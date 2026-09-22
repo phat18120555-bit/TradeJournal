@@ -1,23 +1,18 @@
-
 {
-  "name": "Trade Journal",
+  "name": "Trade Journal — สมุดซื้อขาย",
   "short_name": "Trade Journal",
-  "description": "สมุดบันทึกและวิเคราะห์การซื้อขายหุ้น",
+  "description": "สมุดบันทึกและวิเคราะห์การซื้อขายหุ้น คำนวณต้นทุนเฉลี่ยและกำไรขาดทุนอัตโนมัติ",
   "start_url": "./",
+  "id": "./",
+  "scope": "./",
   "display": "standalone",
-  "background_color": "#111111",
-  "theme_color": "#111111",
   "orientation": "portrait",
+  "background_color": "#EDF0F2",
+  "theme_color": "#0A5C74",
+  "lang": "th",
   "icons": [
-    {
-      "src": "./icon-192.png",
-      "sizes": "192x192",
-      "type": "image/png"
-    },
-    {
-      "src": "./icon-512.png",
-      "sizes": "512x512",
-      "type": "image/png"
-    }
+    { "src": "./icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "./icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "./icon-512-maskable.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
   ]
 }
