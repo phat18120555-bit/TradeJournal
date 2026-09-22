@@ -1,0 +1,1692 @@
+<!doctype html>
+<html lang="th">
+<head>
+<link rel="manifest" href="./manifest.json">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<title>สมุดซื้อขาย</title>
+<meta name="description" content="สมุดบันทึกซื้อขายหุ้นและแลกเงิน บาท ↔ USD คำนวณต้นทุนเฉลี่ยและกำไรขาดทุนอัตโนมัติ">
+<meta name="theme-color" content="#0A5C74" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0B1116" media="(prefers-color-scheme: dark)">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="สมุดซื้อขาย">
+<link rel="manifest" href="data:application/manifest+json;base64,eyJuYW1lIjoi4Liq4Lih4Li44LiU4LiL4Li34LmJ4Lit4LiC4Liy4LiiIOKAlCBUcmFkZSBKb3VybmFsIiwic2hvcnRfbmFtZSI6IuC4quC4oeC4uOC4lOC4i+C4t+C5ieC4reC4guC4suC4oiIsImRlc2NyaXB0aW9uIjoi4Liq4Lih4Li44LiU4Lia4Lix4LiZ4LiX4Li24LiB4LiL4Li34LmJ4Lit4LiC4Liy4Lii4Lir4Li44LmJ4LiZ4LmB4Lil4Liw4LmB4Lil4LiB4LmA4LiH4Li04LiZIOC4muC4suC4lyDihpQgVVNEIOC4hOC4s+C4meC4p+C4k+C4leC5ieC4meC4l+C4uOC4meC5gOC4ieC4peC4teC5iOC4ouC5geC4peC4sOC4geC4s+C5hOC4o+C4guC4suC4lOC4l+C4uOC4meC4reC4seC4leC5guC4meC4oeC4seC4leC4tCIsInN0YXJ0X3VybCI6Ii4iLCJpZCI6Ii8iLCJzY29wZSI6Ii8iLCJkaXNwbGF5Ijoic3RhbmRhbG9uZSIsIm9yaWVudGF0aW9uIjoicG9ydHJhaXQiLCJiYWNrZ3JvdW5kX2NvbG9yIjoiI0VERjBGMiIsInRoZW1lX2NvbG9yIjoiIzBBNUM3NCIsImxhbmciOiJ0aCIsImljb25zIjpbeyJzcmMiOiJkYXRhOmltYWdlL3BuZztiYXNlNjQsaVZCT1J3MEtHZ29BQUFBTlNVaEVVZ0FBQU1BQUFBREFDQVlBQUFCUzNHd0hBQUFFVTBsRVFWUjQydTNkUzFMY1NoQkEwVktGUjdCRjJBSWpXQVdNMkFKc0VhWjRTalQ5VVVtbGJsWG1PWk1YNFhZUUdPZFZsdnJqTjVXZHVYdDQvaW1FOXYzNU51M2xlNWtNTzVtam1BdzltV09ZREQ2WlE1Z01QcGxEbUF3K21VT1lERDZaUTZpR245SDBuTFBKNEpONUcxVERUK1p0VUEwL21TT29ocC9NRVZURFQrWUlxdUVuY3dUVjhKTTVnbXI0eVJ4Qk5meGtqcUFhZmpKSFVQMkl5S3k2K3BONUMxVERUK1lJSElGd0JITDFKK3NXc0FHd0FWejl5Ym9GYkFCc0FGZC9zbTRCR3dBYndOV2ZyRnZBQnNBR2dLd214eDlzQUJBQUNBQUVBR2tDY0FPTURRQUNBQUdBQUVBQUlBQVFBQWdBQkFBQ0FBR0FBRUFBSUFBUUFBZ0FCQUFDQUFHQUFFQUFJQUFRQUFnQUJBQUNnTnY1NTBkQWk2K1AxeisvZHYvNFlnT1FjL2pQL2JvQUNELzhvMGNnQUZZUC84Z1JDSURVQklBQVFBQWdBUGhyN3ZQOEk3NGVJQUF1bXZQc3pxZ3ZoZ21BdE1OZmlyZENzTkZ4eUFZZzNOVS8ydkFMZ0ZWSEh3R1FadmdqWHYwRlFNcHp2d0JJZmU3L3piTkF6RDczbjN2YzZ3QnNPcFJiMzVSZU92ZjdQQUEzSC82dmo5ZXJEVnIwbzQ4QUJqNk85STRnMjdsZkFFRUM2UkZDbHVmN0JURHcxZi8rOGVYa1ZYbE5DSm1lN3hkQWdLUFBwUkNjK3dVUWJ2aVBEZVdwRUZxMlFlWnp2d0FHSHY0NWowZDl5bElBaWJSOENxdGxHemozQzJDSW05NWV3Vnc2Rm1VZS9sSzhGV0xYTjcxTEkzRGx0d0hDbnZ2WEhJc1FRSWh6ZjQrdkp4QUJESC91YjkwR2gvL0ZQY0J1aC8vcjQvWDl6RkEvTGQwR2h0OEdPRHVZdDNqYmNjdnd6M2tjQWF3YXpLMUM4RXlNSTlEdWp5UEhIdHZ5Zkk0TnNMdmhQeHpNSGh2QmUyOXNnTjBQLysraFBQYWkwdEtONEwwM0FoanVxdDhyQk9kK1I2QmhoLy93OTdRZWpReS9EVERNa2FmMXhuWEpSakQ4QWhqcXFyOG1CRGU5QWdoejFWOGF3bzUrRHU4bnZ2ZW43QUhVcUlOLzdmUDN1WGRnM3ZMcWYrNVZZNjhvQnd4Z3F5UFAwaEFjZlJ5QlFoMTVXbzlHQ0NEOFZSOEJERC84YmhUZEF3enBjTkNYZkJ6UWphSUFRa1RneUVQS0FBdy82UU1BQVlBQVFBQXdpMzhXcGJQZS81d0pOa0NJNFovek9BSUFBWUFBUUFDd3JhR2ZCZktNQzJrM2dHZGNjQVFDQVlBQVFBQWdBQkFBQ0FBRUFBSUFBWUFBUUFBZ0FCQUFBZ0FCZ0FCQUFDQUFFTURZZW4wb3Z1ZUg2L2YyUFhYK3N3bGdMd1BlK2hkNzZ2ZjMranF0WDJ1bmY3Wnd3MTlLS2RQZHcvT1BSWWdqRUFnQUJBQUNBQUdBQUVBQUlBQVFBRVFLNFB2emJmSmp3QVlBQVlBQVFBQ1FKZ0Ezd21UMC9mazIyUURZQUpBK0FNY2dzaDEvYkFCc2dHTlZRSWFydncyQURYQ3VEb2g4OWJjQnNBSG1WQUlSci80MkFEWkFTeTBRNmVwL2NRT0lnTWpEN3dpRUk5Q2FlbURrcS8vc0RTQUNJZzUvMHhGSUJFUWIvdVo3QUJFUWFmZ1gzUVNMZ0NqRHZ5Z0FFUkJsK0JjSElBSWlEUCtxQUVUQTZNTy9PZ0FSTVBMd2wxSksxK0gxZjV4a2xNSHZ0Z0ZzQTBZZC91NGJ3RFpnbE1IZlBBQWhNTUxKNG1wSEZpR3d4eVAxMWMvc1FtQlA5NUkzdldrVkE3Y1krdC8rQTh2cUtDWVBsckUrQUFBQUFFbEZUa1N1UW1DQyIsInNpemVzIjoiMTkyeDE5MiIsInR5cGUiOiJpbWFnZS9wbmciLCJwdXJwb3NlIjoiYW55In0seyJzcmMiOiJkYXRhOmltYWdlL3BuZztiYXNlNjQsaVZCT1J3MEtHZ29BQUFBTlNVaEVVZ0FBQWdBQUFBSUFDQVlBQUFEMGVOVDZBQUFOaFVsRVFWUjQydTNkVFZKYnlSYUZVWFNERmt3UnBrQUxSb0ZiVEFGUEVYZHhpN0JDQm9HayszUHk3TFdhN3dVWXlSVzF2OHlyc25kWGxIUno5L2p1WFFDNitQUDcxODY3VUl2ZkVBTVBJQkFFQU1ZZVFCUUlBQXcrZ0NBUUFCaDhBRUVnQUl3K0FHSkFBQmg5QU1TQUFERDZBSWdCQVdENEFSQUNBc0RvQXlBR0JJRGhCMEFJQ0FEREQ0QVFFQUNHSHdBaElBQU1Qd0JDUUFBWWZnQ0V3S2ttNHc4QWVmdXg4eHNIQUhtM0FlMWVrT0VIUUFoOHI5VWpBT01QZ0owSnVnRXcvQUM0RFFpN0FURCtBTmlmc0FBdy9nRFlvZlBzdk9FQWNMblJIZ2tNZHdOZy9BR3dUMkVCWVB3QnNGUHoySGxEQVdCKzFSOEpsTDhCTVA0QXVBMElDd0RqRDRBSUNBc0E0dytBQ0FnTEFPTVBnQWdJQ3dEakQ0QUlDQXNBNHcrQUNBZ0xBT01QZ0FnSUN3RGpENEFJQ0FzQTR3K0FDQWdMQU9NUGdBZ0lDd0RqRHdEYjdlR1U5R0lCUUFSc0ZBREdId0MyMzhlcDg0c0RBQkd3Y1FBWWZ3Q29zNWRUcHhjREFDS2cyQTBBQUZESDRnSGc5QThBOWZaekd2bUhCd0FSVUN3QWpEOEExTjFUbndFQWdFQ0xCSURUUHdEVTN0VnBoQjhTQUVUQXZQczZWZjdoQUlCbGR0Wm5BQUFnMEd3QjRQUVBBT1BjQWt5VmZoZ0FZSjNkOVFnQUFBSmRIQUJPL3dBdzNpMkFHd0FBY0FQZzlBOEFDYmNBMHhhL0tBQ3diUVI0QkFBQWdjNEtBS2QvQUJqN0ZzQU5BQUM0QVhENkI0Q0VXd0EzQUFEZ0JzRHBId0FTYmdIY0FBQ0FHd0NuZndCSXVBVndBd0FBYmdDYy9nRWc0UmJBRFFBQXVBRUFBQVRBbGV0L0FCalJkL3Z0QmdBQTNBQTQvUU5Bd2kyQUd3QUFjQU1BQUVRSGdPdC9BQmpmVjN2dUJnQUEzQUFBQUxFQjRQb2ZBUHI0Yk5mZEFBQ0FHd0FBSURJQVhQOERRRCtIKys0R0FBRGNBQUFBQWdBQTZCOEFudjhEUUYvN08rOEdBQURTYndBQUFBRUFBSFFQQU0vL0FhQy9qNzEzQXdBQXlUY0FBSUFBQUFBRUFBRFF5ZTdxeWdjQUFjQU5BQUFnQUFBQUFRQUFDQUFBUUFBQUFBSUFBQkFBQUVDVkFQQm5BQUNBR3dBQVFBQUFBQUlBQUJBQUFJQUFBQUFFQUFBZ0FBQUFBUUFBQ0FBQVFBQUFBQUlBQUJBQUFJQUFBQUFFQUFBZ0FBQUFBUUFBQ0FBQUVBQUFnQUFBQUFRQUFDQUFBQUFCQUFBSUFBQkFBQUFBQWdBQUVBQUFnQUFBQUFRQUFDQUFBQUFCQUFBSUFBQkFBQUFBQWdBQUVBQUFJQUFBQUFFQUFBZ0FBRUFBQUFBQ0FBQVFBQUNBQUFBQUJBQUFJQUFBQUFFQUFBZ0FBRUFBQUFBQ0FBQVFBQUNBQUFBQUJBQUFJQUFBUUFBQUFBSUFBQkFBQUlBQUFBQUVBQUFnQUFBQUFRQUFDQUFBUUFBQUFBSUFBQkFBQUlBQUFBQm1jdTB0QU9qcDdmWDV5Ly92OXY3Skd4UnVkM1AzK081dEFPZy8rbUlBQVFCZytJVkFPSjhCQUREK3MzNGZCQUFBZzR5L0NCQUFBSVNPdndnUUFBQ0VqcjhJRUFBQWhJNi9DQkFBQUlBQUFDRGw5TzhXUUFBQUFBSUFBQkFBQUt4bXErdDRqd0VFQUFBZ0FBQUFBUUFBQ0FBQVFBQUFBQUlBQUJBQUFIenI5djRwNnRkRkFBQUFBZ0FBRUFBQVFkYStqbmY5THdBQUFBRUFRUGRiQUtkL0FRQkFJV3Y4NVR6R1h3QUFZUHdSQUFCMFp2d0ZBQUJocDMvam4rWGFXd0NRUGY2R1h3QUEwR0Q4UHdiOTJOY1pmUVFBUUNQN3cyN2tPY1puQUFBYW5mNUJBQUNFamI4VFB3SUF3UGlEQUFEb3pQZ2pBQUFDVC84Z0FBREN4dC9wSHdFQVlQeEJBQUIwWnZ3UkFBQ0JwMzhRQUFCaDQrLzBqd0FBTVA0Z0FBQTZNLzRJQUlEQTB6OElBSUN3OFhmNlJ3QUFHSCs0MkxXM0FLQ3VVOGYvbk1jS0FrTUFBRkRzOUwvRzkvMzRXaUdReFNNQWdLTGovOU5CbmlzcWZDalJEUURBckdQaVpPbTVQMjRBZ0lDaE94dzdKOHZUbkRMK2M3KzNmcThFQU1DczQvRlpHSGhmUUFBQUlTT1hOb2F1L2hFQWdKRUx1dzB3L2dnQWdPQVFNUDRJQUNEK2xKc1NBc0lHQVFBWS83RFJkUFdQQUFDTWY5aHRnUEZIQUFBRWg0RHhSd0FBVHY4aEllQzVQd0lBTVA1N3A5dzVUcnJWeDlYVlB3SUFNUDZmak53Y0lWRDFOc0Q0SXdBQTQvL055SFVPQWVPUEFBRDR3UkIyQ0FIUC9SRUFnTlAvR2FmY2tUOGY0T29mQVFBWS93dEdic1RiQU9PUEFBQ00vMHdqMS9YekFjWWZBUUMwTmVmSVZROEJ6LzBSQUlEVGYvR28yUHJ2SzNENlJ3QUFiY2QveVpHcmRCdGcvQkVBZ1BGZmVlUkcrM3lBOFVjQUFNYS9RUWg0N284QUFDaGd6YzhIdVBwSEFBQk8vNFZHYm8zYkFPT1BBQUNNZjlHUnEvTDVBT09QQUFDTWY0TVE4TndmQVFBdzBBbDNpejgvd09rZkFRQzBQZjJQRml0ci9pZUtJQUNBbHVNLzZzZ3RIUUxHSHdFQUdIODNBaUFBQU9OZk5RU2Mva0VBQUlIbXVBMHcvZ2dBd09rL0xBU01Qd0lBTVA1dUJFQUFBTVovOUJEdzNwRGkybHNBekRGd2I2L1BMMmY4V2c5VlgvOWhOQmwrQkFEUSt2Uy94dkFmZm0zbEVJQ3VQQUlBNDMvMjZGMHkva3Q4SDBBQWdQSDMzQjg0d2lNQTJnOWY0ckN0TWY1em45cmZYcDlmS2o0S0FBRUFnNDdleC8vdWhBdndqMGNBeEp4NDkvK2VkNmYveTA3L2dCc0FHR3JzdXQ4SUdIOUFBR0Q4VC9qNkRrTm8vSUZUZUFSQTVQaC85djBTSGc4WWY4QU5BSWIveVBjZmJTQ1Q0Z1Z3QTREeFgvVFhHbVZVWGYwREFnRGpIeFlDeGg4NGwwY0FHUDRUZm81S0EycjhBVGNBR0g4M0FnQnVBTWdlL3YyVDdsSmp2ZldOZ05NL0lBQXcva2VHN3F1LzIzMkpuM2V0a1RYK2dBREErUDl3NUxyY0NoaC9RQUJnK004Y3ViVnVCYlllWCtNUEhPTkRnRVNOLytIWExuMWFuek15ZlBnUWNBTkEvUGpQT2R3ajNBaTQrZ2NFQUU3OUM0MWIxUkF3L29BQXdLbC9CWlZDd1BnRFMvRVpBSXova1Y5enBNOElBTGdCb00zd1Z6alZidlZuQ1RqOUF3SUFwLzRDMXZ5ekJFWi9yNEQ2UEFMQStKLzU4MVg1R1kwLzRBYUE0WWQvdEVGYit2R0E4UWNFQUU3OVFvRGwvL2w5T2VQMy9zRTdod0RBK0llZlpOY01BYWYvYllmLzhHdUZBS1B4R1FCbUdYN2ovLzlyV3ZKMUdmOGE0Ny9FOXdFM0FEajF1eEV3L29BYkFJeS9Hd0dxbnY3ZEF1QUdBTU52L0gvODJzOTVIMFVFSUFCdzZtOFNBejk5VDcxL2dBREFxVDhvQkx4M2dBREErSWVFZ1BjTUVBQU1PLzVHelBzR0NBQ2MrZ0VveEg4R2lQRUhjQU9BOFIvcnl0K2YzUTRnQUFnNjlmdXoyd0V1NHhFQUY1LzZSeHIvSmI0UGdBQmdTT2NPdUdmOUFBSUEwVERVNmQ4dEFDQUE0SVJCOTVmYUFBZ0F3aUxBOEFNSUFNSWl3UGdEOU9JL0E4U3BIOEFOQVB3YmZlTVBJQUJ3OGdkQUFBQUFBZ0FBRUFBQWdBQUFBQVFBQUNBQUFBQUJBQUFJQUFCQUFBQUFBZ0FBRUFBQWdBQUFBTDdncndPR2piMjlQcitjK2pXMzkwOFAzamxBQUVESThCOStyUkFBenVVUkFBdzIva3Q4SDBBQUFBQUNBS2g2K25jTEFBZ0FBRUFBQUFBQ0FBQVFBQUNBQUFBQUFRQUFDQUFBUUFBQUFBSUFBQmlVdnd3b21MK0ZEa0FBWVBoUCtsb2hBREEyandDTS82YmZCd0FCQUFBSUFLcWUvdDBDQUFnQUFFQUFBQUFDQUFBUUFBQ0FBQUFBQkFBQUlBQUFBQUVBQUFnQUFFQUFBQUFDQUFBUUFBQ0FBQUFBQWVBdEFBQUJBQUFJQUFCQUFBQUFBZ0FBRUFBQWdBQUFBQVFBQUNBQUFBQUJBQUFJQUFCQUFBQUFBZ0FBRUFBQWdBQUFBQVFBQUNBQUFBQUJBQUFDQUFBUUFBQ0FBQUFBQkFBQUlBQUFBQUVBQUFnQUFFQUFBQUFDQUFBUUFBQ0FBQUFBQkFBQUlBQUFBQUVBQUFnQUFFQUFBQUFDQUFBRUFBQWdBQUFBQVFBQUNBQUFRQUF3aE52N3A0ZkszODlyR09jMStMMG85UnBLZno4RUFHTENhL0FhL0Y3VWZ3Mys1U1lBTU54MS8wWG5OZFFaSEw4WFpWNkQ4ZWRrdTV1N3gzZHZRNmEzMStlWDBVODVYb1BYNFRYODl4cU1Qd0lBQVBpY1J3QUFJQUFBQUFFQUFBZ0FBRUFBQUFBQ0FBQVFBQUNBQUFBQUJBQUFJQUFBQUFFQUFBZ0FBRUFBQUFBQ0FBQVFBQUNBQUFBQUJBQUFJQUFBUUFBQUFBSUFBR2diQUg5Ky85cDVHd0RBRFFBQUlBQUFBQUVBQUFnQUFFQUFBQUFDQUFBUUFBQkFuUUR3WndFQVFJNC92My90M0FBQVFPb05BQUFnQUFBQUFRQUF0QTBBSHdRRWdQNCs5dDROQUFBazN3QUFBQUlBQUVnSkFKOERBSUMrOW5mZURRQUFwTjhBQUFBQ0FBQklDUUNmQXdDQWZnNzMzUTBBQUxnQkFBQmlBOEJqQUFEbzQ3TmRkd01BQUc0QUFJRG9BUEFZQUFERzk5V2V1d0VBQURjQUFFQjhBSGdNQUFEak9yYmpiZ0FBd0EyQVd3QUE2SDc2ZHdNQUFHNEFBQUFCc01kakFBQVl4MDkyMncwQUFMZ0JjQXNBQU4xUC8yNEFBTUFOZ0ZzQUFFZzQvYnNCQUFBM0FHNEJBQ0RoOU84R0FBRGNBTGdGQUlDRTA3OGJBQUJ3QStBV0FBQVNUdjhYM3dDSUFBQVliL3d2RGdBQVlFd1hCNEJiQUFBWTYvVHZCZ0FBM0FDNEJRQ0FoTlAvckRjQUlnQUF4aGovV1FNQUFCakhyQUhnRmdBQTZwLytGN2tCRUFFQVVIdjhGd2tBRVFBQTlYZlZad0FBSU5CaUFlQVdBQURxN3VrMDRnOE5BTWEvY0FDSUFBQ291WjgrQXdBQWdWWUpBTGNBQUZCck42ZE9Md1lBakgreEFCQUJBRkJuSjZmT0x3NEFqSCtSQUJBQkFMRDlMazVKTHhZQWpQL0dBU0FDQUREKzIrM2dsUHppQVNCMS95WnZBZ0RrN2Q3a3pRQ0F2TDJidkNrQWtMZHpremNIQVBMMmJmSW1BVURlcmszZUxBREkyN1BKbXdZQWVUczJlZk1BSUcrL2hoclhtN3ZIZC85SUFXRDRBMjRBM0FZQVlLZkNBMEFFQUdDZjVqSDBtSG9rQUlEaEQ3a0JjQnNBZ0IwS0R3QVJBSUQ5T1UrcjhmUklBQURESDNJRDREWUFBRHNUZmdQZ05nQUF3eDhlQUVJQUFNUC90Y2x2SGdEazdVZlVPTG9OQU1EQk1UQUFoQUFBNmNNZkhRQkNBSURVNFJjQVFnREE4QWNUQUVJQXdQQUxBTVFBZ05FWEFBZ0JBTU12QU1TQUdBQXcrZ0pBREFCZzlBV0FHQURBNkFzQVFRQ0F3UmNBZ2dBQWd5OEFSSUVvQUREMkcvb0xYNStaU1FSNFhFb0FBQUFBU1VWT1JLNUNZSUk9Iiwic2l6ZXMiOiI1MTJ4NTEyIiwidHlwZSI6ImltYWdlL3BuZyIsInB1cnBvc2UiOiJhbnkifSx7InNyYyI6ImRhdGE6aW1hZ2UvcG5nO2Jhc2U2NCxpVkJPUncwS0dnb0FBQUFOU1VoRVVnQUFBZ0FBQUFJQUNBWUFBQUQwZU5UNkFBQUtyRWxFUVZSNDJ1M2RUWElhU3hxR1VlUFFDTFlvdHNBSVZzRk1XMkNOalBIQW9RaXNzQVJVNWMrWCtaMHo2N2lDaSttT2ZwL0t3bWl6ZlQvZWZnRUFxZnoyRmdDQUFBQUFCQUFBSUFBQUFBRUFBQWdBQUVBQUFBQUNBQUFRQUFDQUFBQUFCQUFBSUFBQUFBRUFBQWdBQUVBQUFBQUNBQUFRQUFDQUFBQUFBUUFBQ0FBQVFBQUFBQUlBQUJBQUFJQUFBQUFFQUFBZ0FBQUFBUUFBQ0FBQVFBQUFBQUlBQUJBQUFJQUFBQUFFQUFBZ0FBQUFBUUFBQWdBQUVBQUFnQUFBQUFRQUFDQUFBQUFCQUFBSUFBQkFBQUFBQWdBQUVBQUFnQUFBQUFRQUFDQUFBQUFCQUFBSUFBQkFBQUFBQWdBQUJBQUFJQUFBQUFFQUFBZ0FBRUFBQUFBQ0FBQVFBQUNBQUFBQUJBQUFJQUFBQUFFQUFBZ0FBRUFBQUFBQ0FBQVFBQUNBQUFBQUJBQUFDQUFBUUFBQUFBSUFBQkFBQUlBQUFBQUVBQUFnQUFBQUFRQUFDQUFBUUFBQUFBSUFBQkFBQUlBQUFBQUVBQUFnQUFBQUFRQUFDQUFBRUFEZUFnQVFBQUNBQUFBQUJBQUFJQUFBQUFFQUFBZ0FBRUFBQUFBQ0FBQVFBQUNBQUFBQUJBQUFJQUFBQUFFQUFBZ0FBRUFBQUFBQ0FBQVFBQUFnQUFBQUFRQUFDQUFBUUFBQUFBSUFBQkFBQUlBQUFBQUVBQUFnQUFBQUFRQUFDQUFBUUFBQUFBSUFBQkFBQUlBQUFBQUVBQUFnQUFCQUFBQUFBZ0FBRUFBQWdBQUFBQVFBQUNBQUFBQUJBQUFJQUFCQUFBQUFBZ0FBRUFBQWdBQUFBQVFBQUNBQUFBQUJBQUFJQUFCQUFBQ0FBQUFBQkFBQUlBQUFBQUVBQUFnQUFFQUFBQUFDQUFBUUFBQ0FBQUFBQkFBQUlBQUFBQUVBQUFnQUFFQUFBQUFDQUFBUUFBQ0FBQUFBQVFBQUNBQUFRQUFBQUFJQUFCQUFBSUFBQUFBRUFBQWdBQUFBQVFBQUNBQUFRQUFBQUFJQUFCQUFBSUFBQUFBRUFBQWdBQUFBQVFBQUFzQmJBQUFDQUFBUUFBQ0FBQUFBcHZEbUxRQ0k0M281Zi92UGR2dVRONGhpTnR2MzQ4M2JBQkJ6OU1VQUFnREE4QXNCaXZFWkFJQkJ4Ny9rOHlBQUFCaGsvRVVBQWdBZzZmaUxBQVFBUU5MeEZ3RUlBSUNrNHk4Q0VBQUFnQUFBeUhMMTd4UUFBUUFBQ0FBQVFBQUFOTlByT041dEFBUUFBQ0FBQUFBQkFBQUNBQUFRQUFDQUFBQUFCQUFBRCszMnAxVC9YZ1FBQUNBQUFBQUJBSkJJNitONHgvOElBQUJBQUFETWZncmc2aDhCQUJCSWkxL09ZL3dSQUFER0h3UUF3TXlNUHdJQUlOblZ2L0ZucVRkdkFjQjQ0Mi80RVFBQUU0ei81NkQvOURpamp3QUFtTWo5c0J0NVd2RVpBSURPVi84Z0FBQ1NqYjhyZmdRQVFETEdId0VBa096cTMvZ2pBQUNTalQ4SUFJQ0U0Ky9xSHdFQWtJenhSd0FBSkx6NkJ3RUFrR3o4WGYwakFBQ01Qd2dBZ0prWmZ5THl1d0FBS2wvOWwzNU9RVUVKbSszNzhlWnRBRW9PMk13RFZlUG9mMmxRQ0FFRUFCQnVFR2NjcDBqakx3Sll5MmNBZ0NxRGVMMmNVLzhWdVJialgrbzVFQUFBeFlkbmxvRXl0QWdBd1BpL09JYWpud2I0SzM4SUFJQ1ZRenBhQ0JoL0JBREFyM0wzcldjOFVqZitDQURBK0hkNHZ1aC9YaEFBUVByeGozNGE0T2dmQVFEUWFIQkh2ZUkyL2dnQXdOWC9CQ0hnYTNrUkFJRHhYM0FVWG1JVWUwV0ErLzRJQU1ENHI3Z1BYaUlFV3A4R3VPK1BBQUI0MFhkak9HSUlHSDhFQU9EcXYrQmdSZzRCUi84SUFNRDRWendLai9qNUFFZi9DQURBK0RjWXcwaW5BY1lmQVFDd1lNalhQbjZrendjWWZ3UUE0T3EvOExEMkNBSDMvUkVBZ1BFUGNCVGU4dk1CanY0UkFJRHhEelNHTFU0RGpEOElBS0REVlhxVUVERCtDQURBMVgvZzRDZ1pBdTc3Z3dBQTR6L1FVWGlQN3c5dzlZOEFBSXgvZ0RFczlZdUdqRDhJQUdEQU1hd2RBc1lmQVFDNCtnOGVKc1lhQkFCUVlmeEhHTmlTcjFGUUlBQUE0ei9RR0pZNERURCtDQUFndlZISGNHa0lHSDhFQU9EcWY1S0FNZW9nQU1ENEo3MGFmdWJQSWhUSTZNMWJBTVoveVJoZUwrZVBGNTd6RUNFQ3ZyNFhoaDhCQUJqL1N1Ti8vL05SUWdBUUFCaElBMUY1L0w4K3RuY0VBSC81REFCcGgvOS9WOGNsZm52Y3FGZi90Y2UvNUhNQUFnQ3FET1BvSWVDWDNnQ1B1QVdBNFgvaU1TTU5wUEVIbkFEQWl2R2Y2VVRBK0FNQ0FPTS9jUWhrKzdJZllEbTNBREQ4SzU4N3lsVzBvMy9BQ1FER3YrR1ZjSVJUQWVNUENBQ01mNmN4SHVWekFzWWZFQUFZL3dsQ3dIMS9ZQW1mQWNEd1YzNU5OYSs0SGYwREFnRGp2OEQ5SU5hS2lGb2hZUHlCTmR3Q3dQamYvZWZhVit1OVRpcU1QK0FFQU1QL1lBeS8rOVd4a1U0RTNQY0hCQURHdjlLVmNPM2JBMHREd05FL1VJSmJBQmovSng5YmEwaGZ1VFZnL0FFbkFCaitEaU5ZOC9aQTZXOFhOUDZBRXdDTWYyRTlQakRvdmovZ0JBRGpIK1FLdU5VSEJsMzlBd0lBd3g5d0FHdUhnUEVIQkFER1AvRDQ5UTRCNHc4SUFJeC80aERnbi85TmZienczOXZCTzRZQWdFR0dQL0tWYjhzUWNQVy9idnp2ZjE0SWtJRy9CY0R3Vi8wakRGL3QxMm44MTQ5L3FjZUNBSUFHNHorYXp4Q284ZDBFbEIxd0VZQUFBT00vNUtrQXdFOThCZ0RESHlBRWxyNHZBZ0p3QW9EeFQzWWlZUHdCSndBWS8wUW5Bb1lmRUFBWS9pUWhZUFNCMHR3Q3dQZ1BFZ0lBQWdEakQ4QXFiZ0dRYXZoOUxTeUFFd0NNLzhPZjkyVXdnQUNBaWlNZWJmeExQUlpBQU1DQTR5OENBQUVBaFFmZFYrRUNDQUNTUllEaEJ4QUFKSXNBNHcvUW43OEdTSmhUQVFDY0FERFo2QnQvQUFHQUszOEFCQUFBSUFBQUFBRUFBQWdBQUVBQUFBQUNBQUFRQUFDQUFBQUFCQUFBNU9WM0FVQkExOHY1NDltZjNlMVBCKzhZNEFRQUVvMy81OCsvK2hnQUFRQURqMytweHdJQ0FCaHcvRVVBSUFBQUFBRUFBQWdBQUVBQUFJQUFBQUFFQUFBZ0FBQUFBUUFBak12dkFxQUkzMTBQNEFRQTQvL3c1MzFqSFlBQUlOSDRsM29zQUFLQUFjZGZCQUFJQUFCQUFBQUFBZ0FBRUFBQWdBQUFBQVFBQUNBQUFBQUJBQUFJQUFBUUFBQ0FBQUFBQkFBQUlBQUFBQUVBQUFnQUFFQUFBQUFDQUFBUUFBQ0FBQUFBQkFBQUlBQUFBQUVBQUFnQUFFQUFBQUFDQUFBUUFBQWdBQUFBQVFBQUNBQUFRQUFBQUFJQUFCQUFBSUFBQUFBRUFBQWdBQUFBQVFBQUNBQUFRQUFBQUFJQUFCQUFBSUFBQUFBRUFBQWdBQUJBQUFBQUFnQ2V0TnVmRGhHZXcrdHM5enE5bDhWZlo0am5RQUFBQUFJQTZsNGx0YmpDOGpxOWx3TzhUbGYvZExIWnZoOXYzZ2JXdWw3T0h4SC96OVhyOUY0TzlEb05Qd0lBQUtqTExRQUFFQUFBZ0FBQUFBUUFBQ0FBQUFBQkFBQUlBQUJBQUFBQUFnQUFFQUFBZ0FBQUFBUUFBQ0FBQUFBQkFBQUlBQUJBQUFBQUFnQUFFQUFBSUFBQUFBRUFBQWdBQUVBQUFBQUNBQUFRQUFDQUFBQUFCQUFBSUFBQUFBRUFBQWdBQUVBQUFBQUNBQUFRQUFDQUFBQUFCQUFBSUFBQVFBQUFBQUlBQUJBQUFJQUFBQUFFQUFBZ0FBQUFBUUFBQ0FBQVFBQUFBQUlBQUJBQUFJQUFBQUFFQUFBZ0FBQUFBUUFBQ0FBQVFBQUFnQUFBQUFRQUFDQUFBQUFCQUFBSUFBQkFBQUFBQWdBQUVBQUFnQUFBQUFRQUFDQUFBQUFCQUFBSUFBQkFBQUFBQWdBQUVBQUFnQUFBQUFFQUFBZ0FBRUFBQUFBQ0FBQVFBQUNBQUFBQUJBQUFJQUFBQUFFQUFBZ0FBRUFBQUFBQ0FBQVFBQUNBQUFBQUJBQUFJQUFBQUFFQUFBZ0FBQkFBQUlBQUFBQUVBQUFnQUFBQUFRQUFDQUFBUUFBQUFBSUFBQkFBQUlBQUFBQUVBQUFnQUFBQUFRQUFDQUFBUUFBQUFBSUFBQkFBQUNBQUFBQUJBQUFJQUFCQUFBQUFBZ0FBRUFBQWdBQUFBQVFBQUNBQUFBQUJBQUFJQUFCQUFBQUFBZ0FBRUFBQWdBQUFBQVFBQUNBQUFFQUFBQUFDQUFBUUFBQ0FBQUFBQkFBQUlBQUFBQUVBQUFnQUFFQUFBQUFDQUFBUUFBQ0FBQUFBQkFBQUlBQUFBQUVBQUFnQUFFQUFBSUFBQUFBRUFBQWdBQUNBeWZ3Qkw5Z20wckpESXFrQUFBQUFTVVZPUks1Q1lJST0iLCJzaXplcyI6IjUxMng1MTIiLCJ0eXBlIjoiaW1hZ2UvcG5nIiwicHVycG9zZSI6Im1hc2thYmxlIn1dfQ==">
+<link rel="icon" type="image/png" sizes="192x192" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMAAAADACAYAAABS3GwHAAAEU0lEQVR42u3dS1LcShBA0VKFR7BF2AIjWAWM2AJsEaZ4SjT9UUmlblXmOZMX4XYQGOdVlvrjN5WduXt4/imE9v35Nu3le5kMO5mjmAw9mWOYDD6ZQ5gMPplDmAw+mUOYDD6ZQ6iGn9H0nLPJ4JN5G1TDT+ZtUA0/mSOohp/MEVTDT+YIquEncwTV8JM5gmr4yRxBNfxkjqAafjJHUP2IyKy6+pN5C1TDT+YIHIFwBHL1J+sWsAGwAVz9yboFbABsAFd/sm4BGwAbwNWfrFvABsAGgKwmxx9sABAACAAEAGkCcAOMDQACAAGAAEAAIAAQAAgABAACAAGAAEAAIAAQAAgABAACAAGAAEAAIAAQAAgABAACgNv550dAi6+P1z+/dv/4YgOQc/jP/boACD/8o0cgAFYP/8gRCIDUBIAAQAAgAPhr7vP8I74eIAAumvPszqgvhgmAtMNfirdCsNFxyAYg3NU/2vALgFVHHwGQZvgjXv0FQMpzvwBIfe7/zbNAzD73n3vc6wBsOpRb35ReOvf7PAA3H/6vj9erDVr0o48ABj6O9I4g27lfAEEC6RFCluf7BTDw1f/+8eXkVXlNCJme7xdAgKPPpRCc+wUQbviPDeWpEFq2QeZzvwAGHv45j0d9ylIAibR8CqtlGzj3C2CIm95ewVw6FmUe/lK8FWLXN71LI3DltwHCnvvXHIsQQIhzf4+vJxABDH/ub90Gh//FPcBuh//r4/X9zFA/Ld0Ght8GODuYt3jbccvwz3kcAawazK1C8EyMI9DujyPHHtvyfI4NsLvhPxzMHhvBe29sgN0P/++hPPai0tKN4L03Ahjuqt8rBOd+R6Bhh//w97QejQy/DTDMkaf1xnXJRjD8Ahjqqr8mBDe9Aghz1V8awo5+Du8nvven7AHUqIN/7fP3uXdg3vLqf+5VY68oBwxgqyPP0hAcfRyBQh15Wo9GCCD8VR8BDD/8bhTdAwzpcNCXfBzQjaIAQkTgyEPKAAw/6QMAAYAAQAAwi38WpbPe/5wJNkCI4Z/zOAIAAYAAQACwraGfBfKMC2k3gGdccAQCAYAAQAAgABAACAAEAAIAAYAAQAAgABAAAgABgABAACAAEMDYen0ovueH6/f2PXX+swlgLwPe+hd76vf3+jqtX2unf7Zww19KKdPdw/OPRYgjEAgABAACAAGAAEAAIAAQAEQK4PvzbfJjwAYAAYAAQACQJgA3wmT0/fk22QDYAJA+AMcgsh1/bABsgGNVQIarvw2ADXCuDoh89bcBsAHmVAIRr/42ADZASy0Q6ep/cQOIgMjD7wiEI9CaemDkq//sDSACIg5/0xFIBEQb/uZ7ABEQafgX3QSLgCjDvygAERBl+BcHIAIiDP+qAETA6MO/OgARMPLwl1JK1+H1f5xklMHvtgFsA0Yd/u4bwDZglMHfPAAhMMLJ4mpHFiGwxyP11c/sQmBP95I3vWkVA7cY+t/+A8vqKCYPlrE+AAAAAElFTkSuQmCC">
+<link rel="apple-touch-icon" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAgAAAAIACAYAAAD0eNT6AAANhUlEQVR42u3dTVJbyRaFUXSDFkwRpkALRoFbTAFPEXdxi7BCBoGk+3Py7LWa7wUYyRW1v8yrsndXlHRz9/juXQC6+PP71867UIvfEAMPIBAEAMYeQBQIAAw+gCAQABh8AEEgAIw+AGJAABh9AMSAADD6AIgBAWD4ARACAsDoAyAGBIDhB0AICADDD4AQEACGHwAhIAAMPwBCQAAYfgCEwKkm4w8Aefux8xsHAHm3Ae1ekOEHQAh8r9UjAOMPgJ0JugEw/AC4DQi7ATD+ANifsAAw/gDYofPsvOEAcLnRHgkMdwNg/AGwT2EBYPwBsFPz2HlDAWB+1R8JlL8BMP4AuA0ICwDjD4AICAsA4w+ACAgLAOMPgAgICwDjD4AICAsA4w+ACAgLAOMPgAgICwDjD4AICAsA4w+ACAgLAOMPgAgICwDjDwDb7eGU9GIBQARsFADGHwC238ep84sDABGwcQAYfwCos5dTpxcDACKg2A0AAFDH4gHg9A8A9fZzGvmHBwARUCwAjD8A1N1TnwEAgECLBIDTPwDU3tVphB8SAETAvPs6Vf7hAIBldtZnAAAg0GwB4PQPAOPcAkyVfhgAYJ3d9QgAAAJdHABO/wAw3i2AGwAAcAPg9A8ACbcA0xa/KACwbQR4BAAAgc4KAKd/ABj7FsANAAC4AXD6B4CEWwA3AADgBsDpHwASbgHcAACAGwCnfwBIuAVwAwAAbgCc/gEg4RbADQAAuAEAAATAlet/ABjRd/vtBgAA3AA4/QNAwi2AGwAAcAMAAEQHgOt/ABjfV3vuBgAA3AAAALEB4PofAPr4bNfdAACAGwAAIDIAXP8DQD+H++4GAADcAAAAAgAA6B8Anv8DQF/7O+8GAADSbwAAAAEAAHQPAM//AaC/j713AwAAyTcAAIAAAAAEAADQye7qygcAAcANAAAgAAAAAQAACAAAQAAAAAIAABAAAECVAPBnAACAGwAAQAAAAAIAABAAAIAAAAAEAAAgAAAAAQAACAAAQAAAAAIAABAAAIAAAAAEAAAgAAAAAQAACAAAEAAAgAAAAAQAACAAAAABAAAIAABAAAAAAgAAEAAAgAAAAAQAACAAAAABAAAIAABAAAAAAgAAEAAAIAAAAAEAAAgAAEAAAAACAAAQAACAAAAABAAAIAAAAAEAAAgAAEAAAAACAAAQAACAAAAABAAAIAAAQAAAAAIAABAAAIAAAAAEAAAgAAAAAQAACAAAQAAAAAIAABAAAIAAAABmcu0tAOjp7fX5y//v9v7JGxRud3P3+O5tAOg/+mIAAQBg+IVAOJ8BADD+s34fBAAAg4y/CBAAAISOvwgQAACEjr8IEAAAhI6/CBAAAIAAACDl9O8WQAAAAAIAABAAAKxmq+t4jwEEAAAgAAAAAQAACAAAQAAAAAIAABAAAHzr9v4p6tdFAAAAAgAAEAAAQda+jnf9LwAAAAEAQPdbAKd/AQBAIWv85TzGXwAAYPwRAAB0ZvwFAABhp3/jn+XaWwCQPf6GXwAA0GD8Pwb92NcZfQQAQCP7w27kOcZnAAAanf5BAACEjb8TPwIAwPiDAADozPgjAAACT/8gAADCxt/pHwEAYPxBAAB0ZvwRAACBp38QAABh4+/0jwAAMP4gAAA6M/4IAIDA0z8IAICw8Xf6RwAAGH+42LW3AKCuU8f/nMcKAkMAAFDs9L/G9/34WiGQxSMAgKLj/9NBnisqfCjRDQDArGPiZOm5P24AgIChOxw7J8vTnDL+c7+3fq8EAMCs4/FZGHhfQAAAISOXNoau/hEAgJELuw0w/ggAgOAQMP4IACD+lJsSAsIGAQAY/7DRdPWPAACMf9htgPFHAAAEh4DxRwAATv8hIeC5PwIAMP57p9w5TrrVx9XVPwIAMP6fjNwcIVD1NsD4IwAA4//NyHUOAeOPAAD4wRB2CAHP/REAgNP/GafckT8f4OofAQAY/wtGbsTbAOOPAACM/0wj1/XzAcYfAQC0NefIVQ8Bz/0RAIDTf/Go2PrvK3D6RwAAbcd/yZGrdBtg/BEAgPFfeeRG+3yA8UcAAMa/QQh47o8AAChgzc8HuPpHAABO/4VGbo3bAOOPAACMf9GRq/L5AOOPAACMf4MQ8NwfAQAw0Al3iz8/wOkfAQC0Pf2PFitr/ieKIACAluM/6sgtHQLGHwEAGH83AiAAAONfNQSc/kEAAIHmuA0w/ggAwOk/LASMPwIAMP5uBEAAAMZ/9BDw3pDi2lsAzDFwb6/PL2f8Wg9VX/9hNBl+BADQ+vS/xvAffm3lEICuPAIA43/26F0y/kt8H0AAgPH33B84wiMA2g9f4rCtMf5zn9rfXp9fKj4KAAEAg47ex//uhAvwj0cAxJx49/+ed6f/y07/gBsAGGrsut8IGH9AAGD8T/j6DkNo/IFTeARA5Ph/9v0SHg8Yf8ANAIb/yPcfbSCT4gVwA4DxX/TXGmVUXf0DAgDjHxYCxh84l0cAGP4Tfo5KA2r8ATcAGH83AgBuAMge/v2T7lJjvfWNgNM/IAAw/keG7qu/232Jn3etkTX+gADA+P9w5LrcChh/QABg+M8cubVuBbYeX+MPHONDgESN/+HXLn1anzMyfPgQcANA/PjPOdwj3Ai4+gcEAE79C41b1RAw/oAAwKl/BZVCwPgDS/EZAIz/kV9zpM8IALgBoM3wVzjVbvVnCTj9AwIAp/4C1vyzBEZ/r4D6PALA+J/581X5GY0/4AaA4Yd/tEFb+vGA8QcEAE79QoDl//l9OeP3/sE7hwDA+IefZNcMAaf/bYf/8GuFAKPxGQBmGX7j//9rWvJ1Gf8a47/E9wE3ADj1uxEw/oAbAIy/GwGqnv7dAuAGAMNv/H/82s95H0UEIABw6m8SAz99T71/gADAqT8oBLx3gADA+IeEgPcMEAAMO/5GzPsGCACc+gEoxH8GiPEHcAOA8R/ryt+f3Q4gAAg69fuz2wEu4xEAF5/6Rxr/Jb4PgABgSOcOuGf9AAIA0TDU6d8tACAA4IRB95faAAgAwiLA8AMIAMIiwPgD9OI/A8SpH8ANAPwbfeMPIABw8gdAAAAAAgAAEAAAgAAAAAQAACAAAAABAAAIAABAAAAAAgAAEAAAgAAAAL7grwOGjb29Pr+c+jW3908P3jlAAEDI8B9+rRAAzuURAAw2/kt8H0AAAAACAKh6+ncLAAgAAEAAAAACAAAQAACAAAAAAQAACAAAQAAAAAIAABiUvwwomL+FDkAAYPhP+lohADA2jwCM/6bfBwABAAAIAKqe/t0CAAgAAEAAAAACAAAQAACAAAAABAAAIAAAAAEAAAgAAEAAAAACAAAQAACAAAAAAeAtAAABAAAIAABAAAAAAgAAEAAAgAAAAAQAACAAAAABAAAIAABAAAAAAgAAEAAAgAAAAAQAACAAAAABAAACAAAQAACAAAAABAAAIAAAAAEAAAgAAEAAAAACAAAQAACAAAAABAAAIAAAAAEAAAgAAEAAAAACAAAEAAAgAAAAAQAACAAAQAAwhNv7p4fK389rGOc1+L0o9RpKfz8EAGLCa/Aa/F7Ufw3+5SYAMNx1/0XnNdQZHL8XZV6D8edku5u7x3dvQ6a31+eX0U85XoPX4TX89xqMPwIAAPicRwAAIAAAAAEAAAgAAEAAAAACAAAQAACAAAAABAAAIAAAAAEAAAgAAEAAAAACAAAQAACAAAAABAAAIAAAQAAAAAIAAGgbAH9+/9p5GwDADQAAIAAAAAEAAAgAAEAAAAACAAAQAABAnQDwZwEAQI4/v3/t3AAAQOoNAAAgAAAAAQAAtA0AHwQEgP4+9t4NAAAk3wAAAAIAAEgJAJ8DAIC+9nfeDQAApN8AAAACAABICQCfAwCAfg733Q0AALgBAABiA8BjAADo47NddwMAAG4AAIDoAPAYAADG99WeuwEAADcAAEB8AHgMAADjOrbjbgAAwA2AWwAA6H76dwMAAG4AAAABsMdjAAAYx0922w0AALgBcAsAAN1P/24AAMANgFsAAEg4/bsBAAA3AG4BACDh9O8GAADcALgFAICE078bAABwA+AWAAASTv8X3wCIAAAYb/wvDgAAYEwXB4BbAAAY6/TvBgAA3AC4BQCAhNP/rDcAIgAAxhj/WQMAABjHrAHgFgAA6p/+F7kBEAEAUHv8FwkAEQAA9XfVZwAAINBiAeAWAADq7uk04g8NAMa/cACIAACouZ8+AwAAgVYJALcAAFBrN6dOLwYAjH+xABABAFBnJ6fOLw4AjH+RABABALD9Lk5JLxYAjP/GASACADD+2+3glPziASB1/yZvAgDk7d7kzQCAvL2bvCkAkLdzkzcHAPL2bfImAUDerk3eLADI27PJmwYAeTs2efMAIG+/hhrXm7vHd/9IAWD4A24A3AYAYKfCA0AEAGCf5jH0mHokAIDhD7kBcBsAgB0KDwARAID9OU+r8fRIAADDH3ID4DYAADsTfgPgNgAAwx8eAEIAAMP/tclvHgDk7UfUOLoNAMDBMTAAhAAA6cMfHQBCAIDU4RcAQgDA8AcTAEIAwPALAMQAgNEXAAgBAMMvAMSAGAAw+gJADABg9AWAGADA6AsAQQCAwRcAggAAgy8ARIEoADD2G/oLX5+ZSQR4XEoAAAAASUVORK5CYII=">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600&family=Prompt:wght@500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #EDF0F2; --surface: #FFFFFF; --surface2: #F5F7F8; --line: #D8DFE4; --line2: #E8ECEF;
+  --ink: #0F1B25; --ink2: #4F5E6A; --ink3: #7A8894;
+  --accent: #0A5C74; --accent-ink: #FFFFFF; --accent-soft: #DCEDF2;
+  --gain: #0A7A4A; --loss: #BD3628; --warn: #9A5B00;
+  --gain-soft: #DDF1E6; --loss-soft: #FBE3DF; --warn-soft: #FAEED6;
+  --buy: #0A5C74; --buy-soft: #DCEDF2; --sell: #664A99; --sell-soft: #EBE4F6;
+  --overlay: rgba(10, 18, 24, .5);
+  --font-body: "IBM Plex Sans Thai", "Noto Sans Thai", "Sarabun", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-display: "Prompt", "IBM Plex Sans Thai", "Noto Sans Thai", system-ui, sans-serif;
+  color-scheme: light;
+  box-sizing: border-box;
+  padding-top: env(safe-area-inset-top, 0px);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0B1116; --surface: #141C23; --surface2: #1A242C; --line: #26323B; --line2: #1F2A32;
+    --ink: #E7EEF3; --ink2: #9AA9B4; --ink3: #74838F;
+    --accent: #58BBD6; --accent-ink: #062530; --accent-soft: #123340;
+    --gain: #43CF8F; --loss: #FF8272; --warn: #E8A94F;
+    --gain-soft: #123A2A; --loss-soft: #43201C; --warn-soft: #3A2C12;
+    --buy: #58BBD6; --buy-soft: #123340; --sell: #BBA3F2; --sell-soft: #2C2345;
+    --overlay: rgba(0, 0, 0, .62);
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0B1116; --surface: #141C23; --surface2: #1A242C; --line: #26323B; --line2: #1F2A32;
+  --ink: #E7EEF3; --ink2: #9AA9B4; --ink3: #74838F;
+  --accent: #58BBD6; --accent-ink: #062530; --accent-soft: #123340;
+  --gain: #43CF8F; --loss: #FF8272; --warn: #E8A94F;
+  --gain-soft: #123A2A; --loss-soft: #43201C; --warn-soft: #3A2C12;
+  --buy: #58BBD6; --buy-soft: #123340; --sell: #BBA3F2; --sell-soft: #2C2345;
+  --overlay: rgba(0, 0, 0, .62);
+  color-scheme: dark;
+}
+html { scroll-padding-top: env(safe-area-inset-top, 0px); background: var(--bg); -webkit-text-size-adjust: 100%; }
+*, *::before, *::after { box-sizing: inherit; }
+body {
+  margin: 0; background: var(--bg); color: var(--ink);
+  font-family: var(--font-body); font-size: 15px; line-height: 1.5;
+  font-variant-numeric: tabular-nums; -webkit-tap-highlight-color: transparent;
+}
+body.noscroll { overflow: hidden; }
+button, input, select, textarea { font: inherit; color: inherit; }
+button { cursor: pointer; }
+h1, h2, h3 { font-family: var(--font-display); font-weight: 600; margin: 0; letter-spacing: 0; }
+.muted { color: var(--ink2); }
+.gain { color: var(--gain); }
+.loss { color: var(--loss); }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+/* ---------- top bar ---------- */
+.topbar {
+  position: sticky; top: env(safe-area-inset-top, 0px); z-index: 20;
+  background: color-mix(in srgb, var(--bg) 92%, transparent);
+  -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--line2);
+}
+.topbar-in { max-width: 680px; margin: 0 auto; padding: 10px 16px; display: flex; align-items: center; gap: 10px; }
+.topbar h1 { font-size: 19px; flex: 1; min-width: 0; }
+.pill {
+  display: inline-flex; align-items: center; gap: 5px; border: 1px solid var(--line); background: var(--surface);
+  color: var(--ink2); border-radius: 999px; padding: 3px 10px; font-size: 12px; line-height: 1.5; white-space: nowrap;
+}
+button.pill { min-height: 28px; }
+.pill.ok { color: var(--gain); border-color: color-mix(in srgb, var(--gain) 35%, var(--line)); }
+.pill.bad { color: var(--loss); border-color: color-mix(in srgb, var(--loss) 40%, var(--line)); background: var(--loss-soft); }
+.pill.warn { color: var(--warn); background: var(--warn-soft); border-color: transparent; }
+.dot { width: 7px; height: 7px; border-radius: 50%; background: currentColor; display: inline-block; }
+
+[hidden] { display: none !important; }
+main { max-width: 680px; margin: 0 auto; padding: 14px 16px calc(150px + env(safe-area-inset-bottom, 0px)); }
+.stack > * + * { margin-top: 14px; }
+
+/* ---------- panels & rows ---------- */
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; overflow: hidden; }
+.panel-pad { padding: 14px 16px; }
+.sec-head { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; padding: 14px 16px 6px; }
+.sec-head h2 { font-size: 15px; }
+.sec-head small { color: var(--ink2); font-size: 12px; }
+.notice { margin: 10px 0 0; padding: 9px 12px; border-radius: 10px; font-size: 13px; line-height: 1.45; }
+.notice.warn { background: var(--warn-soft); color: var(--warn); }
+.notice.bad { background: var(--loss-soft); color: var(--loss); }
+.notice.info { background: var(--accent-soft); color: var(--accent); }
+
+/* ---------- hero + ledger ---------- */
+.hero { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 18px 16px 16px; }
+.hero-label { color: var(--ink2); font-size: 13px; }
+.hero-num { font-family: var(--font-display); font-weight: 600; font-size: 40px; line-height: 1.15; margin-top: 2px; letter-spacing: -.01em; }
+.hero-sub { margin-top: 4px; font-size: 14px; color: var(--ink2); }
+.ledger { margin-top: 16px; padding-top: 6px; border-top: 1px solid var(--line); }
+.ledger-cap { display: flex; justify-content: space-between; color: var(--ink3); font-size: 12px; padding: 4px 0 2px; }
+.lrow { display: flex; align-items: baseline; gap: 8px; padding: 5px 0; font-size: 14.5px; }
+.lrow .dots { flex: 1; border-bottom: 1px dotted var(--line); transform: translateY(-4px); min-width: 12px; }
+.lrow b { font-weight: 500; }
+.lrow.total { margin-top: 6px; padding: 8px 0 7px; border-top: 1px solid var(--ink2); border-bottom: 4px double var(--ink2); font-weight: 600; font-size: 16px; }
+.lrow.total b { font-weight: 600; }
+.lrow.sub { color: var(--ink2); font-size: 13px; }
+.ledger-foot { color: var(--ink2); font-size: 13px; margin-top: 8px; }
+
+/* ---------- holdings ---------- */
+.hold { padding: 12px 16px; border-top: 1px solid var(--line2); }
+.hold:first-of-type { border-top: 0; }
+.hold-top { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+.tk { font-family: var(--font-display); font-weight: 600; font-size: 16px; }
+.hold-top .grow { flex: 1; color: var(--ink2); font-size: 13px; min-width: 0; }
+.hold-top .mv { font-weight: 600; }
+.hold-mid { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 8px; flex-wrap: wrap; }
+.pricein { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; color: var(--ink2); }
+.pricein input { width: 96px; padding: 7px 10px; text-align: right; border-radius: 9px; }
+.hold-bot { margin-top: 6px; font-size: 13px; color: var(--ink2); }
+.hold.sold .tk { color: var(--ink2); }
+.hold-total { display: flex; justify-content: space-between; padding: 12px 16px; border-top: 1px solid var(--ink2); background: var(--surface2); font-weight: 600; font-size: 14.5px; }
+
+dl.kv { margin: 0; padding: 4px 16px 10px; }
+dl.kv .r { display: flex; justify-content: space-between; gap: 12px; padding: 7px 0; border-top: 1px solid var(--line2); font-size: 14px; }
+dl.kv .r:first-child { border-top: 0; }
+dl.kv dt { color: var(--ink2); }
+dl.kv dd { margin: 0; text-align: right; }
+
+/* ---------- checks ---------- */
+details.panel > summary { list-style: none; cursor: pointer; padding: 14px 16px; display: flex; align-items: center; justify-content: space-between; gap: 8px; font-family: var(--font-display); font-weight: 600; font-size: 15px; min-height: 48px; }
+details.panel > summary::-webkit-details-marker { display: none; }
+details.panel > summary::after { content: ""; width: 8px; height: 8px; border-right: 2px solid var(--ink3); border-bottom: 2px solid var(--ink3); transform: rotate(45deg); margin-left: 4px; transition: transform .15s; }
+details.panel[open] > summary::after { transform: rotate(-135deg); }
+details.panel > summary .sum-l { flex: 1; display: flex; align-items: center; gap: 8px; }
+.check { display: flex; gap: 10px; padding: 10px 16px; border-top: 1px solid var(--line2); align-items: flex-start; }
+.check .badge { flex: none; margin-top: 2px; }
+.check .t { font-size: 14px; }
+.check .d { font-size: 12.5px; color: var(--ink2); }
+.badge { display: inline-block; min-width: 62px; text-align: center; font-size: 11.5px; padding: 1px 8px; border-radius: 999px; font-weight: 500; }
+.badge.OK { background: var(--gain-soft); color: var(--gain); }
+.badge.CHECK { background: var(--loss-soft); color: var(--loss); }
+.badge.INFO, .badge.NOINPUT { background: var(--surface2); color: var(--ink2); border: 1px solid var(--line); }
+
+/* ---------- transaction rows ---------- */
+.chips { display: flex; gap: 8px; overflow-x: auto; padding: 2px 0 4px; scrollbar-width: none; }
+.chips::-webkit-scrollbar { display: none; }
+.chip { flex: none; border: 1px solid var(--line); background: var(--surface); border-radius: 999px; padding: 6px 14px; font-size: 13.5px; min-height: 36px; color: var(--ink2); }
+.chip[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); font-weight: 500; }
+.month { padding: 12px 16px 6px; font-family: var(--font-display); font-weight: 600; font-size: 13px; color: var(--ink2); background: var(--surface2); border-top: 1px solid var(--line2); }
+.month:first-child { border-top: 0; }
+.trow { display: flex; align-items: center; gap: 12px; width: 100%; text-align: left; background: transparent; border: 0; border-top: 1px solid var(--line2); padding: 11px 16px; min-height: 60px; }
+.month + .trow { border-top: 0; }
+.trow:active { background: var(--surface2); }
+.tdate { flex: none; width: 34px; text-align: center; line-height: 1.15; }
+.tdate b { display: block; font-family: var(--font-display); font-size: 18px; font-weight: 600; }
+.tdate span { font-size: 11.5px; color: var(--ink2); }
+.tmain { flex: 1; min-width: 0; }
+.tline1 { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.tline1 b { font-family: var(--font-display); font-weight: 600; font-size: 15.5px; }
+.tline2 { font-size: 13px; color: var(--ink2); margin-top: 1px; overflow: hidden; text-overflow: ellipsis; }
+.tamt { flex: none; text-align: right; line-height: 1.3; }
+.tamt b { display: block; font-weight: 500; font-size: 15px; }
+.tamt span { display: block; font-size: 12.5px; color: var(--ink2); }
+.tag { font-size: 11.5px; font-weight: 500; border-radius: 6px; padding: 0 7px; line-height: 1.6; }
+.tag.buy { background: var(--buy-soft); color: var(--buy); }
+.tag.sell { background: var(--sell-soft); color: var(--sell); }
+.tag.bad { background: var(--loss-soft); color: var(--loss); }
+.empty { padding: 26px 16px; text-align: center; color: var(--ink2); }
+.empty b { display: block; color: var(--ink); font-family: var(--font-display); margin-bottom: 4px; }
+
+/* ---------- FX dashboard ---------- */
+.grid4 { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; background: var(--line2); }
+.grid4 > div { background: var(--surface); padding: 12px 16px; }
+.grid4 .k { font-size: 12.5px; color: var(--ink2); }
+.grid4 .v { font-family: var(--font-display); font-weight: 600; font-size: 19px; line-height: 1.3; }
+.grid4 .s { font-size: 12.5px; }
+.rate-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 16px; border-top: 1px solid var(--line2); flex-wrap: wrap; }
+.rate-row label { font-size: 14px; color: var(--ink2); }
+.rate-row input { width: 120px; text-align: right; }
+table.mt { width: 100%; border-collapse: collapse; font-size: 13px; }
+.tscroll { overflow-x: auto; }
+table.mt th, table.mt td { padding: 8px 10px; text-align: right; white-space: nowrap; border-top: 1px solid var(--line2); }
+table.mt th:first-child, table.mt td:first-child { text-align: left; padding-left: 16px; position: sticky; left: 0; background: var(--surface); }
+table.mt th { color: var(--ink2); font-weight: 500; font-size: 12px; }
+
+/* ---------- charts ---------- */
+.chartsvg { display: block; width: 100%; height: auto; overflow: visible; }
+.chartsvg .gl { stroke: var(--line2); stroke-width: 1; }
+.chartsvg .zero { stroke: var(--line); stroke-width: 1; stroke-dasharray: 2 2; }
+.chartsvg .ax { font-size: 7px; fill: var(--ink3); font-family: var(--font-body); }
+.chart-legend { display: flex; flex-direction: column; gap: 6px; margin-top: 12px; }
+.lg-item { display: flex; align-items: center; gap: 8px; font-size: 13px; }
+.lg-dot { width: 9px; height: 9px; border-radius: 50%; flex: none; }
+.lg-l { color: var(--ink2); flex: 1; min-width: 0; }
+.lg-v { font-weight: 500; }
+.donut-wrap { display: flex; align-items: center; gap: 20px; flex-wrap: wrap; }
+.donutsvg { width: 128px; height: 128px; flex: none; }
+.donut-legend { flex: 1; min-width: 160px; display: flex; flex-direction: column; gap: 8px; }
+
+/* ---------- forms ---------- */
+.field { margin-top: 12px; }
+.field label, .lbl { display: block; font-size: 13px; color: var(--ink2); margin-bottom: 4px; }
+.field small { display: block; color: var(--ink3); font-size: 12px; margin-top: 3px; }
+input[type="text"], input[type="date"], input[type="time"], input[type="number"], input:not([type]), input[inputmode], select, textarea {
+  width: 100%; font-size: 16px; padding: 11px 12px; background: var(--surface); border: 1px solid var(--line);
+  border-radius: 10px; min-height: 44px; color: var(--ink); appearance: none; -webkit-appearance: none;
+}
+select { background-image: linear-gradient(45deg, transparent 50%, var(--ink3) 50%), linear-gradient(135deg, var(--ink3) 50%, transparent 50%); background-position: calc(100% - 18px) 55%, calc(100% - 13px) 55%; background-size: 5px 5px; background-repeat: no-repeat; padding-right: 32px; }
+textarea { min-height: 88px; resize: vertical; }
+input:focus, select:focus, textarea:focus { outline: 2px solid var(--accent); outline-offset: 0; border-color: var(--accent); }
+.grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.seg { display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; gap: 4px; background: var(--surface2); border: 1px solid var(--line); padding: 3px; border-radius: 12px; }
+.seg label { position: relative; margin: 0; }
+.seg input { position: absolute; opacity: 0; inset: 0; margin: 0; width: 100%; height: 100%; cursor: pointer; }
+.seg span { display: block; text-align: center; padding: 10px 6px; border-radius: 9px; font-weight: 500; color: var(--ink2); min-height: 44px; }
+.seg input:checked + span { background: var(--surface); color: var(--ink); box-shadow: 0 0 0 1px var(--line); }
+.seg input[value="BUY"]:checked + span, .seg input[value="BUY USD"]:checked + span, .seg input[value="Deposit"]:checked + span { background: var(--buy-soft); color: var(--buy); box-shadow: 0 0 0 1px var(--buy); }
+.seg input[value="SELL"]:checked + span, .seg input[value="SELL USD"]:checked + span, .seg input[value="Withdrawal"]:checked + span { background: var(--sell-soft); color: var(--sell); box-shadow: 0 0 0 1px var(--sell); }
+.seg input:focus-visible + span { outline: 2px solid var(--accent); outline-offset: 1px; }
+.check-row { display: flex; gap: 10px; align-items: flex-start; margin-top: 14px; font-size: 14px; }
+.check-row input { width: 22px; height: 22px; min-height: 0; margin: 1px 0 0; flex: none; accent-color: var(--accent); }
+.preview { margin-top: 14px; background: var(--surface2); border: 1px solid var(--line2); border-radius: 12px; padding: 10px 12px; font-size: 13.5px; }
+.preview .r { display: flex; justify-content: space-between; gap: 10px; padding: 2px 0; }
+.preview .r span:first-child { color: var(--ink2); }
+.err { margin-top: 12px; color: var(--loss); font-size: 13.5px; min-height: 0; }
+details.more { margin-top: 14px; border-top: 1px solid var(--line2); padding-top: 4px; }
+details.more > summary { cursor: pointer; padding: 10px 0; color: var(--accent); font-size: 14px; font-weight: 500; min-height: 44px; display: flex; align-items: center; }
+
+/* ---------- buttons ---------- */
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 46px; padding: 0 18px; border-radius: 12px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); font-weight: 500; text-decoration: none; text-align: center; }
+.btn.primary { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+.btn.danger { color: var(--loss); border-color: color-mix(in srgb, var(--loss) 40%, var(--line)); }
+.btn.block { display: flex; width: 100%; }
+.btn:active { filter: brightness(.94); }
+.btn[disabled] { opacity: .5; }
+.actions { display: flex; gap: 10px; margin-top: 18px; }
+.actions .btn { flex: 1; }
+.actions .btn.primary { flex: 2; }
+.btnlist { display: grid; gap: 10px; padding: 4px 16px 16px; }
+.icon-btn { width: 44px; height: 44px; border-radius: 12px; border: 0; background: transparent; color: var(--ink2); display: inline-flex; align-items: center; justify-content: center; }
+.icon-btn svg { width: 22px; height: 22px; }
+
+/* ---------- fab / tabs ---------- */
+.fab {
+  position: fixed; right: max(16px, calc((100vw - 680px) / 2 + 16px)); z-index: 15;
+  bottom: calc(76px + env(safe-area-inset-bottom, 0px));
+  display: inline-flex; align-items: center; gap: 8px; min-height: 52px; padding: 0 20px 0 16px;
+  border: 0; border-radius: 999px; background: var(--accent); color: var(--accent-ink); font-weight: 600; font-size: 15px;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, .22);
+}
+.fab svg { width: 20px; height: 20px; }
+.fab[hidden] { display: none; }
+.tabbar { position: fixed; left: 0; right: 0; bottom: 0; z-index: 25; background: var(--surface); border-top: 1px solid var(--line); padding-bottom: env(safe-area-inset-bottom, 0px); }
+.tabbar-in { max-width: 680px; margin: 0 auto; display: grid; grid-template-columns: repeat(5, 1fr); }
+.tab { position: relative; background: transparent; border: 0; padding: 9px 2px 8px; min-height: 58px; color: var(--ink3); display: flex; flex-direction: column; align-items: center; gap: 2px; font-size: 11.5px; }
+.tab svg { width: 24px; height: 24px; }
+.tab[aria-current="page"] { color: var(--accent); font-weight: 500; }
+.tab[aria-current="page"]::before { content: ""; position: absolute; top: 0; left: 26%; right: 26%; height: 3px; border-radius: 0 0 3px 3px; background: var(--accent); }
+
+/* ---------- sheet / dialog ---------- */
+.overlay { position: fixed; inset: 0; z-index: 40; background: var(--overlay); display: none; }
+.overlay.open { display: block; }
+.sheet { position: absolute; left: 0; right: 0; bottom: 0; margin: 0 auto; max-width: 680px; max-height: 92dvh; overflow-y: auto; overscroll-behavior: contain; background: var(--bg); border-radius: 20px 20px 0 0; padding: 8px 16px calc(20px + env(safe-area-inset-bottom, 0px)); animation: up .2s ease-out; }
+.sheet:focus { outline: none; }
+.sheet-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; position: sticky; top: -8px; background: var(--bg); padding: 8px 0 4px; z-index: 2; }
+.sheet-head h3 { font-size: 17px; }
+.dialog { position: absolute; left: 16px; right: 16px; top: 50%; transform: translateY(-50%); margin: 0 auto; max-width: 400px; background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 18px 16px 16px; }
+.dialog p { margin: 0; white-space: pre-line; }
+@keyframes up { from { transform: translateY(24px); opacity: .4; } to { transform: none; opacity: 1; } }
+.toast { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(140px + env(safe-area-inset-bottom, 0px)); z-index: 60; background: var(--ink); color: var(--bg); padding: 10px 16px; border-radius: 12px; font-size: 14px; max-width: calc(100vw - 32px); opacity: 0; pointer-events: none; transition: opacity .18s; text-align: center; }
+.toast.show { opacity: 1; }
+textarea.mono { font-size: 12px; min-height: 120px; }
+
+@media (prefers-reduced-motion: reduce) {
+  .sheet { animation: none; }
+  .toast, details.panel > summary::after { transition: none; }
+}
+@media (min-width: 700px) {
+  .hero-num { font-size: 46px; }
+  .sheet { border-radius: 20px; bottom: 24px; }
+}
+
+</style>
+</head>
+<script>
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("./service-worker.js")
+      .then(() => console.log("Service Worker registered"))
+      .catch(err => console.error("Service Worker error:", err));
+  });
+}
+</script>
+<body>
+<header class="topbar"><div class="topbar-in">
+  <h1 id="title">ภาพรวมพอร์ต</h1>
+  <button id="pillCheck" class="pill" data-act="checks" hidden></button>
+  <span id="pillSync" class="pill"></span>
+</div></header>
+<main id="main"></main>
+<button id="fab" class="fab" data-act="add" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg><span id="fabLabel">เพิ่มรายการ</span></button>
+<nav id="tabbar" class="tabbar" aria-label="เมนูหลัก"></nav>
+<div id="sheetWrap" class="overlay"><div id="sheet" class="sheet" role="dialog" aria-modal="true" tabindex="-1"></div></div>
+<div id="dlgWrap" class="overlay" style="z-index:50"></div>
+<div id="toastEl" class="toast" role="status" aria-live="polite"></div>
+<input type="file" id="fileXlsx" accept=".xlsx,.xls,.xlsm" hidden>
+<input type="file" id="fileJson" accept=".json,application/json" hidden>
+<noscript>ต้องเปิด JavaScript เพื่อใช้งานสมุดซื้อขาย</noscript>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script>
+/* ===================== CORE: state, engine, importer ===================== */
+function newState() {
+  return {
+    v: 1, updatedAt: 0, seq: 1,
+    settings: {
+      startValue: 0, tolerance: 0.01, usdThb: null,
+      brokerCash: null, brokerValue: null,
+      fxStartUsd: 0, fxStartThb: 0, fxStartCost: null,
+      prices: {}, brokerShares: {}, defaultBroker: ''
+    },
+    stocks: [], fx: [], cash: []
+  };
+}
+
+function normalizeState(o) {
+  const d = newState();
+  if (!o || typeof o !== 'object') return d;
+  d.updatedAt = Number(o.updatedAt) || 0;
+  d.seq = Number(o.seq) || 1;
+  Object.assign(d.settings, o.settings || {});
+  d.settings.prices = Object.assign({}, (o.settings && o.settings.prices) || {});
+  d.settings.brokerShares = Object.assign({}, (o.settings && o.settings.brokerShares) || {});
+  ['stocks', 'fx', 'cash'].forEach(k => { d[k] = Array.isArray(o[k]) ? o[k].filter(x => x && typeof x === 'object') : []; });
+  let maxSeq = 0;
+  ['stocks', 'fx', 'cash'].forEach(k => d[k].forEach((r, i) => {
+    if (!r.id) r.id = 'r' + k[0] + i + '_' + Math.random().toString(36).slice(2, 8);
+    if (!r.seq) r.seq = ++maxSeq; else maxSeq = Math.max(maxSeq, r.seq);
+  }));
+  d.seq = Math.max(d.seq, maxSeq + 1);
+  return d;
+}
+
+/* ---------- helpers ---------- */
+function num(v) {
+  if (v === null || v === undefined || v === '') return null;
+  if (typeof v === 'number') return isFinite(v) ? v : null;
+  const x = parseFloat(String(v).replace(/[,฿$\s]/g, ''));
+  return isFinite(x) ? x : null;
+}
+function N(v) { const x = num(v); return x === null ? 0 : x; }
+function cmpRows(a, b) {
+  return (a.date || '').localeCompare(b.date || '') ||
+    (a.time || '').localeCompare(b.time || '') ||
+    ((a.seq || 0) - (b.seq || 0));
+}
+const EPS = 1e-7;
+
+/* ---------- Cash Flow (ฝาก/ถอน บัญชีเทรดจริง) ---------- */
+function computeCash(S) {
+  const rows = S.cash.slice().sort(cmpRows);
+  let dep = 0, wd = 0, fees = 0, nonUsd = 0, missing = 0;
+  const out = [];
+  for (const r of rows) {
+    const amount = num(r.amount), fee = N(r.fee);
+    const cur = r.currency ? String(r.currency).toUpperCase() : 'USD';
+    const validType = r.type === 'Deposit' || r.type === 'Withdrawal';
+    const o = Object.assign({}, r, { amount, fee, cur, usdAmt: null, usdFee: null, impact: null, status: 'OK' });
+    if (amount === null && !validType && !r.date) { o.status = 'Incomplete'; out.push(o); continue; }
+    if (amount !== null && (!r.date || !validType)) { missing++; o.status = 'Incomplete'; out.push(o); continue; }
+    if (amount === null || !validType) { o.status = 'Incomplete'; out.push(o); continue; }
+    if (r.currency && cur !== 'USD') nonUsd++;
+    const usdAmt = cur === 'USD' ? amount : 0, usdFee = cur === 'USD' ? fee : 0;
+    o.usdAmt = usdAmt; o.usdFee = usdFee;
+    o.impact = r.type === 'Deposit' ? usdAmt - usdFee : -(usdAmt + usdFee);
+    if (r.type === 'Deposit') dep += usdAmt; else wd += usdAmt;
+    fees += usdFee;
+    out.push(o);
+  }
+  return { rows: out, dep, wd, fees, nonUsd, missing, net: dep - wd - fees };
+}
+
+/* ---------- Stock Transactions (Average Cost) ---------- */
+function computeStocks(S, cash) {
+  cash = cash || computeCash(S);
+  const rows = S.stocks.slice().sort(cmpRows);
+  const start = N(S.settings.startValue);
+  const tol = S.settings.tolerance == null ? 0.01 : N(S.settings.tolerance);
+  const cf = cash.rows.filter(r => r.impact !== null && r.date);
+  const per = {};
+  let cumBuy = 0, cumSell = 0, fees = 0, nonUsd = 0, oversell = 0, incomplete = 0, negCash = 0, realized = 0;
+  const out = [];
+  for (const r of rows) {
+    const asset = String(r.asset || '').trim().toUpperCase();
+    const action = String(r.action || '').toUpperCase();
+    const shares = num(r.shares), price = num(r.price), fee = N(r.fee);
+    const cur = r.currency ? String(r.currency).toUpperCase() : 'USD';
+    const o = Object.assign({}, r, {
+      asset, action, shares, price, fee, cur,
+      gross: null, net: null, thb: null, cost: null, pl: null, sharesAfter: null, cashAfter: null, status: 'OK'
+    });
+    const complete = r.date && asset && (action === 'BUY' || action === 'SELL') &&
+      shares !== null && price !== null && shares > 0 && price > 0;
+    if (!complete) { o.status = 'Incomplete'; incomplete++; out.push(o); continue; }
+    if (r.currency && cur !== 'USD') nonUsd++;
+    const p = per[asset] || (per[asset] = { bs: 0, ss: 0, bn: 0, scb: 0, rl: 0, count: 0 });
+    p.count++;
+    const gross = shares * price;
+    const net = action === 'BUY' ? gross + fee : gross - fee;
+    o.gross = gross; o.net = net; fees += fee;
+    const fxRate = num(r.fxRate);
+    o.thb = cur === 'THB' ? net : (fxRate ? net * fxRate : null);
+    if (action === 'SELL') {
+      const held = p.bs - p.ss;
+      const avg = held !== 0 ? (p.bn - p.scb) / held : 0;
+      const cost = shares * avg;
+      o.cost = cost; o.pl = net - cost;
+      p.ss += shares; p.scb += cost; p.rl += o.pl; realized += o.pl;
+      cumSell += net;
+    } else {
+      p.bs += shares; p.bn += net; cumBuy += net;
+    }
+    o.sharesAfter = p.bs - p.ss;
+    let cfSum = 0;
+    for (const c of cf) if (c.date <= r.date) cfSum += c.impact;
+    o.cashAfter = start + cfSum + cumSell - cumBuy;
+    if (action === 'SELL' && o.sharesAfter < -EPS) { o.status = 'SELL > held'; oversell++; }
+    if (o.cashAfter < -tol) negCash++;
+    out.push(o);
+  }
+  return { rows: out, per, buys: cumBuy, sells: cumSell, fees, realized, nonUsd, oversell, incomplete, negCash };
+}
+
+/* ---------- FX (THB <-> USD) ---------- */
+function computeFX(S) {
+  const rows = S.fx.slice().sort(cmpRows);
+  const st = S.settings;
+  const startUsd = N(st.fxStartUsd), startThb = N(st.fxStartThb);
+  const startCost = num(st.fxStartCost);
+  const openLot = startCost !== null && startUsd > 0;   // ต้นทุน USD ตั้งต้น (ไม่บังคับ)
+  const rateNow = num(st.usdThb);
+  let cBuyUsd = 0, cSellUsd = 0, cBuyThb = 0, cSellThb = 0, cFee = 0, cBuyFee = 0;
+  let sellCount = 0, refCount = 0, realizedTotal = 0, minBal = null, last = null;
+  const out = [];
+  for (const r of rows) {
+    const action = String(r.action || '');
+    const thb = num(r.thb), usd = num(r.usd), fee = N(r.fee);
+    const o = Object.assign({}, r, {
+      action, thb, usd, fee, rate: null, netUsd: null, usdBal: null, thbBal: null,
+      avgCost: null, plNow: null, realized: null, status: 'OK'
+    });
+    if (!r.date || (action !== 'BUY USD' && action !== 'SELL USD') || thb === null || usd === null || usd === 0) {
+      o.status = 'Incomplete'; out.push(o); continue;
+    }
+    o.rate = thb / usd;
+    o.netUsd = action === 'BUY USD' ? usd : -usd;
+    const usdBefore = cBuyUsd + (openLot ? startUsd : 0);
+    const costBefore = cBuyThb + cBuyFee + (openLot ? startUsd * startCost : 0);
+    if (action === 'BUY USD') { cBuyUsd += usd; cBuyThb += thb; cBuyFee += fee; }
+    else { cSellUsd += usd; cSellThb += thb; }
+    cFee += fee;
+    o.usdBal = startUsd + cBuyUsd - cSellUsd;
+    o.thbBal = startThb - cBuyThb + cSellThb - cFee;
+    const M = cBuyUsd + (openLot ? startUsd : 0);
+    const Ncost = cBuyThb + cBuyFee + (openLot ? startUsd * startCost : 0);
+    o.avgCost = M ? Ncost / M : 0;
+    if (rateNow !== null) o.plNow = o.usdBal * (rateNow - o.avgCost);
+    if (action === 'SELL USD') {
+      sellCount++;
+      if (usdBefore > 0) {
+        o.realized = thb - fee - usd * (costBefore / usdBefore);
+        realizedTotal += o.realized; refCount++;
+      }
+    }
+    minBal = minBal === null ? o.usdBal : Math.min(minBal, o.usdBal);
+    last = o;
+    out.push(o);
+  }
+  const usdNow = last ? last.usdBal : startUsd;
+  const avgCost = last ? last.avgCost : (openLot ? startCost : 0);
+  const totalCost = usdNow * avgCost;
+  const valueNow = rateNow !== null ? usdNow * rateNow : null;
+  const unreal = valueNow !== null ? valueNow - totalCost : null;
+  return {
+    rows: out, usdNow, avgCost, totalCost, rateNow, valueNow, unreal,
+    unrealPct: unreal !== null && totalCost ? unreal / totalCost : null,
+    realized: realizedTotal, total: unreal !== null ? realizedTotal + unreal : null,
+    usdBought: cBuyUsd, usdSold: cSellUsd, thbBought: cBuyThb, thbSold: cSellThb, fees: cFee,
+    minBal: minBal === null ? 0 : minBal, sellCount, sellNoRef: sellCount - refCount
+  };
+}
+
+/* ---------- Summary / checks / monthly ---------- */
+function computeAll(S) {
+  const cash = computeCash(S);
+  const st = computeStocks(S, cash);
+  const fx = computeFX(S);
+  const set = S.settings;
+  const tol = set.tolerance == null ? 0.01 : N(set.tolerance);
+  const start = N(set.startValue);
+
+  const holdings = Object.keys(st.per).sort().map(t => {
+    const p = st.per[t];
+    const shares = p.bs - p.ss;
+    const cost = p.bn - p.scb;
+    const zero = Math.abs(shares) < EPS;
+    const price = num(set.prices[t]);
+    const mv = zero ? 0 : (price === null ? null : shares * price);
+    const unreal = mv === null ? null : mv - cost;
+    const bShares = num(set.brokerShares[t]);
+    const diff = bShares === null ? null : shares - bShares;
+    let status = 'OK';
+    if (!zero && price === null) status = 'NO PRICE';
+    else if (diff !== null && Math.abs(diff) > 0.0001) status = 'SHARES DIFF';
+    return {
+      t, shares, cost, zero, price, mv, unreal, realized: p.rl, count: p.count,
+      avg: zero ? 0 : cost / shares,
+      unrealPct: unreal !== null && Math.abs(cost) >= 0.005 ? unreal / cost : null,
+      total: unreal === null ? null : p.rl + unreal,
+      bShares, diff, status
+    };
+  });
+
+  const mvTotal = holdings.reduce((a, h) => a + (h.mv === null ? 0 : h.mv), 0);
+  const unreal = holdings.reduce((a, h) => a + (h.unreal === null ? 0 : h.unreal), 0);
+  const costHold = holdings.reduce((a, h) => a + h.cost, 0);
+  const realized = st.realized;
+
+  const curCash = start + cash.dep - cash.wd - cash.fees + st.sells - st.buys;
+  const value = curCash + mvTotal;
+  const walk = start + cash.dep - cash.wd + realized + unreal - cash.fees;
+  const walkDiff = walk - value;
+  const capital = start + cash.dep;
+  const ret = realized + unreal - cash.fees;
+  const noPrice = holdings.filter(h => h.status === 'NO PRICE').length;
+  const sharesDiff = holdings.filter(h => h.status === 'SHARES DIFF').length;
+
+  // ---- checks ----
+  const checks = [];
+  const bc = num(set.brokerCash), bv = num(set.brokerValue);
+  checks.push({
+    key: 'recon-cash', group: 'recon', label: 'เงินสดที่คำนวณ เทียบกับโบรกเกอร์',
+    status: bc === null ? 'NO INPUT' : (Math.abs(curCash - bc) <= tol ? 'OK' : 'CHECK'),
+    detail: bc === null ? 'ยังไม่ใส่ยอดจริง (ใส่ได้ในตั้งค่า)' : 'คำนวณ ' + curCash.toFixed(2) + ' · จริง ' + bc.toFixed(2) + ' · ต่าง ' + (curCash - bc).toFixed(2)
+  });
+  checks.push({
+    key: 'recon-value', group: 'recon', label: 'มูลค่าพอร์ตที่คำนวณ เทียบกับโบรกเกอร์',
+    status: bv === null ? 'NO INPUT' : (Math.abs(value - bv) <= tol ? 'OK' : 'CHECK'),
+    detail: bv === null ? 'ยังไม่ใส่ยอดจริง (ใส่ได้ในตั้งค่า)' : 'คำนวณ ' + value.toFixed(2) + ' · จริง ' + bv.toFixed(2) + ' · ต่าง ' + (value - bv).toFixed(2)
+  });
+  checks.push({
+    key: 'walk', group: 'recon', label: 'สมการมูลค่าพอร์ต (ตั้งต้น + ฝาก − ถอน + กำไร)',
+    status: Math.abs(walkDiff) <= tol ? 'OK' : 'CHECK',
+    detail: Math.abs(walkDiff) <= tol ? 'ตรงกับเงินสด + หุ้น' : 'ผลต่าง ' + walkDiff.toFixed(2) + ' — อาจขาดราคาปัจจุบัน หรือขายเกินที่ถือ'
+  });
+  const fxUsdNet = N(set.fxStartUsd) + fx.usdBought - fx.usdSold;
+  const cfNet = cash.dep - cash.wd;
+  const fxDiff = fxUsdNet - cfNet;
+  checks.push({
+    key: 'fx-vs-cf', group: 'recon', label: 'USD จากแลกเงินสุทธิ เทียบกับฝาก−ถอนบัญชีเทรด',
+    status: fxDiff < -tol ? 'CHECK' : 'INFO',
+    detail: 'แลกเงินสุทธิ ' + fxUsdNet.toFixed(2) + ' · ฝาก−ถอน ' + cfNet.toFixed(2) + ' · ส่วนต่าง ' + fxDiff.toFixed(2) + (fxDiff < -tol ? ' (ติดลบ = ฝากมากกว่าที่แลก หรือข้อมูลแลกเงินไม่ครบ)' : ' (ค้างนอกบัญชีเทรด ควร ≥ 0)')
+  });
+  const cnt = (key, label, n, hint) => checks.push({ key, group: 'data', label, count: n, status: n > 0 ? 'CHECK' : 'OK', detail: n > 0 ? n + ' รายการ' + (hint ? ' — ' + hint : '') : 'ปกติ' });
+  cnt('oversell', 'หุ้น: ขายเกินจำนวนที่ถืออยู่', st.oversell, 'ตรวจจำนวนหุ้นหรือวันที่');
+  cnt('incomplete', 'หุ้น: แถวข้อมูลไม่ครบ', st.incomplete, 'ต้องมีวันที่ ชื่อหุ้น ซื้อ/ขาย จำนวน ราคา');
+  cnt('negcash', 'หุ้น: เงินสดหลังทำรายการติดลบ', st.negCash, 'ขาดรายการฝากหรือเปล่า?');
+  cnt('cur-stock', 'หุ้น: สกุลเงินไม่ใช่ USD', st.nonUsd, 'สรุปนี้คิดเป็น USD');
+  cnt('noprice', 'หุ้น: ถืออยู่แต่ยังไม่ใส่ราคาปัจจุบัน', noPrice, 'ใส่ในหน้าภาพรวม');
+  cnt('sharesdiff', 'หุ้น: จำนวนไม่ตรงกับโบรกเกอร์', sharesDiff, 'ดูจำนวนหุ้นจริงในหน้าภาพรวม');
+  cnt('cur-cash', 'ฝาก/ถอน: สกุลเงินไม่ใช่ USD', cash.nonUsd, 'สรุปนับเฉพาะ USD');
+  cnt('cash-missing', 'ฝาก/ถอน: มียอดแต่ขาดวันที่หรือประเภท', cash.missing);
+  checks.push({
+    key: 'fx-min', group: 'data', label: 'แลกเงิน: ยอด USD ต่ำสุดในประวัติ',
+    status: fx.minBal < -0.005 ? 'CHECK' : 'OK',
+    detail: fx.minBal < -0.005 ? 'ติดลบ ' + fx.minBal.toFixed(2) + ' — ขาด USD ตั้งต้น (ใส่ได้ในตั้งค่า)' : 'ปกติ'
+  });
+  cnt('fx-noref', 'แลกเงิน: ขาย USD ที่ไม่มีต้นทุนอ้างอิง (ขายก่อนซื้อ)', fx.sellNoRef, 'ใส่ USD และต้นทุนตั้งต้นในตั้งค่า');
+  const issues = checks.filter(c => c.status === 'CHECK').length;
+
+  return {
+    cash, st, fx, holdings, checks, issues,
+    overall: issues === 0 ? 'OK' : 'CHECK',
+    sum: {
+      start, dep: cash.dep, wd: cash.wd, transferFees: cash.fees, buys: st.buys, sells: st.sells,
+      tradeFees: st.fees, curCash, realized, unreal, mvTotal, costHold, value, ret, capital,
+      retPct: capital ? ret / capital : null,
+      realPct: capital ? realized / capital : null,
+      unrealPct: capital ? unreal / capital : null,
+      walk, walkDiff, noPrice, sharesDiff, tol
+    }
+  };
+}
+
+function monthlyCash(C) {
+  const m = {};
+  const get = k => m[k] || (m[k] = { k, dep: 0, wd: 0 });
+  C.cash.rows.forEach(r => {
+    if (r.status !== 'OK' || !r.date || r.cur !== 'USD') return;
+    const g = get(r.date.slice(0, 7));
+    if (r.type === 'Deposit') g.dep += r.usdAmt; else if (r.type === 'Withdrawal') g.wd += r.usdAmt;
+  });
+  return Object.values(m).sort((a, b) => a.k.localeCompare(b.k));
+}
+
+/* จุดสะสมตามเวลา: เงินทุนสะสม (ตั้งต้น+ฝาก-ถอน) เทียบกับกำไรที่ขายแล้วสะสม */
+function equityCurve(S, C) {
+  const start = N(S.settings.startValue);
+  const events = [];
+  C.cash.rows.forEach(r => { if (r.status === 'OK' && r.date && r.cur === 'USD') events.push({ date: r.date, cap: r.type === 'Deposit' ? r.usdAmt : -r.usdAmt, real: 0 }); });
+  C.st.rows.forEach(r => { if (r.action === 'SELL' && r.pl !== null && r.date) events.push({ date: r.date, cap: 0, real: r.pl }); });
+  if (!events.length) return [{ date: '', capital: start, realized: 0 }];
+  events.sort((a, b) => a.date.localeCompare(b.date));
+  const out = [{ date: events[0].date, capital: start, realized: 0 }];
+  let cap = start, real = 0;
+  events.forEach(e => {
+    cap += e.cap; real += e.real;
+    const last = out[out.length - 1];
+    if (last.date === e.date) { last.capital = cap; last.realized = real; }
+    else out.push({ date: e.date, capital: cap, realized: real });
+  });
+  return out;
+}
+
+function monthlyStats(C) {
+  const m = {};
+  const get = k => m[k] || (m[k] = { k, n: 0, buyUsd: 0, sellUsd: 0, buyThb: 0, sellThb: 0, fee: 0, plStock: 0, sells: 0 });
+  C.fx.rows.forEach(r => {
+    if (r.status !== 'OK') return;
+    const g = get(r.date.slice(0, 7)); g.n++; g.fee += r.fee;
+    if (r.action === 'BUY USD') { g.buyUsd += r.usd; g.buyThb += r.thb; } else { g.sellUsd += r.usd; g.sellThb += r.thb; }
+  });
+  C.st.rows.forEach(r => {
+    if (r.action === 'SELL' && r.pl !== null) { const g = get(r.date.slice(0, 7)); g.plStock += r.pl; g.sells++; }
+  });
+  return Object.values(m).sort((a, b) => a.k.localeCompare(b.k)).map(g => Object.assign(g, {
+    avgBuy: g.buyUsd ? g.buyThb / g.buyUsd : null,
+    avgSell: g.sellUsd ? g.sellThb / g.sellUsd : null
+  }));
+}
+
+/* ---------- Importer: อ่านไฟล์ Excel รูปแบบเดียวกับสมุดบันทึกเดิม ---------- */
+function ymd(y, m, d) { return String(y).padStart(4, '0') + '-' + String(m).padStart(2, '0') + '-' + String(d).padStart(2, '0'); }
+function parseDate(v) {
+  if (v === null || v === undefined || v === '') return '';
+  if (v instanceof Date && !isNaN(v)) return ymd(v.getFullYear(), v.getMonth() + 1, v.getDate());
+  if (typeof v === 'number' && v > 20000 && v < 90000) {
+    return new Date(Math.floor(v) * 86400000 - 2209161600000).toISOString().slice(0, 10);
+  }
+  if (typeof v === 'string') {
+    const s = v.trim(); let m = s.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/);
+    if (m) return ymd(m[1], m[2], m[3]);
+    m = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})/);
+    if (m) return ymd(m[3], m[2], m[1]);
+  }
+  return '';
+}
+function txt(v) { if (v === null || v === undefined) return ''; const s = String(v).trim(); return s === '-' ? '' : s; }
+function findSheet(sheets, re) { const k = Object.keys(sheets).find(n => re.test(n)); return k ? sheets[k] : null; }
+function headerInfo(aoa) {
+  for (let i = 0; i < Math.min(aoa.length, 25); i++) {
+    const row = aoa[i] || [];
+    if (row.some(c => String(c == null ? '' : c).trim() === 'Date')) {
+      const map = {};
+      row.forEach((c, j) => { const h = String(c == null ? '' : c).trim(); if (h && !(h in map)) map[h] = j; });
+      return { hi: i, map };
+    }
+  }
+  return null;
+}
+function blank(v) { return v === null || v === undefined || v === ''; }
+
+function importSheets(sheets) {
+  const S = newState();
+  let seq = 1;
+  const st = findSheet(sheets, /stock transactions/i);
+  if (st) {
+    const h = headerInfo(st);
+    if (h) {
+      const g = (row, k) => (k in h.map ? row[h.map[k]] : null);
+      for (let i = h.hi + 1; i < st.length; i++) {
+        const row = st[i] || [];
+        const core = ['Date', 'Asset', 'Action', 'Shares', 'Price per Share'].map(k => g(row, k));
+        if (core.every(blank)) continue;
+        S.stocks.push({
+          id: 's' + seq + '_' + Math.random().toString(36).slice(2, 7), seq: seq++,
+          date: parseDate(g(row, 'Date')), time: txt(g(row, 'Time')),
+          asset: txt(g(row, 'Asset')).toUpperCase(), action: txt(g(row, 'Action')).toUpperCase(),
+          shares: num(g(row, 'Shares')), price: num(g(row, 'Price per Share')),
+          currency: txt(g(row, 'Currency')) || 'USD', fee: N(g(row, 'Fee')), fxRate: num(g(row, 'FX Rate')),
+          txId: txt(g(row, 'Transaction ID')), broker: txt(g(row, 'Broker')),
+          note: txt(g(row, 'Note')), source: txt(g(row, 'Source'))
+        });
+      }
+    }
+  }
+  const fx = findSheet(sheets, /fx transactions/i);
+  if (fx) {
+    const h = headerInfo(fx);
+    if (h) {
+      const g = (row, k) => (k in h.map ? row[h.map[k]] : null);
+      for (let i = h.hi + 1; i < fx.length; i++) {
+        const row = fx[i] || [];
+        const core = ['Date', 'Action', 'THB Used/Received', 'USD Received/Used'].map(k => g(row, k));
+        if (core.every(blank)) continue;
+        S.fx.push({
+          id: 'f' + seq + '_' + Math.random().toString(36).slice(2, 7), seq: seq++,
+          date: parseDate(g(row, 'Date')), action: txt(g(row, 'Action')).toUpperCase(),
+          thb: num(g(row, 'THB Used/Received')), usd: num(g(row, 'USD Received/Used')),
+          fee: N(g(row, 'Fee')), note: txt(g(row, 'Note')), source: txt(g(row, 'Source'))
+        });
+      }
+    }
+  }
+  const cf = findSheet(sheets, /cash flow/i);
+  if (cf) {
+    const h = headerInfo(cf);
+    if (h) {
+      const g = (row, k) => (k in h.map ? row[h.map[k]] : null);
+      for (let i = h.hi + 1; i < cf.length; i++) {
+        const row = cf[i] || [];
+        const core = ['Date', 'Type', 'Amount'].map(k => g(row, k));
+        if (core.every(blank)) continue;
+        const t = txt(g(row, 'Type')).toLowerCase();
+        S.cash.push({
+          id: 'c' + seq + '_' + Math.random().toString(36).slice(2, 7), seq: seq++,
+          date: parseDate(g(row, 'Date')), type: t === 'deposit' ? 'Deposit' : t === 'withdrawal' ? 'Withdrawal' : '',
+          amount: num(g(row, 'Amount')), currency: txt(g(row, 'Currency')) || 'USD', fee: N(g(row, 'Fee')),
+          source: txt(g(row, 'Source')), note: txt(g(row, 'Note'))
+        });
+      }
+    }
+  }
+  S.seq = seq;
+
+  // ---- settings ----
+  const set = S.settings;
+  const kv = findSheet(sheets, /^settings$/i);
+  if (kv) {
+    kv.forEach(row => {
+      if (!row) return;
+      const k = txt(row[0]), v = row[1];
+      if (k === 'startValue') set.startValue = N(v);
+      else if (k === 'tolerance') set.tolerance = num(v) === null ? 0.01 : num(v);
+      else if (k === 'usdThb') set.usdThb = num(v);
+      else if (k === 'brokerCash') set.brokerCash = num(v);
+      else if (k === 'brokerValue') set.brokerValue = num(v);
+      else if (k === 'fxStartUsd') set.fxStartUsd = N(v);
+      else if (k === 'fxStartThb') set.fxStartThb = N(v);
+      else if (k === 'fxStartCost') set.fxStartCost = num(v);
+      else if (k.startsWith('price:')) { const p = num(v); if (p !== null) set.prices[k.slice(6).toUpperCase()] = p; }
+      else if (k.startsWith('brokerShares:')) { const p = num(v); if (p !== null) set.brokerShares[k.slice(13).toUpperCase()] = p; }
+    });
+  } else {
+    const ps = findSheet(sheets, /portfolio summary/i);
+    if (ps) {
+      let inTable = false;
+      ps.forEach(row => {
+        if (!row) return;
+        const a = txt(row[0]);
+        if (a === 'Starting Portfolio Value (USD)') set.startValue = N(row[1]);
+        else if (a === 'Broker Actual Cash (USD)') set.brokerCash = num(row[1]);
+        else if (a === 'Broker Actual Portfolio Value (USD)') set.brokerValue = num(row[1]);
+        else if (a === 'Tolerance (USD)' && num(row[1]) !== null) set.tolerance = num(row[1]);
+        if (a === 'Asset' && txt(row[1]) === 'Shares Held') { inTable = true; return; }
+        if (inTable) {
+          if (a === 'TOTAL' || a === '') { if (a === 'TOTAL') inTable = false; return; }
+          const p = num(row[4]), bs = num(row[10]);
+          if (p !== null) set.prices[a.toUpperCase()] = p;
+          if (bs !== null) set.brokerShares[a.toUpperCase()] = bs;
+        }
+      });
+    }
+    const fxs = findSheet(sheets, /fx transactions/i);
+    if (fxs) {
+      for (let i = 0; i < Math.min(fxs.length, 6); i++) {
+        const row = fxs[i] || [];
+        row.forEach((c, j) => {
+          const s = txt(c);
+          if (s.startsWith('ยอดเริ่มต้น USD')) set.fxStartUsd = N(row[j + 1]);
+          if (s.startsWith('ยอดเริ่มต้น THB')) set.fxStartThb = N(row[j + 1]);
+        });
+      }
+    }
+    const db = findSheet(sheets, /^dashboard$/i);
+    if (db) {
+      db.forEach(row => {
+        if (!row) return;
+        row.forEach((c, j) => {
+          if (txt(c).startsWith('เรทตลาดปัจจุบัน')) {
+            for (let k = j + 1; k < row.length; k++) { const v = num(row[k]); if (v !== null) { set.usdThb = v; break; } }
+          }
+        });
+      });
+    }
+  }
+  return S;
+}
+
+if (typeof module !== 'undefined') module.exports = { newState, normalizeState, computeAll, computeCash, computeStocks, computeFX, monthlyStats, monthlyCash, equityCurve, importSheets, parseDate, num, N };
+
+/* ===================== APP ===================== */
+const LS_KEY = 'tradejournal.v1';
+const $ = (s, el) => (el || document).querySelector(s);
+const $$ = (s, el) => Array.from((el || document).querySelectorAll(s));
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const MONTHS = ['ม.ค.', 'ก.พ.', 'มี.ค.', 'เม.ย.', 'พ.ค.', 'มิ.ย.', 'ก.ค.', 'ส.ค.', 'ก.ย.', 'ต.ค.', 'พ.ย.', 'ธ.ค.'];
+const MINUS = '\u2212';
+
+/* ---------- format ---------- */
+function money(n, sym, o) {
+  o = o || {}; sym = sym === undefined ? '$' : sym;
+  if (n === null || n === undefined || !isFinite(n)) return '–';
+  const dec = o.dec === undefined ? 2 : o.dec;
+  const s = Math.abs(n).toLocaleString('en-US', { minimumFractionDigits: dec, maximumFractionDigits: dec });
+  const zero = Number(Math.abs(n).toFixed(dec)) === 0;
+  return (zero ? '' : (n < 0 ? MINUS : (o.sign ? '+' : ''))) + sym + s;
+}
+function pct(n, sign) {
+  if (n === null || n === undefined || !isFinite(n)) return '–';
+  const v = Math.abs(n * 100).toFixed(2);
+  return (Number(v) === 0 ? '' : (n < 0 ? MINUS : (sign ? '+' : ''))) + v + '%';
+}
+function priceFmt(n) { return n == null ? '–' : n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 4 }); }
+function fmtShares(n) { return n == null ? '–' : Number(n.toFixed(6)).toLocaleString('en-US', { maximumFractionDigits: 6 }); }
+function sgn(n) { return n === null || n === undefined ? '' : (n > 0.004 ? 'gain' : (n < -0.004 ? 'loss' : '')); }
+function today() { const d = new Date(); return ymd(d.getFullYear(), d.getMonth() + 1, d.getDate()); }
+function monthLabel(k) { return k ? MONTHS[Number(k.slice(5, 7)) - 1] + ' ' + k.slice(0, 4) : 'ไม่มีวันที่'; }
+function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 7); }
+
+function shortDate(d) { if (!d) return ''; const mm = Number(d.slice(5, 7)); return Number(d.slice(8)) + ' ' + MONTHS[mm - 1]; }
+function monthShort(k, showYear) { const mm = Number(k.slice(5, 7)); return MONTHS[mm - 1] + (showYear ? ' \'' + k.slice(2, 4) : ''); }
+
+/* ---------- tiny self-contained SVG charts (no external library) ---------- */
+function lineChart(series, opts) {
+  opts = opts || {};
+  const W = 300, H = opts.h || 150, PL = 4, PR = 4, PT = 10, PB = 20;
+  const n = series[0].points.length;
+  if (n < 2) return '';
+  const allY = series.flatMap(s => s.points.map(p => p.y));
+  let maxY = Math.max(0, ...allY), minY = Math.min(0, ...allY);
+  if (maxY === minY) { maxY += 1; minY -= 1; }
+  const x = i => PL + (W - PL - PR) * (i / (n - 1));
+  const y = v => H - PB - (H - PT - PB) * ((v - minY) / (maxY - minY));
+  let grid = '';
+  for (let i = 0; i <= 3; i++) { const yy = y(minY + (maxY - minY) * i / 3); grid += `<line x1="${PL}" y1="${yy.toFixed(1)}" x2="${W - PR}" y2="${yy.toFixed(1)}" class="gl"/>`; }
+  const zy = y(Math.max(minY, Math.min(maxY, 0)));
+  const idx = [0, Math.floor((n - 1) / 2), n - 1];
+  const labels = idx.map(i => `<text x="${x(i).toFixed(1)}" y="${H - 4}" class="ax" text-anchor="${i === 0 ? 'start' : i === n - 1 ? 'end' : 'middle'}">${esc(series[0].points[i].x)}</text>`).join('');
+  const paths = series.map(s => {
+    const d = s.points.map((p, i) => (i ? 'L' : 'M') + x(i).toFixed(1) + ' ' + y(p.y).toFixed(1)).join(' ');
+    const last = s.points[n - 1];
+    return `<path d="${d}" fill="none" style="stroke:${s.color}" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/><circle cx="${x(n - 1).toFixed(1)}" cy="${y(last.y).toFixed(1)}" r="2.6" style="fill:${s.color}"/>`;
+  }).join('');
+  return `<svg viewBox="0 0 ${W} ${H}" class="chartsvg" role="img" aria-label="${esc(opts.aria || '')}">${grid}<line x1="${PL}" y1="${zy.toFixed(1)}" x2="${W - PR}" y2="${zy.toFixed(1)}" class="zero"/>${paths}${labels}</svg>`;
+}
+function lineLegend(series, fmt) {
+  return series.map(s => `<div class="lg-item"><span class="lg-dot" style="background:${s.color}"></span><span class="lg-l">${esc(s.name)}</span><span class="lg-v">${fmt(s.points[s.points.length - 1].y)}</span></div>`).join('');
+}
+function fxRateChart(rows, opts) {
+  const pts = rows.filter(r => r.status === 'OK' && r.rate != null);
+  const n = pts.length; if (n < 2) return '';
+  const W = 300, H = 150, PL = 30, PR = 4, PT = 10, PB = 20;
+  let maxY = Math.max(...pts.map(p => p.rate)), minY = Math.min(...pts.map(p => p.rate));
+  if (maxY === minY) { maxY += 1; minY -= 1; }
+  const pad = (maxY - minY) * 0.1; maxY += pad; minY -= pad;
+  const x = i => PL + (W - PL - PR) * (i / (n - 1));
+  const y = v => H - PB - (H - PT - PB) * ((v - minY) / (maxY - minY));
+  let grid = '';
+  for (let i = 0; i <= 3; i++) { const v = minY + (maxY - minY) * i / 3; const yy = y(v); grid += `<line x1="${PL}" y1="${yy.toFixed(1)}" x2="${W - PR}" y2="${yy.toFixed(1)}" class="gl"/><text x="0" y="${(yy - 2).toFixed(1)}" class="ax">${v.toFixed(1)}</text>`; }
+  const d = pts.map((p, i) => (i ? 'L' : 'M') + x(i).toFixed(1) + ' ' + y(p.rate).toFixed(1)).join(' ');
+  const dots = pts.map((p, i) => `<circle cx="${x(i).toFixed(1)}" cy="${y(p.rate).toFixed(1)}" r="2.3" style="fill:${p.action === 'BUY USD' ? 'var(--buy)' : 'var(--sell)'}"/>`).join('');
+  const li = [0, n - 1];
+  const labels = li.map(i => `<text x="${x(i).toFixed(1)}" y="${H - 4}" class="ax" text-anchor="${i === 0 ? 'start' : 'end'}">${esc(shortDate(pts[i].date))}</text>`).join('');
+  return `<svg viewBox="0 0 ${W} ${H}" class="chartsvg" role="img" aria-label="${esc((opts && opts.aria) || '')}">${grid}<path d="${d}" fill="none" style="stroke:var(--ink3)" stroke-width="1.5"/>${dots}${labels}</svg>`;
+}
+function barChart(cats, series, opts) {
+  opts = opts || {};
+  const W = 300, H = opts.h || 150, PL = 4, PR = 4, PT = 10, PB = 20;
+  const n = cats.length; if (!n) return '';
+  const maxV = niceMax(Math.max(0, ...series.flatMap(s => s.values)));
+  const groupW = (W - PL - PR) / n;
+  const barW = Math.max(3, Math.min(14, groupW / (series.length + 1) - 2));
+  const y = v => H - PB - (H - PT - PB) * (v / maxV);
+  let grid = '';
+  for (let i = 0; i <= 3; i++) { const yy = y(maxV * i / 3); grid += `<line x1="${PL}" y1="${yy.toFixed(1)}" x2="${W - PR}" y2="${yy.toFixed(1)}" class="gl"/>`; }
+  const step = Math.ceil(n / 6);
+  let bars = '';
+  cats.forEach((c, i) => {
+    const gx = PL + groupW * i + groupW / 2 - (series.length * barW) / 2;
+    series.forEach((s, si) => {
+      const v = s.values[i] || 0, bx = gx + si * barW, by = y(v);
+      bars += `<rect x="${bx.toFixed(1)}" y="${by.toFixed(1)}" width="${barW.toFixed(1)}" height="${Math.max(0, H - PB - by).toFixed(1)}" rx="1.5" style="fill:${s.color}"/>`;
+    });
+    if (i % step === 0 || i === n - 1) bars += `<text x="${(PL + groupW * i + groupW / 2).toFixed(1)}" y="${H - 4}" class="ax" text-anchor="middle">${esc(c.label)}</text>`;
+  });
+  return `<svg viewBox="0 0 ${W} ${H}" class="chartsvg" role="img" aria-label="${esc(opts.aria || '')}">${grid}${bars}</svg>`;
+}
+function barLegend(series, fmt) {
+  return series.map(s => `<div class="lg-item"><span class="lg-dot" style="background:${s.color}"></span><span class="lg-l">${esc(s.name)}</span><span class="lg-v">${fmt(s.values.reduce((a, b) => a + b, 0))}</span></div>`).join('');
+}
+function niceMax(v) { if (v <= 0) return 1; const p = Math.pow(10, Math.floor(Math.log10(v))); const n = v / p; const m = n <= 1 ? 1 : n <= 2 ? 2 : n <= 5 ? 5 : 10; return m * p; }
+function donutChart(segs, opts) {
+  opts = opts || {};
+  const total = segs.reduce((a, s) => a + s.value, 0);
+  if (total <= 0) return '';
+  const R = 60, r = 38, cx = 70, cy = 70;
+  let a0 = -Math.PI / 2, paths = '';
+  segs.forEach(s => {
+    const frac = s.value / total, a1 = a0 + frac * Math.PI * 2, large = (a1 - a0) > Math.PI ? 1 : 0;
+    if (frac >= 0.9995) { paths += `<circle cx="${cx}" cy="${cy}" r="${(R + r) / 2}" fill="none" style="stroke:${s.color}" stroke-width="${R - r}"/>`; a0 = a1; return; }
+    const x0 = cx + R * Math.cos(a0), y0 = cy + R * Math.sin(a0), x1 = cx + R * Math.cos(a1), y1 = cy + R * Math.sin(a1);
+    const ix0 = cx + r * Math.cos(a1), iy0 = cy + r * Math.sin(a1), ix1 = cx + r * Math.cos(a0), iy1 = cy + r * Math.sin(a0);
+    paths += `<path d="M${x0.toFixed(2)} ${y0.toFixed(2)} A${R} ${R} 0 ${large} 1 ${x1.toFixed(2)} ${y1.toFixed(2)} L${ix0.toFixed(2)} ${iy0.toFixed(2)} A${r} ${r} 0 ${large} 0 ${ix1.toFixed(2)} ${iy1.toFixed(2)} Z" style="fill:${s.color}"/>`;
+    a0 = a1;
+  });
+  const legend = segs.map(s => `<div class="lg-item"><span class="lg-dot" style="background:${s.color}"></span><span class="lg-l">${esc(s.label)}</span><span class="lg-v">${money(s.value, '$', { dec: 0 })} · ${pct(s.value / total)}</span></div>`).join('');
+  return `<div class="donut-wrap"><svg viewBox="0 0 140 140" class="donutsvg" role="img" aria-label="${esc(opts.aria || '')}">${paths}</svg><div class="donut-legend">${legend}</div></div>`;
+}
+
+
+
+const ICON = {
+  sum: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 20v-7M12 20V5M19 20v-10M3 20h18"/></svg>',
+  stock: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 17l6-6 4 4 8-8"/><path d="M15 7h6v6"/></svg>',
+  fx: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 8h15l-3.5-3.5M20 16H5l3.5 3.5"/></svg>',
+  cash: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 9.5L12 4l9 5.5M5.5 11v6M10 11v6M14 11v6M18.5 11v6M3 20h18"/></svg>',
+  set: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h9M17 7h3M4 17h3M11 17h9"/><circle cx="15" cy="7" r="2"/><circle cx="9" cy="17" r="2"/></svg>',
+  plus: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>',
+  x: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>'
+};
+const TABS = [
+  { id: 'sum', label: 'ภาพรวม', title: 'ภาพรวมพอร์ต', icon: ICON.sum },
+  { id: 'stock', label: 'หุ้น', title: 'รายการซื้อขายหุ้น', icon: ICON.stock },
+  { id: 'fx', label: 'แลกเงิน', title: 'แลกเงิน บาท ↔ USD', icon: ICON.fx },
+  { id: 'cash', label: 'ฝาก/ถอน', title: 'ฝาก/ถอนบัญชีเทรด', icon: ICON.cash },
+  { id: 'set', label: 'ตั้งค่า', title: 'ตั้งค่าและข้อมูล', icon: ICON.set }
+];
+const FAB = { stock: 'เพิ่มรายการหุ้น', fx: 'เพิ่มการแลกเงิน', cash: 'เพิ่มฝาก/ถอน' };
+
+/* ---------- state ---------- */
+function loadLocal() {
+  try { const t = localStorage.getItem(LS_KEY); return t ? normalizeState(JSON.parse(t)) : null; } catch (e) { return null; }
+}
+function saveLocal() { try { localStorage.setItem(LS_KEY, JSON.stringify(S)); } catch (e) { /* เก็บในเครื่องไม่ได้ */ } }
+let S = loadLocal() || newState();
+let C = null;
+const ui = { tab: 'sum', stockFilter: 'ALL', checksOpen: null, monthOpen: false, scrollChecks: false };
+
+function persist() { S.updatedAt = Date.now(); saveLocal(); scheduleRemote(); }
+function hasData(s) { return s.stocks.length + s.fx.length + s.cash.length > 0 || N(s.settings.startValue) !== 0; }
+
+/* ---------- cloud sync (ส่วนตัวต่อบัญชี ถ้ามี) ---------- */
+const remote = { db: null, path: null, timer: null, busy: false, again: false, status: 'local' };
+async function cap(name) { try { return (window.claude && window.claude.use) ? await window.claude.use(name) : null; } catch (e) { return null; } }
+function setSync(s) {
+  remote.status = s;
+  const el = $('#pillSync'); if (!el) return;
+  const map = { local: ['เก็บในเครื่องนี้', ''], cloud: ['สำรองแล้ว', 'ok'], saving: ['กำลังสำรอง…', ''], error: ['สำรองไม่สำเร็จ', 'warn'] };
+  const m = map[s] || map.local;
+  el.className = 'pill ' + m[1];
+  el.innerHTML = '<span class="dot"></span>' + m[0];
+}
+async function initRemote() {
+  try {
+    const [user, db] = await Promise.all([cap('user'), cap('db')]);
+    if (!user || !db) return;
+    const id = await user.id();
+    if (!id) return;
+    remote.db = db; remote.path = 'data/users/' + id + '/ledger';
+    const snap = await db.doc(remote.path).get();
+    let push = false;
+    if (snap.exists) {
+      const d = snap.data() || {};
+      const ru = Number(d.updatedAt) || 0;
+      if (ru > (S.updatedAt || 0) && typeof d.json === 'string') {
+        S = normalizeState(JSON.parse(d.json)); S.updatedAt = ru; saveLocal(); render();
+        toast('โหลดข้อมูลล่าสุดที่สำรองไว้แล้ว');
+      } else if ((S.updatedAt || 0) > ru) push = true;
+    } else if (hasData(S)) push = true;
+    setSync('cloud');
+    if (ui.tab === 'set') render();
+    if (push) flushRemote();
+  } catch (e) { setSync('local'); }
+}
+function scheduleRemote() {
+  if (!remote.db) return;
+  clearTimeout(remote.timer);
+  setSync('saving');
+  remote.timer = setTimeout(flushRemote, 1200);
+}
+async function flushRemote() {
+  if (!remote.db) return;
+  if (remote.busy) { remote.again = true; return; }
+  remote.busy = true;
+  try {
+    const stamp = S.updatedAt;
+    await remote.db.doc(remote.path).set({ v: 1, updatedAt: stamp, json: JSON.stringify(S) });
+    setSync('cloud');
+  } catch (e) { setSync('error'); }
+  remote.busy = false;
+  if (remote.again) { remote.again = false; flushRemote(); }
+}
+
+/* ---------- UI shell ---------- */
+function toast(msg) {
+  const t = $('#toastEl'); t.textContent = msg; t.classList.add('show');
+  clearTimeout(toast._t); toast._t = setTimeout(() => t.classList.remove('show'), 2600);
+}
+function go(tab, opts) {
+  ui.tab = tab; const toChecks = !!(opts && opts.checks); ui.scrollChecks = toChecks;
+  render(); if (!toChecks) window.scrollTo(0, 0);
+}
+function buildTabbar() {
+  $('#tabbar').innerHTML = '<div class="tabbar-in">' + TABS.map(t =>
+    `<button class="tab" data-act="tab" data-tab="${t.id}">${t.icon}<span>${t.label}</span></button>`).join('') + '</div>';
+}
+function render() {
+  const y = window.scrollY;
+  C = computeAll(S);
+  const tab = TABS.find(t => t.id === ui.tab) || TABS[0];
+  $('#title').textContent = tab.title;
+  const pc = $('#pillCheck');
+  if (isEmpty()) { pc.hidden = true; } else {
+    pc.hidden = false;
+    pc.className = 'pill ' + (C.issues ? 'bad' : 'ok');
+    pc.innerHTML = '<span class="dot"></span>' + (C.issues ? 'ต้องตรวจ ' + C.issues : 'ตรวจแล้วปกติ');
+  }
+  setSync(remote.status);
+  const views = { sum: viewSummary, stock: viewStocks, fx: viewFx, cash: viewCash, set: viewSettings };
+  $('#main').innerHTML = views[tab.id]();
+  $$('.tab').forEach(b => b.setAttribute('aria-current', b.dataset.tab === tab.id ? 'page' : 'false'));
+  const fab = $('#fab');
+  if (FAB[tab.id]) { fab.hidden = false; $('#fabLabel').textContent = FAB[tab.id]; } else fab.hidden = true;
+  if (ui.scrollChecks) {
+    ui.scrollChecks = false;
+    const c = $('#checks'); if (c) { c.open = true; ui.checksOpen = true; c.scrollIntoView({ block: 'start' }); return; }
+  }
+  window.scrollTo(0, y);
+}
+function isEmpty() { return !S.stocks.length && !S.fx.length && !S.cash.length && N(S.settings.startValue) === 0; }
+
+/* ---------- views ---------- */
+function lrow(label, val, o) {
+  o = o || {};
+  const shown = o.signed ? money(val, '', { sign: true }) : money(val, '');
+  return `<div class="lrow ${o.cls || ''}"><span>${label}</span><i class="dots"></i><b class="${o.color ? sgn(val) : ''}">${shown}</b></div>`;
+}
+
+function onboardHTML() {
+  return `<section class="panel panel-pad">
+    <h2 style="font-size:18px">เริ่มใช้สมุดซื้อขาย</h2>
+    <p class="muted" style="margin:8px 0 14px">คำนวณด้วยวิธีเดียวกับไฟล์ Excel เดิม: ต้นทุนเฉลี่ย กำไรที่ขายแล้วและยังไม่ขาย แลกเงิน บาท ↔ USD และตรวจยอดกับโบรกเกอร์</p>
+    <div style="display:grid;gap:10px">
+      <button type="button" class="btn primary block" data-act="pick-xlsx">นำเข้าจากไฟล์ Excel เดิม</button>
+      <button class="btn block" data-act="add-stock-first">เริ่มบันทึกรายการหุ้นใหม่</button>
+      <button class="btn block" data-act="tab" data-tab="set">ตั้งมูลค่าพอร์ตตั้งต้นก่อน</button>
+    </div>
+    <p class="muted" style="margin:14px 0 0;font-size:13px">เริ่มจากศูนย์: ใส่มูลค่าพอร์ตตั้งต้น (เงินสด + ต้นทุนหุ้นที่ถืออยู่เดิม) ในตั้งค่า แล้วบันทึกเงินฝากหลังจากนั้นในแท็บฝาก/ถอน</p>
+  </section>`;
+}
+
+function holdHTML(h) {
+  if (h.zero) {
+    return `<div class="hold sold"><div class="hold-top"><span class="tk">${esc(h.t)}</span><span class="grow">ขายหมดแล้ว · กำไรที่ขายแล้ว</span><span class="${sgn(h.realized)}">${money(h.realized, '$', { sign: true })}</span></div></div>`;
+  }
+  const avgDec = Math.abs(h.avg) < 10 ? 4 : 2;
+  return `<div class="hold">
+    <div class="hold-top"><span class="tk">${esc(h.t)}</span><span class="grow">${fmtShares(h.shares)} หุ้น · ต้นทุนเฉลี่ย ${money(h.avg, '$', { dec: avgDec })}</span><span class="mv">${h.mv === null ? '–' : money(h.mv)}</span></div>
+    <div class="hold-mid">
+      <label class="pricein">ราคาตอนนี้ $<input inputmode="decimal" data-price="${esc(h.t)}" value="${h.price === null ? '' : h.price}" placeholder="0.00" aria-label="ราคาปัจจุบันของ ${esc(h.t)}"></label>
+      <span class="${sgn(h.unreal)}">${h.unreal === null ? 'ยังไม่ใส่ราคา' : money(h.unreal, '$', { sign: true }) + (h.unrealPct !== null ? ' (' + pct(h.unrealPct, true) + ')' : '')}</span>
+    </div>
+    <div class="hold-bot">ขายไปแล้ว <span class="${sgn(h.realized)}">${money(h.realized, '$', { sign: true })}</span>${h.total !== null ? ` · รวม <span class="${sgn(h.total)}">${money(h.total, '$', { sign: true })}</span>` : ''}${h.status === 'SHARES DIFF' ? ` <span class="tag bad">ไม่ตรงโบรกเกอร์ ต่าง ${fmtShares(h.diff)}</span>` : ''}</div>
+  </div>`;
+}
+
+function checksHTML() {
+  const open = ui.checksOpen === null ? C.issues > 0 : ui.checksOpen;
+  const b = st => `<span class="badge ${st.replace(' ', '')}">${st === 'NO INPUT' ? 'ยังไม่ใส่' : st === 'OK' ? 'ปกติ' : st === 'CHECK' ? 'ตรวจ' : 'ข้อมูล'}</span>`;
+  return `<details class="panel" id="checks" ${open ? 'open' : ''}>
+    <summary><span class="sum-l">ตรวจความถูกต้อง</span><span class="pill ${C.issues ? 'bad' : 'ok'}">${C.issues ? C.issues + ' จุดต้องดู' : 'ปกติ'}</span></summary>
+    ${C.checks.map(c => `<div class="check">${b(c.status)}<div><div class="t">${esc(c.label)}</div><div class="d">${esc(c.detail)}</div></div></div>`).join('')}
+  </details>`;
+}
+
+function viewSummary() {
+  if (isEmpty()) return onboardHTML();
+  const s = C.sum, rate = num(S.settings.usdThb);
+  const nop = C.holdings.filter(h => h.status === 'NO PRICE').map(h => h.t);
+  let h = '<div class="stack">';
+  h += `<section class="hero">
+    <div class="hero-label">มูลค่าพอร์ตตอนนี้ (USD)</div>
+    <div class="hero-num">${money(s.value)}</div>
+    <div class="hero-sub">${rate ? '≈ ' + money(s.value * rate, '฿', { dec: 0 }) + ' · ' : ''}<span class="${sgn(s.ret)}">ผลตอบแทน ${money(s.ret, '$', { sign: true })}${s.retPct !== null ? ' (' + pct(s.retPct, true) + ')' : ''}</span></div>
+    ${nop.length ? `<div class="notice warn">ยังไม่ได้ใส่ราคาปัจจุบันของ ${esc(nop.join(', '))} — มูลค่าพอร์ตยังไม่ครบ</div>` : ''}
+    ${Math.abs(s.walkDiff) > s.tol && !nop.length ? `<div class="notice bad">สมการไม่ลงตัว ผลต่าง ${money(s.walkDiff)} — ดูหัวข้อ “ตรวจความถูกต้อง”</div>` : ''}
+    <div class="ledger">
+      <div class="ledger-cap"><span>ที่มาของมูลค่าพอร์ต</span><span>USD</span></div>
+      ${lrow('เงินตั้งต้น', s.start)}
+      ${lrow('เงินฝากเข้า', s.dep, { signed: true })}
+      ${lrow('เงินถอนออก', -s.wd, { signed: true })}
+      ${lrow('กำไรที่ขายแล้ว', s.realized, { signed: true, color: true })}
+      ${lrow('กำไรที่ยังไม่ขาย', s.unreal, { signed: true, color: true })}
+      ${s.transferFees ? lrow('ค่าโอนเข้า/ออก', -s.transferFees, { signed: true }) : ''}
+      ${lrow('มูลค่าพอร์ต', s.value, { cls: 'total' })}
+      <div class="ledger-foot">เงินสด ${money(s.curCash)} + หุ้น ${money(s.mvTotal)}</div>
+    </div>
+  </section>`;
+  const eq = equityCurve(S, C);
+  if (eq.length >= 2) {
+    const capSeries = { name: 'เงินทุนสะสม (ฝาก − ถอน)', color: 'var(--accent)', points: eq.map(p => ({ x: shortDate(p.date), y: p.capital })) };
+    const realSeries = { name: 'กำไรสะสมที่ขายแล้ว', color: 'var(--gain)', points: eq.map(p => ({ x: shortDate(p.date), y: p.realized })) };
+    h += `<section class="panel panel-pad"><h2 style="font-size:15px;margin-bottom:2px">การเติบโตของพอร์ต</h2><p class="muted" style="font-size:12.5px;margin:0 0 10px">เงินทุนสะสมเทียบกับกำไรที่ขายแล้วสะสม ตามเวลา</p>${lineChart([capSeries, realSeries], { aria: 'กราฟการเติบโตของพอร์ต' })}<div class="chart-legend">${lineLegend([capSeries, realSeries], v => money(v, '$', { sign: true }))}</div></section>`;
+  }
+  const palette = ['var(--accent)', 'var(--sell)', 'var(--warn)', 'var(--gain)', 'var(--loss)'];
+  const segs = [];
+  if (s.curCash > 0.5) segs.push({ label: 'เงินสด', value: s.curCash, color: 'var(--ink3)' });
+  C.holdings.filter(x => !x.zero && x.mv !== null && x.mv > 0).sort((a, b) => b.mv - a.mv).forEach((x, i) => segs.push({ label: x.t, value: x.mv, color: palette[i % palette.length] }));
+  if (segs.length) {
+    h += `<section class="panel panel-pad"><h2 style="font-size:15px;margin-bottom:10px">สัดส่วนพอร์ต</h2>${donutChart(segs, { aria: 'สัดส่วนพอร์ตตามมูลค่า' })}</section>`;
+  }
+  if (C.holdings.length) {
+    const act = C.holdings.filter(x => !x.zero), sold = C.holdings.filter(x => x.zero);
+    h += `<section class="panel"><div class="sec-head"><h2>หุ้นที่ถืออยู่</h2><small>ใส่ราคาตอนนี้ของแต่ละตัว</small></div>
+      ${act.map(holdHTML).join('')}
+      ${act.length ? `<div class="hold-total"><span>รวมมูลค่าหุ้น</span><span>${money(s.mvTotal)}</span></div>` : ''}
+      ${sold.map(holdHTML).join('')}
+    </section>`;
+  }
+  h += `<section class="panel"><div class="sec-head"><h2>ตัวเลขสรุป</h2><small>USD</small></div><dl class="kv">
+    <div class="r"><dt>เงินสดคงเหลือ</dt><dd>${money(s.curCash)}</dd></div>
+    <div class="r"><dt>ต้นทุนหุ้นที่ยังถืออยู่</dt><dd>${money(s.costHold)}</dd></div>
+    <div class="r"><dt>เงินทุน (ตั้งต้น + ฝาก)</dt><dd>${money(s.capital)}</dd></div>
+    <div class="r"><dt>ผลตอบแทนรวม</dt><dd class="${sgn(s.ret)}">${money(s.ret, '$', { sign: true })} · ${pct(s.retPct, true)}</dd></div>
+    <div class="r"><dt>ที่ขายแล้ว (Realized)</dt><dd class="${sgn(s.realized)}">${money(s.realized, '$', { sign: true })} · ${pct(s.realPct, true)}</dd></div>
+    <div class="r"><dt>ที่ยังไม่ขาย (Unrealized)</dt><dd class="${sgn(s.unreal)}">${money(s.unreal, '$', { sign: true })} · ${pct(s.unrealPct, true)}</dd></div>
+    <div class="r"><dt>ซื้อหุ้นรวม / ขายหุ้นรวม</dt><dd>${money(s.buys)} / ${money(s.sells)}</dd></div>
+    <div class="r"><dt>ค่าธรรมเนียมซื้อขาย (รวมในตัวเลขข้างบนแล้ว)</dt><dd>${money(s.tradeFees)}</dd></div>
+  </dl></section>`;
+  h += checksHTML();
+  return h + '</div>';
+}
+
+function stockRowHTML(r) {
+  const d = r.date || '';
+  if (r.status === 'Incomplete') {
+    return `<button class="trow" data-act="edit-stock" data-id="${r.id}"><span class="tdate"><b>${d ? Number(d.slice(8)) : '?'}</b><span>${d ? MONTHS[Number(d.slice(5, 7)) - 1] : ''}</span></span><span class="tmain"><span class="tline1"><b>${esc(r.asset || '?')}</b><span class="tag bad">ข้อมูลไม่ครบ</span></span><span class="tline2">แตะเพื่อแก้ไข</span></span></button>`;
+  }
+  const buy = r.action === 'BUY', sym = r.cur === 'THB' ? '฿' : '$';
+  return `<button class="trow" data-act="edit-stock" data-id="${r.id}">
+    <span class="tdate"><b>${Number(d.slice(8))}</b><span>${MONTHS[Number(d.slice(5, 7)) - 1]}</span></span>
+    <span class="tmain"><span class="tline1"><b>${esc(r.asset)}</b><span class="tag ${buy ? 'buy' : 'sell'}">${buy ? 'ซื้อ' : 'ขาย'}</span>${r.status === 'SELL > held' ? '<span class="tag bad">ขายเกินที่ถือ</span>' : ''}</span>
+    <span class="tline2">${fmtShares(r.shares)} × ${sym}${priceFmt(r.price)}${r.fee ? ' · ค่าธรรมเนียม ' + money(r.fee, sym) : ''}</span></span>
+    <span class="tamt"><b>${money(buy ? -r.net : r.net, sym, { sign: !buy })}</b>${!buy && r.pl !== null ? `<span class="${sgn(r.pl)}">กำไร ${money(r.pl, sym, { sign: true })}</span>` : `<span>หุ้นเหลือ ${fmtShares(r.sharesAfter)}</span>`}</span>
+  </button>`;
+}
+
+function groupedList(rows, rowFn) {
+  let out = '', cur = null;
+  rows.forEach(r => {
+    const k = (r.date || '').slice(0, 7);
+    if (k !== cur) { cur = k; out += `<div class="month">${monthLabel(k)}</div>`; }
+    out += rowFn(r);
+  });
+  return out;
+}
+
+function viewStocks() {
+  const tick = Object.keys(C.st.per).sort();
+  if (ui.stockFilter !== 'ALL' && !tick.includes(ui.stockFilter)) ui.stockFilter = 'ALL';
+  let rows = C.st.rows.slice().reverse();
+  if (ui.stockFilter !== 'ALL') rows = rows.filter(r => r.asset === ui.stockFilter);
+  const chips = tick.length > 1 ? `<div class="chips" role="group" aria-label="กรองตามหุ้น">
+    ${['ALL'].concat(tick).map(t => `<button class="chip" data-act="filter" data-v="${esc(t)}" aria-pressed="${ui.stockFilter === t}">${t === 'ALL' ? 'ทั้งหมด' : esc(t)}</button>`).join('')}</div>` : '';
+  const fees = rows.reduce((a, r) => a + (r.fee || 0), 0);
+  const pl = rows.reduce((a, r) => a + (r.pl || 0), 0);
+  return `<div class="stack">${chips}
+    <section class="panel">
+      ${rows.length ? `<div class="sec-head"><h2>${rows.length} รายการ</h2><small>ค่าธรรมเนียม ${money(fees)} · กำไรที่ขายแล้ว <span class="${sgn(pl)}">${money(pl, '$', { sign: true })}</span></small></div>` : ''}
+      ${rows.length ? groupedList(rows, stockRowHTML) : `<div class="empty"><b>ยังไม่มีรายการหุ้น</b>กดปุ่มด้านล่างเพื่อบันทึกการซื้อหรือขายหุ้น</div>`}
+    </section></div>`;
+}
+
+function fxRowHTML(r) {
+  const d = r.date || '';
+  if (r.status === 'Incomplete') {
+    return `<button class="trow" data-act="edit-fx" data-id="${r.id}"><span class="tdate"><b>${d ? Number(d.slice(8)) : '?'}</b><span>${d ? MONTHS[Number(d.slice(5, 7)) - 1] : ''}</span></span><span class="tmain"><span class="tline1"><b>แลกเงิน</b><span class="tag bad">ข้อมูลไม่ครบ</span></span><span class="tline2">แตะเพื่อแก้ไข</span></span></button>`;
+  }
+  const buy = r.action === 'BUY USD';
+  return `<button class="trow" data-act="edit-fx" data-id="${r.id}">
+    <span class="tdate"><b>${Number(d.slice(8))}</b><span>${MONTHS[Number(d.slice(5, 7)) - 1]}</span></span>
+    <span class="tmain"><span class="tline1"><b>${buy ? money(r.thb, '฿') + ' → ' + money(r.usd) : money(r.usd) + ' → ' + money(r.thb, '฿')}</b><span class="tag ${buy ? 'buy' : 'sell'}">${buy ? 'ซื้อ USD' : 'ขาย USD'}</span></span>
+    <span class="tline2">เรท ${money(r.rate, '฿', { dec: 2 })}${r.fee ? ' · ค่าธรรมเนียม ' + money(r.fee, '฿') : ''}${r.note ? ' · ' + esc(r.note) : ''}</span></span>
+    <span class="tamt"><b>${money(r.usdBal)}</b>${r.realized !== null ? `<span class="${sgn(r.realized)}">${money(r.realized, '฿', { sign: true })}</span>` : '<span>USD คงเหลือ</span>'}</span>
+  </button>`;
+}
+
+function viewFx() {
+  const f = C.fx, rate = f.rateNow;
+  const rows = f.rows.slice().reverse();
+  const msAsc = monthlyStats(C);
+  const ms = msAsc.slice().reverse();
+  const nomo = !ms.length;
+  const rateRows = f.rows.filter(r => r.status === 'OK' && r.rate != null);
+  let rateChart = '';
+  if (rateRows.length >= 2) {
+    rateChart = `<section class="panel panel-pad"><h2 style="font-size:15px;margin-bottom:2px">เรทการแลกเงินตามเวลา</h2><p class="muted" style="font-size:12.5px;margin:0 0 10px">฿ ต่อ 1 USD แต่ละรายการ · <span style="color:var(--buy)">●</span> ซื้อ USD &nbsp;<span style="color:var(--sell)">●</span> ขาย USD</p>${fxRateChart(rateRows, { aria: 'เรทการแลกเงินตามเวลา' })}</section>`;
+  }
+  let volChart = '';
+  if (msAsc.length >= 2) {
+    const recent = msAsc.slice(-8);
+    const multiYear = recent[0].k.slice(0, 4) !== recent[recent.length - 1].k.slice(0, 4);
+    const cats = recent.map(m => ({ k: m.k, label: monthShort(m.k, multiYear) }));
+    const series = [{ name: 'ซื้อ USD', color: 'var(--buy)', values: recent.map(m => m.buyUsd) }, { name: 'ขาย USD', color: 'var(--sell)', values: recent.map(m => m.sellUsd) }];
+    const scope = msAsc.length > recent.length ? `${recent.length} เดือนล่าสุด` : 'ทุกเดือนที่มีรายการ';
+    volChart = `<section class="panel panel-pad"><h2 style="font-size:15px;margin-bottom:2px">ซื้อ/ขาย USD รายเดือน</h2><p class="muted" style="font-size:12.5px;margin:0 0 10px">รวม ${esc(scope)}</p>${barChart(cats, series, { aria: 'ปริมาณซื้อขาย USD รายเดือน' })}<div class="chart-legend">${barLegend(series, v => money(v, ''))}</div></section>`;
+  }
+  return `<div class="stack">
+  ${rateChart}${volChart}
+  <section class="panel">
+    <div class="grid4">
+      <div><div class="k">USD คงเหลือ</div><div class="v">${money(f.usdNow)}</div></div>
+      <div><div class="k">ต้นทุนเฉลี่ย</div><div class="v">${money(f.avgCost, '฿', { dec: 4 })}</div><div class="s muted">ต่อ 1 USD</div></div>
+      <div><div class="k">มูลค่าตอนนี้</div><div class="v">${f.valueNow === null ? '–' : money(f.valueNow, '฿', { dec: 0 })}</div><div class="s muted">ต้นทุน ${money(f.totalCost, '฿', { dec: 0 })}</div></div>
+      <div><div class="k">กำไร/ขาดทุนที่ยังไม่ขาย</div><div class="v ${sgn(f.unreal)}">${f.unreal === null ? '–' : money(f.unreal, '฿', { sign: true })}</div><div class="s ${sgn(f.unreal)}">${f.unrealPct === null ? '' : pct(f.unrealPct, true)}</div></div>
+    </div>
+    <div class="rate-row"><label for="rateFx">เรทตลาดตอนนี้ (บาทต่อ 1 USD)</label><input id="rateFx" inputmode="decimal" data-set="usdThb" value="${rate === null ? '' : rate}" placeholder="เช่น 33.32"></div>
+    <dl class="kv">
+      <div class="r"><dt>กำไร/ขาดทุนที่ขายแล้ว (Realized)</dt><dd class="${sgn(f.realized)}">${money(f.realized, '฿', { sign: true })}</dd></div>
+      <div class="r"><dt>รวม Realized + Unrealized</dt><dd class="${sgn(f.total)}">${f.total === null ? '–' : money(f.total, '฿', { sign: true })}</dd></div>
+      <div class="r"><dt>บาทที่ใช้ซื้อ USD ทั้งหมด</dt><dd>${money(f.thbBought, '฿')}</dd></div>
+      <div class="r"><dt>บาทที่ได้จากการขาย USD</dt><dd>${money(f.thbSold, '฿')}</dd></div>
+      <div class="r"><dt>ค่าธรรมเนียมรวม</dt><dd>${money(f.fees, '฿')}</dd></div>
+    </dl>
+    ${rate === null ? '<div style="padding:0 16px 14px"><div class="notice info" style="margin:0">ใส่เรทตลาดเพื่อดูมูลค่าและกำไรขาดทุนของ USD ที่ถืออยู่</div></div>' : ''}
+  </section>
+  ${nomo ? '' : `<details class="panel" id="monthly" ${ui.monthOpen ? 'open' : ''}><summary><span class="sum-l">สรุปรายเดือน</span></summary>
+    <div class="tscroll"><table class="mt"><thead><tr><th>เดือน</th><th>ครั้ง</th><th>ซื้อ USD</th><th>ขาย USD</th><th>เรทซื้อเฉลี่ย</th><th>เรทขายเฉลี่ย</th><th>ค่าธรรมเนียม ฿</th><th>กำไรขายหุ้น $</th></tr></thead><tbody>
+    ${ms.map(m => `<tr><td>${monthLabel(m.k)}</td><td>${m.n}</td><td>${m.buyUsd ? money(m.buyUsd, '') : '–'}</td><td>${m.sellUsd ? money(m.sellUsd, '') : '–'}</td><td>${m.avgBuy === null ? '–' : money(m.avgBuy, '')}</td><td>${m.avgSell === null ? '–' : money(m.avgSell, '')}</td><td>${m.fee ? money(m.fee, '') : '–'}</td><td class="${sgn(m.plStock)}">${m.sells ? money(m.plStock, '', { sign: true }) : '–'}</td></tr>`).join('')}
+    </tbody></table></div></details>`}
+  <section class="panel">
+    ${rows.length ? `<div class="sec-head"><h2>${rows.length} รายการ</h2><small>ซื้อ ${money(f.usdBought)} · ขาย ${money(f.usdSold)}</small></div>${groupedList(rows, fxRowHTML)}` : `<div class="empty"><b>ยังไม่มีรายการแลกเงิน</b>บันทึกเมื่อแลกบาทเป็น USD หรือ USD กลับเป็นบาท</div>`}
+  </section></div>`;
+}
+
+function cashRowHTML(r) {
+  const d = r.date || '';
+  if (r.status === 'Incomplete') {
+    return `<button class="trow" data-act="edit-cash" data-id="${r.id}"><span class="tdate"><b>${d ? Number(d.slice(8)) : '?'}</b><span>${d ? MONTHS[Number(d.slice(5, 7)) - 1] : ''}</span></span><span class="tmain"><span class="tline1"><b>ฝาก/ถอน</b><span class="tag bad">ข้อมูลไม่ครบ</span></span><span class="tline2">แตะเพื่อแก้ไข</span></span></button>`;
+  }
+  const dep = r.type === 'Deposit', sym = r.cur === 'THB' ? '฿' : '$';
+  return `<button class="trow" data-act="edit-cash" data-id="${r.id}">
+    <span class="tdate"><b>${Number(d.slice(8))}</b><span>${MONTHS[Number(d.slice(5, 7)) - 1]}</span></span>
+    <span class="tmain"><span class="tline1"><b>${dep ? 'ฝากเข้า' : 'ถอนออก'}</b><span class="tag ${dep ? 'buy' : 'sell'}">${dep ? 'เข้า' : 'ออก'}</span>${r.cur !== 'USD' ? '<span class="tag bad">ไม่ใช่ USD</span>' : ''}</span>
+    <span class="tline2">${r.fee ? 'ค่าธรรมเนียม ' + money(r.fee, sym) : ''}${r.fee && (r.note || r.source) ? ' · ' : ''}${esc(r.note || r.source || '')}</span></span>
+    <span class="tamt"><b>${money(dep ? r.amount : -r.amount, sym, { sign: dep })}</b></span>
+  </button>`;
+}
+
+function viewCash() {
+  const c = C.cash, rows = c.rows.slice().reverse();
+  const mc = monthlyCash(C);
+  let cashChart = '';
+  if (mc.length >= 2) {
+    const recent = mc.slice(-8);
+    const multiYear = recent[0].k.slice(0, 4) !== recent[recent.length - 1].k.slice(0, 4);
+    const cats = recent.map(m => ({ k: m.k, label: monthShort(m.k, multiYear) }));
+    const series = [{ name: 'ฝากเข้า', color: 'var(--gain)', values: recent.map(m => m.dep) }, { name: 'ถอนออก', color: 'var(--loss)', values: recent.map(m => m.wd) }];
+    const scope = mc.length > recent.length ? `${recent.length} เดือนล่าสุด` : 'ทุกเดือนที่มีรายการ';
+    cashChart = `<section class="panel panel-pad"><h2 style="font-size:15px;margin-bottom:2px">เงินเข้า/ออกรายเดือน</h2><p class="muted" style="font-size:12.5px;margin:0 0 10px">รวม ${esc(scope)}</p>${barChart(cats, series, { aria: 'เงินฝากถอนรายเดือน' })}<div class="chart-legend">${barLegend(series, v => money(v))}</div></section>`;
+  }
+  return `<div class="stack">
+  ${cashChart}
+  <section class="panel"><dl class="kv" style="padding-top:10px">
+    <div class="r"><dt>ฝากเข้ารวม</dt><dd>${money(c.dep)}</dd></div>
+    <div class="r"><dt>ถอนออกรวม</dt><dd>${money(c.wd)}</dd></div>
+    <div class="r"><dt>ค่าโอนเข้า/ออก</dt><dd>${money(c.fees)}</dd></div>
+    <div class="r"><dt>สุทธิเข้าบัญชีเทรด</dt><dd><b>${money(c.net)}</b></dd></div>
+  </dl>
+  <div style="padding:0 16px 14px"><div class="notice info" style="margin:0">บันทึกเฉพาะเงินที่โอนเข้า/ออกบัญชีโบรกเกอร์จริง กำไรจากการขายหุ้นที่เอาไปซื้อต่อไม่ใช่เงินฝาก</div></div></section>
+  <section class="panel">
+    ${rows.length ? `<div class="sec-head"><h2>${rows.length} รายการ</h2></div>${groupedList(rows, cashRowHTML)}` : `<div class="empty"><b>ยังไม่มีรายการฝาก/ถอน</b>กดปุ่มด้านล่างเพื่อบันทึกเงินเข้าหรือออกบัญชีเทรด</div>`}
+  </section></div>`;
+}
+
+function setField(label, key, o) {
+  o = o || {}; const v = S.settings[key];
+  return `<div class="field"><label for="s_${key}">${label}</label><input id="s_${key}" inputmode="decimal" data-set="${key}" value="${v === null || v === undefined ? '' : v}" placeholder="${o.ph || ''}">${o.hint ? `<small>${o.hint}</small>` : ''}</div>`;
+}
+function viewSettings() {
+  const tick = Object.keys(C.st.per).sort();
+  const cloud = remote.db ? 'ข้อมูลอยู่ในเครื่องนี้ และสำรองไว้ในพื้นที่ส่วนตัวของบัญชีคุณ (เปิดจากเครื่องอื่นก็เห็นข้อมูลเดียวกัน)' : 'ข้อมูลอยู่ในเครื่องนี้เท่านั้น แนะนำให้กด “สำรอง/กู้คืน” เก็บไว้เป็นระยะ';
+  return `<div class="stack">
+  <section class="panel panel-pad"><h2 style="font-size:15px">ค่าตั้งต้น</h2>
+    ${setField('มูลค่าพอร์ตตั้งต้น (USD)', 'startValue', { ph: '0.00', hint: 'เงินสด + ต้นทุนหุ้นที่ถืออยู่ก่อนเริ่มบันทึก · เงินฝากหลังจากนั้นบันทึกในแท็บฝาก/ถอน' })}
+    ${setField('เรทตลาด USD/THB (บาทต่อ 1 USD)', 'usdThb', { ph: 'เช่น 33.32', hint: 'ใช้ดูมูลค่าเป็นบาทและกำไรขาดทุนจากค่าเงิน' })}
+    ${setField('ความคลาดเคลื่อนที่ยอมรับ (USD)', 'tolerance', { ph: '0.01', hint: 'ส่วนต่างเท่านี้หรือน้อยกว่าไม่ขึ้นเตือน' })}
+  </section>
+  <section class="panel panel-pad"><h2 style="font-size:15px">ตรวจกับโบรกเกอร์</h2>
+    ${setField('เงินสดจริงตาม statement (USD)', 'brokerCash', { ph: 'เว้นว่างได้' })}
+    ${setField('มูลค่าพอร์ตรวมจริง (USD)', 'brokerValue', { ph: 'เว้นว่างได้' })}
+    ${tick.length ? `<div class="field"><span class="lbl">จำนวนหุ้นจริงตามโบรกเกอร์ (เว้นว่างได้)</span><div class="grid2">${tick.map(t => `<div><label class="lbl" for="bs_${esc(t)}">${esc(t)}</label><input id="bs_${esc(t)}" inputmode="decimal" data-bshare="${esc(t)}" value="${S.settings.brokerShares[t] == null ? '' : S.settings.brokerShares[t]}"></div>`).join('')}</div></div>` : ''}
+  </section>
+  <section class="panel panel-pad"><h2 style="font-size:15px">แลกเงิน: ยอดตั้งต้น</h2>
+    ${setField('USD ตั้งต้น', 'fxStartUsd', { ph: '0', hint: 'USD ที่มีอยู่ก่อนรายการแรกในแท็บแลกเงิน' })}
+    ${setField('THB ตั้งต้น (฿)', 'fxStartThb', { ph: '0' })}
+    ${setField('ต้นทุนเฉลี่ย USD ตั้งต้น (฿ ต่อ USD)', 'fxStartCost', { ph: 'ไม่บังคับ', hint: 'ใส่แล้ว รายการขาย USD ที่เกิดก่อนการซื้อ จะคำนวณกำไรขาดทุนได้' })}
+  </section>
+  <section class="panel"><div class="sec-head"><h2>ข้อมูล</h2></div>
+    <div class="btnlist">
+      <button type="button" class="btn block" data-act="pick-xlsx">นำเข้าจากไฟล์ Excel</button>
+      <button class="btn block" data-act="export-xlsx">ส่งออกเป็นไฟล์ Excel</button>
+      <button class="btn block" data-act="backup">สำรอง / กู้คืน (JSON)</button>
+      <button class="btn danger block" data-act="wipe">ล้างข้อมูลทั้งหมด</button>
+    </div>
+    <div style="padding:0 16px 16px" class="muted"><small>${cloud}</small></div>
+  </section>
+  <details class="panel"><summary><span class="sum-l">วิธีคำนวณ</span></summary>
+    <div class="panel-pad muted" style="padding-top:0;font-size:13.5px;line-height:1.65">
+      <p style="margin:0 0 8px">ยอดรวม = จำนวน × ราคา · ยอดสุทธิ = ซื้อ: ยอดรวม + ค่าธรรมเนียม / ขาย: ยอดรวม − ค่าธรรมเนียม</p>
+      <p style="margin:0 0 8px">ต้นทุนตอนขาย = จำนวนที่ขาย × ต้นทุนเฉลี่ยต่อหุ้นของตัวนั้น ณ ตอนขาย (รวมค่าธรรมเนียมซื้อ) · กำไรที่ขายแล้ว = ยอดสุทธิ − ต้นทุน</p>
+      <p style="margin:0 0 8px">เงินสดหลังทำรายการ = มูลค่าพอร์ตตั้งต้น + ฝาก/ถอน (วันที่ไม่เกินรายการนั้น) ± ซื้อขายหุ้นสะสม</p>
+      <p style="margin:0 0 8px">มูลค่าพอร์ต = เงินสด + จำนวนหุ้น × ราคาตอนนี้ · ผลตอบแทน = กำไรที่ขายแล้ว + ที่ยังไม่ขาย − ค่าโอน หารด้วยเงินทุน (ตั้งต้น + ฝาก)</p>
+      <p style="margin:0">แลกเงิน: ต้นทุนเฉลี่ย USD ถัวเฉลี่ยทุกครั้งที่ซื้อ (รวมค่าธรรมเนียม) · กำไรตอนขาย USD = บาทที่ได้ − ค่าธรรมเนียม − USD × ต้นทุนเฉลี่ยก่อนหน้า · เรียงรายการตามวันที่ให้อัตโนมัติ</p>
+    </div>
+  </details></div>`;
+}
+
+/* ---------- sheet / dialog ---------- */
+function openSheet(html) {
+  const w = $('#sheetWrap');
+  $('#sheet').innerHTML = html;
+  w.classList.add('open'); document.body.classList.add('noscroll');
+  $('#sheet').scrollTop = 0; $('#sheet').focus();
+}
+function closeSheet() {
+  $('#sheetWrap').classList.remove('open'); document.body.classList.remove('noscroll'); $('#sheet').innerHTML = '';
+}
+function confirmBox(msg, okLabel, danger) {
+  return new Promise(res => {
+    const w = $('#dlgWrap');
+    w.innerHTML = `<div class="dialog" role="alertdialog" aria-modal="true"><p>${esc(msg)}</p><div class="actions"><button class="btn" data-dlg="no">ยกเลิก</button><button class="btn ${danger ? 'danger' : 'primary'}" data-dlg="yes">${esc(okLabel || 'ตกลง')}</button></div></div>`;
+    w.classList.add('open');
+    const done = v => { w.classList.remove('open'); w.innerHTML = ''; w.onclick = null; res(v); };
+    w.onclick = e => { const b = e.target.closest('[data-dlg]'); if (b) done(b.dataset.dlg === 'yes'); else if (e.target === w) done(false); };
+    const first = w.querySelector('[data-dlg="no"]'); if (first) first.focus();
+  });
+}
+function head(title) { return `<div class="sheet-head"><h3>${title}</h3><button type="button" class="icon-btn" data-act="close" aria-label="ปิด">${ICON.x}</button></div>`; }
+function fld(label, name, val, o) {
+  o = o || {};
+  return `<div class="field"><label for="f_${name}">${label}</label><input id="f_${name}" name="${name}" type="${o.type || 'text'}" ${o.im ? `inputmode="${o.im}"` : ''} value="${esc(val === null || val === undefined ? '' : val)}" ${o.ph ? `placeholder="${o.ph}"` : ''} ${o.list ? `list="${o.list}"` : ''} autocomplete="off" ${o.cap ? 'autocapitalize="characters"' : ''}>${o.hint ? `<small>${o.hint}</small>` : ''}</div>`;
+}
+function seg(name, opts, cur, label) {
+  return `<div class="seg" role="radiogroup" aria-label="${label}" style="margin-top:8px">${opts.map(o => `<label><input type="radio" name="${name}" value="${o[0]}" ${cur === o[0] ? 'checked' : ''}><span>${o[1]}</span></label>`).join('')}</div>`;
+}
+function lastBroker() {
+  const rows = S.stocks.slice().sort((a, b) => (b.seq || 0) - (a.seq || 0));
+  const r = rows.find(x => x.broker);
+  return r ? r.broker : (S.settings.defaultBroker || '');
+}
+function afterSave() { closeSheet(); persist(); render(); toast('บันทึกแล้ว'); }
+
+/* ----- stock form ----- */
+function openStock(id) {
+  const r = id ? S.stocks.find(x => x.id === id) : null;
+  const d = r || { date: today(), action: 'BUY', asset: ui.stockFilter !== 'ALL' ? ui.stockFilter : '', currency: 'USD', broker: lastBroker() };
+  const tick = Object.keys(C.st.per).sort();
+  openSheet(`<form id="frm" data-kind="stock" data-id="${r ? r.id : ''}" novalidate>
+    ${head(r ? 'แก้ไขรายการหุ้น' : 'เพิ่มรายการหุ้น')}
+    ${seg('action', [['BUY', 'ซื้อ'], ['SELL', 'ขาย']], d.action === 'SELL' ? 'SELL' : 'BUY', 'ซื้อหรือขาย')}
+    <div class="grid2">${fld('วันที่', 'date', d.date, { type: 'date' })}${fld('ชื่อหุ้น (Ticker)', 'asset', d.asset, { list: 'tickers', cap: true, ph: 'เช่น SMCI' })}</div>
+    <datalist id="tickers">${tick.map(t => `<option value="${esc(t)}">`).join('')}</datalist>
+    <div class="grid2">${fld('จำนวนหุ้น', 'shares', d.shares, { im: 'decimal' })}${fld('ราคาต่อหุ้น', 'price', d.price, { im: 'decimal' })}</div>
+    ${fld('ค่าธรรมเนียม (สกุลเดียวกับราคา)', 'fee', d.fee ? d.fee : '', { im: 'decimal', ph: '0' })}
+    <div class="preview" id="preview"></div>
+    <details class="more"><summary>รายละเอียดเพิ่มเติม</summary>
+      <div class="grid2"><div class="field"><label for="f_currency">สกุลเงิน</label><select id="f_currency" name="currency"><option value="USD" ${d.currency !== 'THB' ? 'selected' : ''}>USD</option><option value="THB" ${d.currency === 'THB' ? 'selected' : ''}>THB</option></select></div>${fld('เรท ฿ ต่อ USD (ไม่บังคับ)', 'fxRate', d.fxRate, { im: 'decimal' })}</div>
+      <div class="grid2">${fld('เวลา', 'time', d.time, { type: 'time' })}${fld('โบรกเกอร์', 'broker', d.broker)}</div>
+      ${fld('รหัสรายการ (Transaction ID)', 'txId', d.txId)}${fld('แหล่งที่มา', 'source', d.source)}
+      <div class="field"><label for="f_note">หมายเหตุ</label><textarea id="f_note" name="note">${esc(d.note || '')}</textarea></div>
+    </details>
+    <div class="err" id="err" role="alert"></div>
+    <div class="actions">${r ? '<button type="button" class="btn danger" data-act="del">ลบ</button>' : ''}<button type="submit" class="btn primary">บันทึก</button></div>
+  </form>`);
+  updatePreview();
+}
+function readStock(f) {
+  const g = n => (f.elements[n] ? f.elements[n].value : '');
+  const fee = num(g('fee'));
+  return {
+    date: g('date'), asset: g('asset').trim().toUpperCase(), action: f.elements['action'].value === 'SELL' ? 'SELL' : 'BUY',
+    shares: num(g('shares')), price: num(g('price')), fee: fee === null ? 0 : fee, currency: g('currency') || 'USD', fxRate: num(g('fxRate')),
+    time: g('time'), broker: g('broker').trim(), txId: g('txId').trim(), source: g('source').trim(), note: g('note').trim()
+  };
+}
+function prow(a, b, cls) { return `<div class="r"><span>${a}</span><span class="${cls || ''}">${b}</span></div>`; }
+function stockCandidate(f, v) {
+  v = v || readStock(f);
+  const id = f.dataset.id || '__new__';
+  const old = f.dataset.id ? S.stocks.find(x => x.id === id) : null;
+  const tmp = Object.assign({}, S, { stocks: S.stocks.filter(x => x.id !== id).concat([Object.assign({}, v, { id, seq: old ? old.seq : S.seq })]) });
+  return computeStocks(tmp, computeCash(tmp)).rows.find(x => x.id === id);
+}
+function updatePreview() {
+  const f = $('#frm'); const box = $('#preview'); if (!f || !box) return;
+  if (f.dataset.kind === 'stock') {
+    const v = readStock(f), sym = v.currency === 'THB' ? '฿' : '$';
+    if (!(v.shares > 0 && v.price > 0)) { box.innerHTML = prow('ยอดรวม / สุทธิ', 'กรอกจำนวนและราคา'); return; }
+    const row = stockCandidate(f, v);
+    if (!row || row.status === 'Incomplete') { box.innerHTML = prow('ยอดรวม / สุทธิ', 'กรอกข้อมูลให้ครบ'); return; }
+    let h = prow('ยอดรวมก่อนค่าธรรมเนียม', money(row.gross, sym)) + prow(v.action === 'BUY' ? 'ยอดสุทธิ (รวมค่าธรรมเนียม)' : 'ยอดสุทธิ (หักค่าธรรมเนียม)', '<b>' + money(row.net, sym) + '</b>');
+    if (v.action === 'SELL') h += prow('ต้นทุนหุ้นที่ขาย (เฉลี่ย)', money(row.cost, sym)) + prow('กำไร/ขาดทุนที่ขายแล้ว', '<b>' + money(row.pl, sym, { sign: true }) + '</b>', sgn(row.pl));
+    h += prow('หุ้นเหลือหลังรายการนี้', fmtShares(row.sharesAfter)) + prow('เงินสดหลังรายการนี้', money(row.cashAfter, sym), row.cashAfter < -0.005 ? 'loss' : '');
+    if (row.status === 'SELL > held') h += '<div class="notice bad">ขายเกินจำนวนที่ถืออยู่ ณ วันที่นี้ — ตรวจจำนวนหุ้นหรือวันที่</div>';
+    else if (row.cashAfter < -0.005) h += '<div class="notice warn">เงินสดในบัญชีจะติดลบ — ขาดรายการฝากหรือเปล่า?</div>';
+    box.innerHTML = h;
+  } else if (f.dataset.kind === 'fx') {
+    const v = readFx(f);
+    if (!(v.thb > 0 && v.usd > 0)) { box.innerHTML = prow('เรทที่แลก', 'กรอกจำนวนบาทและ USD'); return; }
+    const id = f.dataset.id || '__new__';
+    const old = f.dataset.id ? S.fx.find(x => x.id === id) : null;
+    const tmp = Object.assign({}, S, { fx: S.fx.filter(x => x.id !== id).concat([Object.assign({}, v, { id, seq: old ? old.seq : S.seq })]) });
+    const cf = computeFX(tmp), row = cf.rows.find(x => x.id === id);
+    if (!row || row.status === 'Incomplete') { box.innerHTML = prow('เรทที่แลก', money(v.thb / v.usd, '฿') + ' ต่อ 1 USD'); return; }
+    let h = prow('เรทที่แลก', '<b>' + money(row.rate, '฿') + ' ต่อ 1 USD</b>') + prow('USD คงเหลือหลังรายการนี้', money(row.usdBal), row.usdBal < -0.005 ? 'loss' : '') + prow('ต้นทุนเฉลี่ย USD', money(row.avgCost, '฿', { dec: 4 }));
+    if (row.realized !== null) h += prow('กำไร/ขาดทุนจากการขาย USD', '<b>' + money(row.realized, '฿', { sign: true }) + '</b>', sgn(row.realized));
+    if (row.usdBal < -0.005) h += '<div class="notice warn">USD คงเหลือติดลบ — ขาด USD ตั้งต้นหรือรายการซื้อหรือเปล่า?</div>';
+    box.innerHTML = h;
+  } else if (f.dataset.kind === 'cash') {
+    const v = readCash(f), sym = v.currency === 'THB' ? '฿' : '$';
+    if (!(v.amount > 0)) { box.innerHTML = prow('ผลต่อบัญชีเทรด', 'กรอกจำนวนเงิน'); return; }
+    const imp = v.type === 'Deposit' ? v.amount - v.fee : -(v.amount + v.fee);
+    box.innerHTML = prow('ผลต่อบัญชีเทรด', '<b>' + money(imp, sym, { sign: true }) + '</b>', sgn(imp)) + (v.currency !== 'USD' ? '<div class="notice warn">สรุปภาพรวมนับเฉพาะ USD — รายการสกุลอื่นจะไม่ถูกนับ</div>' : '');
+  }
+}
+async function saveStock(f) {
+  const v = readStock(f), err = [];
+  if (!v.date) err.push('เลือกวันที่');
+  if (!v.asset) err.push('ใส่ชื่อหุ้น');
+  if (!(v.shares > 0)) err.push('จำนวนหุ้นต้องมากกว่า 0');
+  if (!(v.price > 0)) err.push('ราคาต้องมากกว่า 0');
+  if (v.fee < 0) err.push('ค่าธรรมเนียมต้องไม่ติดลบ');
+  if (err.length) { $('#err').textContent = err.join(' · '); return; }
+  const cand = stockCandidate(f, v);
+  if (cand && cand.status === 'SELL > held' && !(await confirmBox('รายการนี้ขายเกินจำนวนหุ้นที่ถืออยู่ ณ วันที่นั้น\nบันทึกต่อไหม? (จะขึ้นเตือนในหน้าภาพรวม)', 'บันทึกต่อ', false))) return;
+  const id = f.dataset.id;
+  if (id) Object.assign(S.stocks.find(x => x.id === id), v);
+  else S.stocks.push(Object.assign({ id: uid(), seq: S.seq++ }, v));
+  if (v.broker) S.settings.defaultBroker = v.broker;
+  afterSave();
+}
+
+/* ----- fx form ----- */
+function openFx(id) {
+  const r = id ? S.fx.find(x => x.id === id) : null;
+  const d = r || { date: today(), action: 'BUY USD' };
+  openSheet(`<form id="frm" data-kind="fx" data-id="${r ? r.id : ''}" novalidate>
+    ${head(r ? 'แก้ไขการแลกเงิน' : 'เพิ่มการแลกเงิน')}
+    ${seg('action', [['BUY USD', 'ซื้อ USD'], ['SELL USD', 'ขาย USD']], d.action === 'SELL USD' ? 'SELL USD' : 'BUY USD', 'ซื้อหรือขาย USD')}
+    ${fld('วันที่', 'date', d.date, { type: 'date' })}
+    <div class="grid2">
+      <div class="field"><label for="f_thb" id="lblThb">บาทที่จ่าย (฿)</label><input id="f_thb" name="thb" inputmode="decimal" value="${esc(d.thb == null ? '' : d.thb)}" autocomplete="off"></div>
+      <div class="field"><label for="f_usd" id="lblUsd">USD ที่ได้รับ</label><input id="f_usd" name="usd" inputmode="decimal" value="${esc(d.usd == null ? '' : d.usd)}" autocomplete="off"></div>
+    </div>
+    ${fld('ค่าธรรมเนียม (บาท)', 'fee', d.fee ? d.fee : '', { im: 'decimal', ph: '0' })}
+    <div class="preview" id="preview"></div>
+    ${r ? '' : `<label class="check-row"><input type="checkbox" name="mirror" checked><span>บันทึกฝาก/ถอนบัญชีเทรดพร้อมกัน <span class="muted">(ซื้อ USD = ฝากเข้า, ขาย USD = ถอนออก จำนวน USD เท่ากัน)</span></span></label>`}
+    <details class="more"><summary>รายละเอียดเพิ่มเติม</summary>${fld('แหล่งที่มา', 'source', d.source)}<div class="field"><label for="f_note">หมายเหตุ</label><textarea id="f_note" name="note">${esc(d.note || '')}</textarea></div></details>
+    <div class="err" id="err" role="alert"></div>
+    <div class="actions">${r ? '<button type="button" class="btn danger" data-act="del">ลบ</button>' : ''}<button type="submit" class="btn primary">บันทึก</button></div>
+  </form>`);
+  fxLabels(); updatePreview();
+}
+function fxLabels() {
+  const f = $('#frm'); if (!f || f.dataset.kind !== 'fx') return;
+  const sell = f.elements['action'].value === 'SELL USD';
+  $('#lblThb').textContent = sell ? 'บาทที่ได้รับ (฿)' : 'บาทที่จ่าย (฿)';
+  $('#lblUsd').textContent = sell ? 'USD ที่ขาย' : 'USD ที่ได้รับ';
+}
+function readFx(f) {
+  const g = n => (f.elements[n] ? f.elements[n].value : ''); const fee = num(g('fee'));
+  return { date: g('date'), action: f.elements['action'].value === 'SELL USD' ? 'SELL USD' : 'BUY USD', thb: num(g('thb')), usd: num(g('usd')), fee: fee === null ? 0 : fee, source: g('source').trim(), note: g('note').trim() };
+}
+function saveFx(f) {
+  const v = readFx(f), err = [];
+  if (!v.date) err.push('เลือกวันที่');
+  if (!(v.thb > 0)) err.push('จำนวนบาทต้องมากกว่า 0');
+  if (!(v.usd > 0)) err.push('จำนวน USD ต้องมากกว่า 0');
+  if (v.fee < 0) err.push('ค่าธรรมเนียมต้องไม่ติดลบ');
+  if (err.length) { $('#err').textContent = err.join(' · '); return; }
+  const id = f.dataset.id;
+  if (id) Object.assign(S.fx.find(x => x.id === id), v);
+  else {
+    S.fx.push(Object.assign({ id: uid(), seq: S.seq++ }, v));
+    if (f.elements['mirror'] && f.elements['mirror'].checked) {
+      S.cash.push({ id: uid(), seq: S.seq++, date: v.date, type: v.action === 'BUY USD' ? 'Deposit' : 'Withdrawal', amount: v.usd, currency: 'USD', fee: 0, source: '', note: 'จากรายการแลกเงิน' });
+    }
+  }
+  afterSave();
+}
+
+/* ----- cash form ----- */
+function openCash(id) {
+  const r = id ? S.cash.find(x => x.id === id) : null;
+  const d = r || { date: today(), type: 'Deposit', currency: 'USD' };
+  openSheet(`<form id="frm" data-kind="cash" data-id="${r ? r.id : ''}" novalidate>
+    ${head(r ? 'แก้ไขฝาก/ถอน' : 'เพิ่มฝาก/ถอน')}
+    ${seg('type', [['Deposit', 'ฝากเข้า'], ['Withdrawal', 'ถอนออก']], d.type === 'Withdrawal' ? 'Withdrawal' : 'Deposit', 'ฝากหรือถอน')}
+    ${fld('วันที่', 'date', d.date, { type: 'date' })}
+    <div class="grid2">${fld('จำนวนเงิน', 'amount', d.amount, { im: 'decimal' })}${fld('ค่าธรรมเนียมโอน', 'fee', d.fee ? d.fee : '', { im: 'decimal', ph: '0' })}</div>
+    <div class="preview" id="preview"></div>
+    <details class="more"><summary>รายละเอียดเพิ่มเติม</summary>
+      <div class="field"><label for="f_currency">สกุลเงิน</label><select id="f_currency" name="currency"><option value="USD" ${d.currency !== 'THB' ? 'selected' : ''}>USD</option><option value="THB" ${d.currency === 'THB' ? 'selected' : ''}>THB</option></select></div>
+      ${fld('แหล่งที่มา', 'source', d.source)}<div class="field"><label for="f_note">หมายเหตุ</label><textarea id="f_note" name="note">${esc(d.note || '')}</textarea></div>
+    </details>
+    <div class="err" id="err" role="alert"></div>
+    <div class="actions">${r ? '<button type="button" class="btn danger" data-act="del">ลบ</button>' : ''}<button type="submit" class="btn primary">บันทึก</button></div>
+  </form>`);
+  updatePreview();
+}
+function readCash(f) {
+  const g = n => (f.elements[n] ? f.elements[n].value : ''); const fee = num(g('fee'));
+  return { date: g('date'), type: f.elements['type'].value === 'Withdrawal' ? 'Withdrawal' : 'Deposit', amount: num(g('amount')), fee: fee === null ? 0 : fee, currency: g('currency') || 'USD', source: g('source').trim(), note: g('note').trim() };
+}
+function saveCash(f) {
+  const v = readCash(f), err = [];
+  if (!v.date) err.push('เลือกวันที่');
+  if (!(v.amount > 0)) err.push('จำนวนเงินต้องมากกว่า 0');
+  if (v.fee < 0) err.push('ค่าธรรมเนียมต้องไม่ติดลบ');
+  if (err.length) { $('#err').textContent = err.join(' · '); return; }
+  const id = f.dataset.id;
+  if (id) Object.assign(S.cash.find(x => x.id === id), v);
+  else S.cash.push(Object.assign({ id: uid(), seq: S.seq++ }, v));
+  afterSave();
+}
+
+async function deleteCurrent() {
+  const f = $('#frm'); if (!f || !f.dataset.id) return;
+  if (!(await confirmBox('ลบรายการนี้? การลบย้อนกลับไม่ได้', 'ลบ', true))) return;
+  const key = { stock: 'stocks', fx: 'fx', cash: 'cash' }[f.dataset.kind];
+  S[key] = S[key].filter(x => x.id !== f.dataset.id);
+  closeSheet(); persist(); render(); toast('ลบแล้ว');
+}
+
+/* ---------- import / export / backup ---------- */
+async function handleXlsx(file) {
+  if (typeof XLSX === 'undefined') { toast('โหลดตัวอ่าน Excel ไม่สำเร็จ ลองใหม่เมื่อมีอินเทอร์เน็ต'); return; }
+  try {
+    const wb = XLSX.read(await file.arrayBuffer(), { type: 'array' });
+    const sheets = {};
+    wb.SheetNames.forEach(n => { sheets[n] = XLSX.utils.sheet_to_json(wb.Sheets[n], { header: 1, raw: true, defval: null }); });
+    const imp = importSheets(sheets);
+    if (!imp.stocks.length && !imp.fx.length && !imp.cash.length) { toast('ไม่พบรายการในไฟล์นี้ (ต้องมีชีต Stock Transactions, FX Transactions หรือ Cash Flow)'); return; }
+    const msg = `พบ หุ้น ${imp.stocks.length} · แลกเงิน ${imp.fx.length} · ฝาก/ถอน ${imp.cash.length} รายการ\n` + (hasData(S) ? 'การนำเข้าจะแทนที่ข้อมูลปัจจุบันทั้งหมด' : 'นำเข้าเข้าสมุดนี้เลยไหม?');
+    if (!(await confirmBox(msg, 'นำเข้า', false))) return;
+    S = imp; ui.stockFilter = 'ALL'; persist(); go('sum'); toast('นำเข้าแล้ว ' + (imp.stocks.length + imp.fx.length + imp.cash.length) + ' รายการ');
+  } catch (e) { toast('อ่านไฟล์ไม่สำเร็จ ตรวจว่าเป็นไฟล์ .xlsx'); }
+}
+async function saveFile(filename, data) {
+  const dl = await cap('downloads');
+  if (!dl) return false;
+  try { await dl.save({ filename, data }); return true; } catch (e) { if (e && e.code === 'declined') return true; throw e; }
+}
+async function exportXlsx() {
+  if (typeof XLSX === 'undefined') { toast('ส่งออก Excel ไม่ได้ (โหลดไลบรารีไม่สำเร็จ)'); return; }
+  const ser = d => { if (!d) return ''; const p = d.split('-').map(Number); return Math.round((Date.UTC(p[0], p[1] - 1, p[2]) - Date.UTC(1899, 11, 30)) / 86400000); };
+  const wb = XLSX.utils.book_new();
+  const add = (name, aoa) => {
+    const ws = XLSX.utils.aoa_to_sheet(aoa);
+    for (let r = 1; r < aoa.length; r++) { const ref = XLSX.utils.encode_cell({ r, c: 0 }); if (ws[ref] && ws[ref].t === 'n') ws[ref].z = 'yyyy-mm-dd'; }
+    ws['!cols'] = aoa[0].map(() => ({ wch: 15 })); XLSX.utils.book_append_sheet(wb, ws, name);
+  };
+  const v = x => (x === null || x === undefined ? '' : x);
+  add('Stock Transactions', [['Date', 'Time', 'Asset', 'Action', 'Shares', 'Price per Share', 'Currency', 'Gross Amount', 'Fee', 'Net Amount', 'FX Rate', 'THB Value', 'Cost Basis', 'Realized P/L', 'Shares After', 'Cash Balance After', 'Transaction ID', 'Broker', 'Note', 'Source', 'Row Check']]
+    .concat(C.st.rows.map(r => [ser(r.date), r.time || '', r.asset, r.action, v(r.shares), v(r.price), r.cur, v(r.gross), r.fee, v(r.net), v(num(r.fxRate)), v(r.thb), v(r.cost), v(r.pl), v(r.sharesAfter), v(r.cashAfter), r.txId || '', r.broker || '', r.note || '', r.source || '', r.status === 'Incomplete' ? 'Incomplete' : r.status])));
+  add('FX Transactions', [['Date', 'Action', 'THB Used/Received', 'USD Received/Used', 'FX Rate', 'Fee', 'Net USD', 'Note', 'Source', 'USD Balance', 'THB Balance', 'ต้นทุนเฉลี่ยสะสม', 'FX Realized P/L']]
+    .concat(C.fx.rows.map(r => [ser(r.date), r.action, v(r.thb), v(r.usd), v(r.rate), r.fee, v(r.netUsd), r.note || '', r.source || '', v(r.usdBal), v(r.thbBal), v(r.avgCost), v(r.realized)])));
+  add('Cash Flow', [['Date', 'Type', 'Amount', 'Currency', 'Direction', 'Fee', 'Net Amount', 'Source', 'Note', 'Account Impact (USD)']]
+    .concat(C.cash.rows.map(r => [ser(r.date), r.type || '', v(r.amount), r.cur, r.type === 'Deposit' ? 'IN' : r.type === 'Withdrawal' ? 'OUT' : '', r.fee, r.amount === null ? '' : (r.type === 'Deposit' ? r.amount - r.fee : r.amount + r.fee), r.source || '', r.note || '', v(r.impact)])));
+  const st = S.settings, kv = [['key', 'value'], ['startValue', st.startValue], ['tolerance', st.tolerance], ['usdThb', v(st.usdThb)], ['brokerCash', v(st.brokerCash)], ['brokerValue', v(st.brokerValue)], ['fxStartUsd', st.fxStartUsd], ['fxStartThb', st.fxStartThb], ['fxStartCost', v(st.fxStartCost)]];
+  Object.keys(st.prices).forEach(k => kv.push(['price:' + k, st.prices[k]]));
+  Object.keys(st.brokerShares).forEach(k => kv.push(['brokerShares:' + k, st.brokerShares[k]]));
+  add('Settings', kv);
+  const buf = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
+  try { const ok = await saveFile('trade-journal-' + today() + '.xlsx', buf); if (!ok) toast('เครื่องนี้ยังบันทึกไฟล์จากหน้านี้ไม่ได้ ใช้ “สำรอง / กู้คืน” แทน'); else toast('ส่งออกแล้ว'); } catch (e) { toast('ส่งออกไม่สำเร็จ'); }
+}
+let backupJson = '';
+function openBackup() {
+  backupJson = JSON.stringify({ app: 'trade-journal', v: 1, exportedAt: new Date().toISOString(), state: S });
+  openSheet(`${head('สำรอง / กู้คืนข้อมูล')}
+    <div class="field"><span class="lbl">สำรองข้อมูลทั้งหมด (รายการ ตั้งค่า ราคาที่ใส่ไว้)</span></div>
+    <div class="actions" style="margin-top:6px"><button class="btn" data-act="bk-file">บันทึกเป็นไฟล์</button><button class="btn" data-act="bk-copy">คัดลอกข้อความ</button></div>
+    <div class="field" style="margin-top:24px"><label for="restoreBox">กู้คืน: วางข้อความที่สำรองไว้ หรือเลือกไฟล์ .json</label><textarea id="restoreBox" class="mono" placeholder='{"app":"trade-journal", ...}'></textarea></div>
+    <div class="actions"><button type="button" class="btn" data-act="pick-json">เลือกไฟล์ .json</button><button class="btn primary" data-act="bk-restore">กู้คืน</button></div>`);
+}
+async function restoreFrom(text) {
+  try {
+    const o = JSON.parse(text); const st = normalizeState(o && o.state ? o.state : o);
+    if (!st.stocks.length && !st.fx.length && !st.cash.length && !st.settings.startValue) { toast('ไม่พบข้อมูลในข้อความนี้'); return; }
+    if (!(await confirmBox(`กู้คืน หุ้น ${st.stocks.length} · แลกเงิน ${st.fx.length} · ฝาก/ถอน ${st.cash.length} รายการ\nจะแทนที่ข้อมูลปัจจุบันทั้งหมด`, 'กู้คืน', false))) return;
+    S = st; closeSheet(); persist(); go('sum'); toast('กู้คืนแล้ว');
+  } catch (e) { toast('ข้อความนี้ไม่ใช่ข้อมูลสำรองที่ถูกต้อง'); }
+}
+async function copyText(t) {
+  try { await navigator.clipboard.writeText(t); return true; } catch (e) {
+    const ta = document.createElement('textarea'); ta.value = t; ta.style.position = 'fixed'; ta.style.opacity = '0'; document.body.appendChild(ta); ta.select();
+    let ok = false; try { ok = document.execCommand('copy'); } catch (e2) { ok = false; } ta.remove(); return ok;
+  }
+}
+
+/* ---------- events ---------- */
+document.addEventListener('click', async e => {
+  const t = e.target.closest('[data-act]'); if (!t) return;
+  const a = t.dataset.act, id = t.dataset.id;
+  if (a === 'tab') go(t.dataset.tab);
+  else if (a === 'close') closeSheet();
+  else if (a === 'add') { if (ui.tab === 'stock') openStock(); else if (ui.tab === 'fx') openFx(); else if (ui.tab === 'cash') openCash(); }
+  else if (a === 'add-stock-first') { ui.tab = 'stock'; render(); openStock(); }
+  else if (a === 'edit-stock') openStock(id);
+  else if (a === 'edit-fx') openFx(id);
+  else if (a === 'edit-cash') openCash(id);
+  else if (a === 'del') deleteCurrent();
+  else if (a === 'filter') { ui.stockFilter = t.dataset.v; render(); }
+  else if (a === 'checks') go('sum', { checks: true });
+  else if (a === 'pick-xlsx') $('#fileXlsx').click();
+  else if (a === 'pick-json') $('#fileJson').click();
+  else if (a === 'export-xlsx') exportXlsx();
+  else if (a === 'backup') openBackup();
+  else if (a === 'bk-file') { try { const ok = await saveFile('trade-journal-backup-' + today() + '.json', backupJson); toast(ok ? 'บันทึกไฟล์แล้ว' : 'เครื่องนี้บันทึกไฟล์ไม่ได้ ใช้ “คัดลอกข้อความ” แทน'); } catch (er) { toast('บันทึกไฟล์ไม่สำเร็จ'); } }
+  else if (a === 'bk-copy') toast((await copyText(backupJson)) ? 'คัดลอกแล้ว วางเก็บไว้ในที่ปลอดภัย' : 'คัดลอกไม่สำเร็จ');
+  else if (a === 'bk-restore') { const v = $('#restoreBox').value.trim(); if (!v) toast('วางข้อความที่สำรองไว้ก่อน'); else restoreFrom(v); }
+  else if (a === 'wipe') { if (await confirmBox('ล้างข้อมูลทั้งหมดในสมุดนี้? แนะนำให้สำรองข้อมูลก่อน', 'ล้างทั้งหมด', true)) { S = newState(); persist(); go('sum'); toast('ล้างข้อมูลแล้ว'); } }
+});
+document.addEventListener('change', async e => {
+  const t = e.target;
+  if (t.dataset && t.dataset.price !== undefined) {
+    const p = num(t.value); if (p === null) delete S.settings.prices[t.dataset.price]; else S.settings.prices[t.dataset.price] = p;
+    persist(); render();
+  } else if (t.dataset && t.dataset.bshare !== undefined) {
+    const p = num(t.value); if (p === null) delete S.settings.brokerShares[t.dataset.bshare]; else S.settings.brokerShares[t.dataset.bshare] = p;
+    persist(); render();
+  } else if (t.dataset && t.dataset.set) {
+    const k = t.dataset.set, p = num(t.value);
+    if (k === 'startValue' || k === 'fxStartUsd' || k === 'fxStartThb') S.settings[k] = p === null ? 0 : p;
+    else if (k === 'tolerance') S.settings[k] = p === null || p < 0 ? 0.01 : p;
+    else S.settings[k] = p;
+    persist(); render();
+  } else if (t.id === 'fileXlsx') { const f = t.files && t.files[0]; t.value = ''; if (f) handleXlsx(f); }
+  else if (t.id === 'fileJson') { const f = t.files && t.files[0]; t.value = ''; if (f) { try { $('#restoreBox').value = await f.text(); toast('อ่านไฟล์แล้ว กด “กู้คืน” เพื่อยืนยัน'); } catch (er) { toast('อ่านไฟล์ไม่สำเร็จ'); } } }
+});
+document.addEventListener('input', e => {
+  const f = e.target.form; if (!f || f.id !== 'frm') return;
+  if (e.target.name === 'action') fxLabels();
+  updatePreview();
+});
+document.addEventListener('submit', e => {
+  e.preventDefault(); const f = e.target; if (f.id !== 'frm') return;
+  if (f.dataset.kind === 'stock') saveStock(f); else if (f.dataset.kind === 'fx') saveFx(f); else if (f.dataset.kind === 'cash') saveCash(f);
+});
+document.addEventListener('toggle', e => {
+  if (e.target.id === 'checks') ui.checksOpen = e.target.open;
+  if (e.target.id === 'monthly') ui.monthOpen = e.target.open;
+}, true);
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') { if ($('#dlgWrap').classList.contains('open')) $('#dlgWrap').click(); else if ($('#sheetWrap').classList.contains('open')) closeSheet(); }
+});
+$('#sheetWrap').addEventListener('click', e => { if (e.target.id === 'sheetWrap') closeSheet(); });
+
+buildTabbar();
+render();
+initRemote();
+
+</script>
+</body>
+</html>
