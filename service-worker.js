@@ -7,13 +7,13 @@
  */
 
 // เปลี่ยนเลขเวอร์ชันทุกครั้งที่แก้ไฟล์แอป เพื่อบังคับให้แคชเก่าถูกล้างและโหลดของใหม่
-const CACHE_VERSION = 'tj-v2';
+const CACHE_VERSION = 'tj-v3';
 const SHELL_CACHE = CACHE_VERSION + '-shell';
 const RUNTIME_CACHE = CACHE_VERSION + '-runtime';
 
 // โฮสต์ของ API ราคาหุ้น/เรทแลกเปลี่ยนแบบ real-time — ห้ามแคชเด็ดขาด ต้องขอข้อมูลสดจากเน็ตทุกครั้ง
 // ถ้าออฟไลน์/ล้มเหลว ให้ fetch() พังตามจริง แล้วให้โค้ดในแอปเป็นคนจัดการ fallback ไปใช้ค่าล่าสุดที่เก็บไว้เอง (ไม่ใช่หน้าที่ Service Worker)
-const LIVE_DATA_HOSTS = ['query1.finance.yahoo.com', 'query2.finance.yahoo.com', 'api.frankfurter.dev', 'api.frankfurter.app'];
+const LIVE_DATA_HOSTS = ['query1.finance.yahoo.com', 'query2.finance.yahoo.com', 'api.frankfurter.dev', 'api.frankfurter.app', 'corsproxy.io', 'api.allorigins.win'];
 
 const SHELL_FILES = [
   './',

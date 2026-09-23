@@ -1161,10 +1161,27 @@ function checkPriceAlerts() {
 /* ---------- ราคาหุ้น/เรท USD-THB สด (ไม่ใช้ API key ฝั่ง client — ดึงจากปลายทางสาธารณะที่ไม่ต้องสมัคร) ---------- */
 const live = { priceStatus: 'idle', rateStatus: 'idle', priceBusy: false, rateBusy: false, priceTimer: null, rateTimer: null };
 const PRICE_REFRESH_MS = 60000, RATE_REFRESH_MS = 60000;
+// บางปลายทาง (เช่น Yahoo Finance) ไม่เปิด CORS header ให้เว็บอื่นเรียกตรงๆ จากเบราว์เซอร์ — ถ้าเรียกตรงพังเพราะ CORS จะลองผ่านตัวกลางสาธารณะที่เปิด CORS ให้แทน (ไม่ใช่ API key ยังคงไม่มี key ฝังในแอป)
+const CORS_RELAYS = [
+  u => 'https://corsproxy.io/?url=' + encodeURIComponent(u),
+  u => 'https://api.allorigins.win/raw?url=' + encodeURIComponent(u)
+];
 async function fetchJson(url) {
-  const res = await fetch(url, { cache: 'no-store' });
-  if (!res.ok) throw new Error('http ' + res.status);
-  return res.json();
+  try {
+    const res = await fetch(url, { cache: 'no-store' });
+    if (!res.ok) throw new Error('http ' + res.status);
+    return await res.json();
+  } catch (e) {
+    if (!navigator.onLine) throw e;
+    for (const wrap of CORS_RELAYS) {
+      try {
+        const res2 = await fetch(wrap(url), { cache: 'no-store' });
+        if (!res2.ok) continue;
+        return await res2.json();
+      } catch (e2) { /* ลองตัวกลางถัดไป */ }
+    }
+    throw e;
+  }
 }
 function heldTickers() { return Object.keys(C.st.per).filter(t => Math.abs(C.st.per[t].bs - C.st.per[t].ss) > 1e-7); }
 async function refreshPricesNow() {
@@ -1539,7 +1556,7 @@ function viewSettings() {
   const notifPerm = ('Notification' in window) ? Notification.permission : 'unsupported';
   return `<div class="stack">
   <section class="panel panel-pad"><h2 style="font-size:15px">ชื่อผู้ใช้</h2>
-    <div class="field"><label for="unameInput">ชื่อที่แสดงในแอป</label><input id="unameInput" maxlength="50" value="${esc(S.settings.username || '')}" placeholder="เช่น ช่างไฟสุดหล่อ ⚡"></div>
+    <div class="field"><label for="unameInput">ชื่อที่แสดงในแอป</label><input id="unameInput" maxlength="50" value="${esc(S.settings.username || '')}" placeholder="ชื่อผู้ใช้งาน"></div>
     <button type="button" class="btn block" data-act="save-username" style="margin-top:2px">บันทึกชื่อ</button>
   </section>
   <section class="panel panel-pad"><h2 style="font-size:15px">ค่าตั้งต้น</h2>
