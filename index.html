@@ -1159,29 +1159,32 @@ function checkPriceAlerts() {
 }
 
 /* ---------- ราคาหุ้น/เรท USD-THB สด (ไม่ใช้ API key ฝั่ง client — ดึงจากปลายทางสาธารณะที่ไม่ต้องสมัคร) ---------- */
-const live = { priceStatus: 'idle', rateStatus: 'idle', priceBusy: false, rateBusy: false, priceTimer: null, rateTimer: null };
+const live = { priceStatus: 'idle', rateStatus: 'idle', priceBusy: false, rateBusy: false, priceTimer: null, rateTimer: null, directBlocked: false };
 const PRICE_REFRESH_MS = 60000, RATE_REFRESH_MS = 60000;
 // บางปลายทาง (เช่น Yahoo Finance) ไม่เปิด CORS header ให้เว็บอื่นเรียกตรงๆ จากเบราว์เซอร์ — ถ้าเรียกตรงพังเพราะ CORS จะลองผ่านตัวกลางสาธารณะที่เปิด CORS ให้แทน (ไม่ใช่ API key ยังคงไม่มี key ฝังในแอป)
 const CORS_RELAYS = [
   u => 'https://corsproxy.io/?url=' + encodeURIComponent(u),
   u => 'https://api.allorigins.win/raw?url=' + encodeURIComponent(u)
 ];
+const FETCH_TIMEOUT_MS = 6000;
+function fetchWithTimeout(url) {
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), FETCH_TIMEOUT_MS);
+  return fetch(url, { cache: 'no-store', signal: ctrl.signal }).finally(() => clearTimeout(timer));
+}
+// ยิงตัวกลางทุกตัวพร้อมกัน เอาตัวที่ตอบสำเร็จก่อนสุด — เร็วกว่าลองทีละตัวตามลำดับมาก
+async function fetchViaFirstRelay(url) {
+  return Promise.any(CORS_RELAYS.map(wrap =>
+    fetchWithTimeout(wrap(url)).then(res => { if (!res.ok) throw new Error('http ' + res.status); return res.json(); })
+  ));
+}
 async function fetchJson(url) {
-  try {
-    const res = await fetch(url, { cache: 'no-store' });
-    if (!res.ok) throw new Error('http ' + res.status);
-    return await res.json();
-  } catch (e) {
-    if (!navigator.onLine) throw e;
-    for (const wrap of CORS_RELAYS) {
-      try {
-        const res2 = await fetch(wrap(url), { cache: 'no-store' });
-        if (!res2.ok) continue;
-        return await res2.json();
-      } catch (e2) { /* ลองตัวกลางถัดไป */ }
-    }
-    throw e;
+  if (!live.directBlocked) {
+    try { const res = await fetchWithTimeout(url); if (!res.ok) throw new Error('http ' + res.status); return await res.json(); }
+    catch (e) { live.directBlocked = true; /* เรียกตรงไม่ได้ (มักเป็น CORS) — รอบถัดไปในเซสชันนี้ข้ามไปยิงผ่านตัวกลางเลย ไม่เสียเวลาลองซ้ำ */ }
   }
+  if (!navigator.onLine) throw new Error('offline');
+  return fetchViaFirstRelay(url);
 }
 function heldTickers() { return Object.keys(C.st.per).filter(t => Math.abs(C.st.per[t].bs - C.st.per[t].ss) > 1e-7); }
 async function refreshPricesNow() {
