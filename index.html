@@ -109,7 +109,8 @@ main { max-width: 680px; margin: 0 auto; padding: 14px 16px calc(150px + env(saf
 .notice.info { background: var(--accent-soft); color: var(--accent); }
 
 /* ---------- hero + ledger ---------- */
-.hero { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 18px 16px 16px; box-shadow: 0 2px 10px rgba(15, 27, 37, .06); }
+.hero { position: relative; background: linear-gradient(165deg, color-mix(in srgb, var(--accent) 7%, var(--surface)) 0%, var(--surface) 55%); border: 1px solid var(--line); border-radius: 16px; padding: 20px 16px 16px; box-shadow: 0 2px 14px rgba(15, 27, 37, .07); overflow: hidden; }
+.hero::before { content: ""; position: absolute; inset: 0 0 auto 0; height: 3px; background: linear-gradient(90deg, var(--accent), color-mix(in srgb, var(--accent) 40%, var(--gain))); }
 .hero-label { color: var(--ink2); font-size: 13px; }
 .hero-num { font-family: var(--font-display); font-weight: 700; font-size: 40px; line-height: 1.15; margin-top: 2px; letter-spacing: -.015em; font-variant-numeric: tabular-nums; }
 .hero-sub { margin-top: 4px; font-size: 14px; color: var(--ink2); }
@@ -165,7 +166,7 @@ details.panel > summary .sum-l { flex: 1; display: flex; align-items: center; ga
 .chip[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); font-weight: 500; }
 .month { padding: 12px 16px 6px; font-family: var(--font-display); font-weight: 600; font-size: 13px; color: var(--ink2); background: var(--surface2); border-top: 1px solid var(--line2); }
 .month:first-child { border-top: 0; }
-.trow { display: flex; align-items: center; gap: 12px; width: 100%; text-align: left; background: transparent; border: 0; border-top: 1px solid var(--line2); padding: 11px 16px; min-height: 60px; }
+.trow { display: flex; align-items: center; gap: 12px; width: 100%; text-align: left; background: transparent; border: 0; border-top: 1px solid var(--line2); padding: 11px 16px; min-height: 60px; transition: background-color .1s; }
 .month + .trow { border-top: 0; }
 .trow:active { background: var(--surface2); }
 .tdate { flex: none; width: 34px; text-align: center; line-height: 1.15; }
@@ -182,8 +183,8 @@ details.panel > summary .sum-l { flex: 1; display: flex; align-items: center; ga
 .tag.buy { background: var(--buy-soft); color: var(--buy); }
 .tag.sell { background: var(--sell-soft); color: var(--sell); }
 .tag.bad { background: var(--loss-soft); color: var(--loss); }
-.empty { padding: 26px 16px; text-align: center; color: var(--ink2); }
-.empty b { display: block; color: var(--ink); font-family: var(--font-display); margin-bottom: 4px; }
+.empty { padding: 34px 16px; text-align: center; color: var(--ink2); }
+.empty b { display: block; color: var(--ink); font-family: var(--font-display); font-size: 15px; margin-bottom: 5px; }
 
 /* ---------- FX dashboard ---------- */
 .grid4 { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; background: var(--line2); }
@@ -222,6 +223,7 @@ input[type="text"], input[type="date"], input[type="time"], input[type="number"]
   width: 100%; font-size: 16px; padding: 11px 12px; background: var(--surface); border: 1px solid var(--line);
   border-radius: 10px; min-height: 44px; color: var(--ink); appearance: none; -webkit-appearance: none;
 }
+input[type="range"] { accent-color: var(--accent); height: 32px; padding: 0; background: transparent; border: 0; }
 select { background-image: linear-gradient(45deg, transparent 50%, var(--ink3) 50%), linear-gradient(135deg, var(--ink3) 50%, transparent 50%); background-position: calc(100% - 18px) 55%, calc(100% - 13px) 55%; background-size: 5px 5px; background-repeat: no-repeat; padding-right: 32px; }
 textarea { min-height: 88px; resize: vertical; }
 input:focus, select:focus, textarea:focus { outline: 2px solid var(--accent); outline-offset: 0; border-color: var(--accent); }
@@ -272,13 +274,15 @@ details.more > summary { cursor: pointer; padding: 10px 0; color: var(--accent);
 .tabbar-in { max-width: 680px; margin: 0 auto; display: grid; grid-template-columns: repeat(5, 1fr); }
 .tab { position: relative; background: transparent; border: 0; padding: 9px 2px 8px; min-height: 58px; color: var(--ink3); display: flex; flex-direction: column; align-items: center; gap: 2px; font-size: 11.5px; }
 .tab svg { width: 24px; height: 24px; }
-.tab[aria-current="page"] { color: var(--accent); font-weight: 500; }
+.tab[aria-current="page"] { color: var(--accent); font-weight: 600; }
 .tab[aria-current="page"]::before { content: ""; position: absolute; top: 0; left: 26%; right: 26%; height: 3px; border-radius: 0 0 3px 3px; background: var(--accent); }
+.tab[aria-current="page"] svg { filter: drop-shadow(0 0 0 var(--accent)); }
 
 /* ---------- sheet / dialog ---------- */
 .overlay { position: fixed; inset: 0; z-index: 40; background: var(--overlay); display: none; }
 .overlay.open { display: block; }
-.sheet { position: absolute; left: 0; right: 0; bottom: 0; margin: 0 auto; max-width: 680px; max-height: 92dvh; overflow-y: auto; overscroll-behavior: contain; background: var(--bg); border-radius: 20px 20px 0 0; padding: 8px 16px calc(20px + env(safe-area-inset-bottom, 0px)); animation: up .2s ease-out; }
+.sheet { position: absolute; left: 0; right: 0; bottom: 0; margin: 0 auto; max-width: 680px; max-height: 92dvh; overflow-y: auto; overscroll-behavior: contain; background: var(--bg); border-radius: 20px 20px 0 0; padding: 8px 16px calc(20px + env(safe-area-inset-bottom, 0px)); animation: up .2s ease-out; box-shadow: 0 -8px 30px rgba(15, 27, 37, .18); }
+.sheet::before { content: ""; display: block; width: 36px; height: 4px; border-radius: 3px; background: var(--line); margin: 2px auto 4px; }
 .sheet:focus { outline: none; }
 .sheet-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; position: sticky; top: -8px; background: var(--bg); padding: 8px 0 4px; z-index: 2; }
 .sheet-head h3 { font-size: 17px; }
@@ -326,7 +330,8 @@ function newState() {
       startValue: 0, tolerance: 0.01, usdThb: null,
       brokerCash: null, brokerValue: null,
       fxStartUsd: 0, fxStartThb: 0, fxStartCost: null,
-      prices: {}, brokerShares: {}, defaultBroker: ''
+      prices: {}, brokerShares: {}, defaultBroker: '',
+      soundEnabled: true, soundVolume: 0.6
     },
     stocks: [], fx: [], cash: []
   };
@@ -340,6 +345,8 @@ function normalizeState(o) {
   Object.assign(d.settings, o.settings || {});
   d.settings.prices = Object.assign({}, (o.settings && o.settings.prices) || {});
   d.settings.brokerShares = Object.assign({}, (o.settings && o.settings.brokerShares) || {});
+  if (o.settings && typeof o.settings.soundEnabled === 'boolean') d.settings.soundEnabled = o.settings.soundEnabled;
+  if (o.settings && typeof o.settings.soundVolume === 'number' && o.settings.soundVolume >= 0 && o.settings.soundVolume <= 1) d.settings.soundVolume = o.settings.soundVolume;
   ['stocks', 'fx', 'cash'].forEach(k => { d[k] = Array.isArray(o[k]) ? o[k].filter(x => x && typeof x === 'object') : []; });
   let maxSeq = 0;
   ['stocks', 'fx', 'cash'].forEach(k => d[k].forEach((r, i) => {
@@ -837,6 +844,60 @@ function today() { const d = new Date(); return ymd(d.getFullYear(), d.getMonth(
 function monthLabel(k) { return k ? MONTHS[Number(k.slice(5, 7)) - 1] + ' ' + k.slice(0, 4) : 'ไม่มีวันที่'; }
 function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 7); }
 
+/* ---------- ระบบเสียงแจ้งเตือน (สังเคราะห์เอง ไม่ใช้ไฟล์เสียงภายนอก ทำงานออฟไลน์ได้ทันที) ---------- */
+const audio = { ctx: null, unlocked: false };
+function ensureAudioCtx() {
+  if (audio.ctx) return audio.ctx;
+  try {
+    const Ctx = window.AudioContext || window.webkitAudioContext;
+    if (!Ctx) return null;
+    audio.ctx = new Ctx();
+  } catch (e) { return null; }
+  return audio.ctx;
+}
+// เปิดใช้งาน AudioContext หลัง user interaction ครั้งแรกเท่านั้น (autoplay policy)
+function unlockAudioOnce() {
+  if (audio.unlocked) return;
+  audio.unlocked = true;
+  const ctx = ensureAudioCtx();
+  if (ctx && ctx.state === 'suspended') ctx.resume().catch(() => {});
+  document.removeEventListener('pointerdown', unlockAudioOnce);
+}
+document.addEventListener('pointerdown', unlockAudioOnce, { once: true });
+
+function playTone(freq, startAt, dur, ctx, gainNode, type) {
+  const osc = ctx.createOscillator();
+  const g = ctx.createGain();
+  osc.type = type || 'sine';
+  osc.frequency.value = freq;
+  const t0 = ctx.currentTime + startAt;
+  g.gain.setValueAtTime(0, t0);
+  g.gain.linearRampToValueAtTime(1, t0 + 0.012);
+  g.gain.linearRampToValueAtTime(0, t0 + dur);
+  osc.connect(g); g.connect(gainNode);
+  osc.start(t0); osc.stop(t0 + dur + 0.02);
+}
+// ประเภทเสียง: success (บันทึก/นำเข้า/ส่งออก/สำรอง/กู้คืนสำเร็จ), error (ผิดพลาด/validation), warn (แจ้งเตือนทั่วไป)
+const SOUND_PATTERNS = {
+  success: [[880, 0, 0.09, 'sine'], [1318.5, 0.07, 0.13, 'sine']],
+  error: [[220, 0, 0.09, 'square'], [180, 0.1, 0.12, 'square']],
+  warn: [[440, 0, 0.14, 'sine']]
+};
+function playSound(kind) {
+  try {
+    if (!S.settings.soundEnabled) return;
+    const ctx = ensureAudioCtx();
+    if (!ctx || ctx.state === 'suspended') return; // ยังไม่ปลดล็อกจาก interaction ก็แค่เงียบ ไม่ error
+    const vol = Math.max(0, Math.min(1, S.settings.soundVolume));
+    if (vol <= 0) return;
+    const master = ctx.createGain();
+    master.gain.value = vol * 0.5;
+    master.connect(ctx.destination);
+    (SOUND_PATTERNS[kind] || SOUND_PATTERNS.success).forEach(([freq, at, dur, type]) => playTone(freq, at, dur, ctx, master, type));
+  } catch (e) { /* ห้ามให้เสียงทำระบบหลัก error เด็ดขาด */ }
+}
+
+
 function shortDate(d) { if (!d) return ''; const mm = Number(d.slice(5, 7)); return Number(d.slice(8)) + ' ' + MONTHS[mm - 1]; }
 function monthShort(k, showYear) { const mm = Number(k.slice(5, 7)); return MONTHS[mm - 1] + (showYear ? ' \'' + k.slice(2, 4) : ''); }
 
@@ -1316,6 +1377,11 @@ function viewSettings() {
     ${setField('THB ตั้งต้น (฿)', 'fxStartThb', { ph: '0' })}
     ${setField('ต้นทุนเฉลี่ย USD ตั้งต้น (฿ ต่อ USD)', 'fxStartCost', { ph: 'ไม่บังคับ', hint: 'ใส่แล้ว รายการขาย USD ที่เกิดก่อนการซื้อ จะคำนวณกำไรขาดทุนได้' })}
   </section>
+  <section class="panel panel-pad"><h2 style="font-size:15px;margin-bottom:2px">เสียงแจ้งเตือน</h2><p class="muted" style="font-size:12.5px;margin:0 0 4px">เสียงสั้นๆ ตอนบันทึก/นำเข้า/ส่งออกสำเร็จ หรือมีข้อผิดพลาด — ไม่ต้องต่อเน็ต</p>
+    <div class="rate-row" style="padding-left:0;padding-right:0"><span class="lbl" style="margin:0">เปิดเสียง</span>${seg('soundEnabled', [['on', 'เปิด'], ['off', 'ปิด']], S.settings.soundEnabled ? 'on' : 'off', 'เปิดหรือปิดเสียงแจ้งเตือน')}</div>
+    <div class="field"><label for="s_soundVolume">ระดับเสียง ${Math.round(S.settings.soundVolume * 100)}%</label><input id="s_soundVolume" type="range" min="0" max="100" step="5" data-soundvol value="${Math.round(S.settings.soundVolume * 100)}" ${S.settings.soundEnabled ? '' : 'disabled'}></div>
+    <button type="button" class="btn block" data-act="sound-test" style="margin-top:6px" ${S.settings.soundEnabled ? '' : 'disabled'}>🔊 ทดสอบเสียง</button>
+  </section>
   <section class="panel"><div class="sec-head"><h2>ข้อมูล</h2></div>
     <div class="btnlist">
       <button type="button" class="btn block" data-act="pick-xlsx">นำเข้าจากไฟล์ Excel</button>
@@ -1369,7 +1435,7 @@ function lastBroker() {
   const r = rows.find(x => x.broker);
   return r ? r.broker : (S.settings.defaultBroker || '');
 }
-function afterSave() { closeSheet(); persist(); render(); toast('บันทึกแล้ว'); }
+function afterSave() { closeSheet(); persist(); render(); toast('บันทึกแล้ว'); playSound('success'); }
 
 /* ----- stock form ----- */
 function openStock(id) {
@@ -1451,7 +1517,7 @@ async function saveStock(f) {
   if (!(v.shares > 0)) err.push('จำนวนหุ้นต้องมากกว่า 0');
   if (!(v.price > 0)) err.push('ราคาต้องมากกว่า 0');
   if (v.fee < 0) err.push('ค่าธรรมเนียมต้องไม่ติดลบ');
-  if (err.length) { $('#err').textContent = err.join(' · '); return; }
+  if (err.length) { $('#err').textContent = err.join(' · '); playSound('error'); return; }
   const cand = stockCandidate(f, v);
   if (cand && cand.status === 'SELL > held' && !(await confirmBox('รายการนี้ขายเกินจำนวนหุ้นที่ถืออยู่ ณ วันที่นั้น\nบันทึกต่อไหม? (จะขึ้นเตือนในหน้าภาพรวม)', 'บันทึกต่อ', false))) return;
   const id = f.dataset.id;
@@ -1498,7 +1564,7 @@ function saveFx(f) {
   if (!(v.thb > 0)) err.push('จำนวนบาทต้องมากกว่า 0');
   if (!(v.usd > 0)) err.push('จำนวน USD ต้องมากกว่า 0');
   if (v.fee < 0) err.push('ค่าธรรมเนียมต้องไม่ติดลบ');
-  if (err.length) { $('#err').textContent = err.join(' · '); return; }
+  if (err.length) { $('#err').textContent = err.join(' · '); playSound('error'); return; }
   const id = f.dataset.id;
   if (id) Object.assign(S.fx.find(x => x.id === id), v);
   else {
@@ -1538,7 +1604,7 @@ function saveCash(f) {
   if (!v.date) err.push('เลือกวันที่');
   if (!(v.amount > 0)) err.push('จำนวนเงินต้องมากกว่า 0');
   if (v.fee < 0) err.push('ค่าธรรมเนียมต้องไม่ติดลบ');
-  if (err.length) { $('#err').textContent = err.join(' · '); return; }
+  if (err.length) { $('#err').textContent = err.join(' · '); playSound('error'); return; }
   const id = f.dataset.id;
   if (id) Object.assign(S.cash.find(x => x.id === id), v);
   else S.cash.push(Object.assign({ id: uid(), seq: S.seq++ }, v));
@@ -1555,17 +1621,17 @@ async function deleteCurrent() {
 
 /* ---------- import / export / backup ---------- */
 async function handleXlsx(file) {
-  if (typeof XLSX === 'undefined') { toast('โหลดตัวอ่าน Excel ไม่สำเร็จ ลองใหม่เมื่อมีอินเทอร์เน็ต'); return; }
+  if (typeof XLSX === 'undefined') { toast('โหลดตัวอ่าน Excel ไม่สำเร็จ ลองใหม่เมื่อมีอินเทอร์เน็ต'); playSound('error'); return; }
   try {
     const wb = XLSX.read(await file.arrayBuffer(), { type: 'array' });
     const sheets = {};
     wb.SheetNames.forEach(n => { sheets[n] = XLSX.utils.sheet_to_json(wb.Sheets[n], { header: 1, raw: true, defval: null }); });
     const imp = importSheets(sheets);
-    if (!imp.stocks.length && !imp.fx.length && !imp.cash.length) { toast('ไม่พบรายการในไฟล์นี้ (ต้องมีชีต Stock Transactions, FX Transactions หรือ Cash Flow)'); return; }
+    if (!imp.stocks.length && !imp.fx.length && !imp.cash.length) { toast('ไม่พบรายการในไฟล์นี้ (ต้องมีชีต Stock Transactions, FX Transactions หรือ Cash Flow)'); playSound('error'); return; }
     const msg = `พบ หุ้น ${imp.stocks.length} · แลกเงิน ${imp.fx.length} · ฝาก/ถอน ${imp.cash.length} รายการ\n` + (hasData(S) ? 'การนำเข้าจะแทนที่ข้อมูลปัจจุบันทั้งหมด' : 'นำเข้าเข้าสมุดนี้เลยไหม?');
     if (!(await confirmBox(msg, 'นำเข้า', false))) return;
-    S = imp; ui.stockFilter = 'ALL'; persist(); go('sum'); toast('นำเข้าแล้ว ' + (imp.stocks.length + imp.fx.length + imp.cash.length) + ' รายการ');
-  } catch (e) { toast('อ่านไฟล์ไม่สำเร็จ ตรวจว่าเป็นไฟล์ .xlsx'); }
+    S = imp; ui.stockFilter = 'ALL'; persist(); go('sum'); toast('นำเข้าแล้ว ' + (imp.stocks.length + imp.fx.length + imp.cash.length) + ' รายการ'); playSound('success');
+  } catch (e) { toast('อ่านไฟล์ไม่สำเร็จ ตรวจว่าเป็นไฟล์ .xlsx'); playSound('error'); }
 }
 async function saveFile(filename, data) {
   const dl = await cap('downloads');
@@ -1593,7 +1659,7 @@ async function exportXlsx() {
   Object.keys(st.brokerShares).forEach(k => kv.push(['brokerShares:' + k, st.brokerShares[k]]));
   add('Settings', kv);
   const buf = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
-  try { const ok = await saveFile('trade-journal-' + today() + '.xlsx', buf); if (!ok) toast('เครื่องนี้ยังบันทึกไฟล์จากหน้านี้ไม่ได้ ใช้ “สำรอง / กู้คืน” แทน'); else toast('ส่งออกแล้ว'); } catch (e) { toast('ส่งออกไม่สำเร็จ'); }
+  try { const ok = await saveFile('trade-journal-' + today() + '.xlsx', buf); if (!ok) { toast('เครื่องนี้ยังบันทึกไฟล์จากหน้านี้ไม่ได้ ใช้ “สำรอง / กู้คืน” แทน'); playSound('warn'); } else { toast('ส่งออกแล้ว'); playSound('success'); } } catch (e) { toast('ส่งออกไม่สำเร็จ'); playSound('error'); }
 }
 let backupJson = '';
 function openBackup() {
@@ -1609,8 +1675,8 @@ async function restoreFrom(text) {
     const o = JSON.parse(text); const st = normalizeState(o && o.state ? o.state : o);
     if (!st.stocks.length && !st.fx.length && !st.cash.length && !st.settings.startValue) { toast('ไม่พบข้อมูลในข้อความนี้'); return; }
     if (!(await confirmBox(`กู้คืน หุ้น ${st.stocks.length} · แลกเงิน ${st.fx.length} · ฝาก/ถอน ${st.cash.length} รายการ\nจะแทนที่ข้อมูลปัจจุบันทั้งหมด`, 'กู้คืน', false))) return;
-    S = st; closeSheet(); persist(); go('sum'); toast('กู้คืนแล้ว');
-  } catch (e) { toast('ข้อความนี้ไม่ใช่ข้อมูลสำรองที่ถูกต้อง'); }
+    S = st; closeSheet(); persist(); go('sum'); toast('กู้คืนแล้ว'); playSound('success');
+  } catch (e) { toast('ข้อความนี้ไม่ใช่ข้อมูลสำรองที่ถูกต้อง'); playSound('error'); }
 }
 async function copyText(t) {
   try { await navigator.clipboard.writeText(t); return true; } catch (e) {
@@ -1637,9 +1703,10 @@ document.addEventListener('click', async e => {
   else if (a === 'pick-json') $('#fileJson').click();
   else if (a === 'export-xlsx') exportXlsx();
   else if (a === 'backup') openBackup();
-  else if (a === 'bk-file') { try { const ok = await saveFile('trade-journal-backup-' + today() + '.json', backupJson); toast(ok ? 'บันทึกไฟล์แล้ว' : 'เครื่องนี้บันทึกไฟล์ไม่ได้ ใช้ “คัดลอกข้อความ” แทน'); } catch (er) { toast('บันทึกไฟล์ไม่สำเร็จ'); } }
-  else if (a === 'bk-copy') toast((await copyText(backupJson)) ? 'คัดลอกแล้ว วางเก็บไว้ในที่ปลอดภัย' : 'คัดลอกไม่สำเร็จ');
+  else if (a === 'bk-file') { try { const ok = await saveFile('trade-journal-backup-' + today() + '.json', backupJson); toast(ok ? 'บันทึกไฟล์แล้ว' : 'เครื่องนี้บันทึกไฟล์ไม่ได้ ใช้ “คัดลอกข้อความ” แทน'); playSound(ok ? 'success' : 'warn'); } catch (er) { toast('บันทึกไฟล์ไม่สำเร็จ'); playSound('error'); } }
+  else if (a === 'bk-copy') { const ok = await copyText(backupJson); toast(ok ? 'คัดลอกแล้ว วางเก็บไว้ในที่ปลอดภัย' : 'คัดลอกไม่สำเร็จ'); playSound(ok ? 'success' : 'error'); }
   else if (a === 'bk-restore') { const v = $('#restoreBox').value.trim(); if (!v) toast('วางข้อความที่สำรองไว้ก่อน'); else restoreFrom(v); }
+  else if (a === 'sound-test') playSound('success');
   else if (a === 'wipe') { if (await confirmBox('ล้างข้อมูลทั้งหมดในสมุดนี้? แนะนำให้สำรองข้อมูลก่อน', 'ล้างทั้งหมด', true)) { S = newState(); persist(); go('sum'); toast('ล้างข้อมูลแล้ว'); } }
 });
 document.addEventListener('change', async e => {
@@ -1658,8 +1725,15 @@ document.addEventListener('change', async e => {
     persist(); render();
   } else if (t.id === 'fileXlsx') { const f = t.files && t.files[0]; t.value = ''; if (f) handleXlsx(f); }
   else if (t.id === 'fileJson') { const f = t.files && t.files[0]; t.value = ''; if (f) { try { $('#restoreBox').value = await f.text(); toast('อ่านไฟล์แล้ว กด “กู้คืน” เพื่อยืนยัน'); } catch (er) { toast('อ่านไฟล์ไม่สำเร็จ'); } } }
+  else if (t.name === 'soundEnabled') { S.settings.soundEnabled = t.value === 'on'; persist(); render(); if (S.settings.soundEnabled) playSound('success'); }
+  else if (t.dataset && t.dataset.soundvol !== undefined) { S.settings.soundVolume = Math.max(0, Math.min(100, Number(t.value))) / 100; persist(); }
 });
 document.addEventListener('input', e => {
+  if (e.target.dataset && e.target.dataset.soundvol !== undefined) {
+    const lbl = e.target.previousElementSibling;
+    if (lbl) lbl.textContent = 'ระดับเสียง ' + e.target.value + '%';
+    return;
+  }
   const f = e.target.form; if (!f || f.id !== 'frm') return;
   if (e.target.name === 'action') fxLabels();
   updatePreview();
@@ -1677,8 +1751,18 @@ document.addEventListener('keydown', e => {
 });
 $('#sheetWrap').addEventListener('click', e => { if (e.target.id === 'sheetWrap') closeSheet(); });
 
+/* ---------- App Shortcuts (manifest.json) → route ด้วย hash ---------- */
+let pendingShortcutAdd = null;
+(function routeFromShortcut() {
+  const h = (location.hash || '').replace('#', '');
+  const known = { sum: 'sum', stock: 'stock', fx: 'fx', cash: 'cash', set: 'set', 'stock-add': 'stock' };
+  if (known[h]) { ui.tab = known[h]; if (h === 'stock-add') pendingShortcutAdd = 'stock'; }
+  if (h) history.replaceState(null, '', location.pathname + location.search);
+})();
+
 buildTabbar();
 render();
+if (pendingShortcutAdd === 'stock') openStock();
 initRemote();
 
 /* ---------- offline indicator (ไม่แตะ state/ข้อมูลใดๆ) ---------- */
