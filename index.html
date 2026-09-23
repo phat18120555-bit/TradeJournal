@@ -64,6 +64,12 @@ body {
   font-variant-numeric: tabular-nums; -webkit-tap-highlight-color: transparent;
 }
 body.noscroll { overflow: hidden; }
+/* ---------- ป้องกันการเลือก/คัดลอกข้อความแบบเว็บไซต์ (ให้รู้สึกเป็นแอป ไม่ใช่หน้าเว็บ) — ยกเว้น input/textarea ที่ต้องกรอกข้อมูล ---------- */
+body {
+  -webkit-user-select: none; -moz-user-select: none; user-select: none;
+  -webkit-touch-callout: none;
+}
+input, textarea, select { -webkit-user-select: text; -moz-user-select: text; user-select: text; -webkit-touch-callout: default; }
 button, input, select, textarea { font: inherit; color: inherit; }
 button { cursor: pointer; }
 h1, h2, h3 { font-family: var(--font-display); font-weight: 600; margin: 0; letter-spacing: 0; }
@@ -137,6 +143,15 @@ main { max-width: 680px; margin: 0 auto; padding: 14px 16px calc(150px + env(saf
 .hold-bot { margin-top: 6px; font-size: 13px; color: var(--ink2); }
 .hold.sold .tk { color: var(--ink2); }
 .hold-total { display: flex; justify-content: space-between; padding: 12px 16px; border-top: 1px solid var(--ink2); background: var(--surface2); font-weight: 600; font-size: 14.5px; }
+.hold-alert { display: flex; gap: 10px; margin-top: 8px; flex-wrap: wrap; }
+.hold-alert label { display: inline-flex; align-items: center; gap: 6px; font-size: 12.5px; color: var(--ink2); }
+.hold-alert input { width: 78px; padding: 6px 8px; text-align: right; border-radius: 9px; border: 1px solid var(--line); background: var(--surface2); color: var(--ink); }
+.greet { font-family: var(--font-display); font-weight: 600; font-size: 16px; padding: 2px 2px 0; overflow-wrap: anywhere; word-break: break-word; }
+.live-panel { padding-top: 10px; padding-bottom: 10px; }
+.live-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.live-row + .live-row { margin-top: 8px; }
+.btn.ghost { background: transparent; border-color: var(--line); min-height: 30px; }
+.btn.sm { min-height: 28px; padding: 0 10px; font-size: 12.5px; border-radius: 999px; margin-left: auto; }
 
 dl.kv { margin: 0; padding: 4px 16px 10px; }
 dl.kv .r { display: flex; justify-content: space-between; gap: 12px; padding: 7px 0; border-top: 1px solid var(--line2); font-size: 14px; }
@@ -331,7 +346,11 @@ function newState() {
       brokerCash: null, brokerValue: null,
       fxStartUsd: 0, fxStartThb: 0, fxStartCost: null,
       prices: {}, brokerShares: {}, defaultBroker: '',
-      soundEnabled: true, soundVolume: 0.6
+      soundEnabled: true, soundVolume: 0.6,
+      username: '',
+      autoPrice: true, autoRate: true, notifEnabled: true,
+      priceUpdatedAt: 0, rateUpdatedAt: 0,
+      alerts: {}, alertsFired: {}
     },
     stocks: [], fx: [], cash: []
   };
@@ -347,6 +366,14 @@ function normalizeState(o) {
   d.settings.brokerShares = Object.assign({}, (o.settings && o.settings.brokerShares) || {});
   if (o.settings && typeof o.settings.soundEnabled === 'boolean') d.settings.soundEnabled = o.settings.soundEnabled;
   if (o.settings && typeof o.settings.soundVolume === 'number' && o.settings.soundVolume >= 0 && o.settings.soundVolume <= 1) d.settings.soundVolume = o.settings.soundVolume;
+  if (o.settings && typeof o.settings.username === 'string') d.settings.username = o.settings.username.slice(0, 50);
+  if (o.settings && typeof o.settings.autoPrice === 'boolean') d.settings.autoPrice = o.settings.autoPrice;
+  if (o.settings && typeof o.settings.autoRate === 'boolean') d.settings.autoRate = o.settings.autoRate;
+  if (o.settings && typeof o.settings.notifEnabled === 'boolean') d.settings.notifEnabled = o.settings.notifEnabled;
+  d.settings.priceUpdatedAt = Number(o.settings && o.settings.priceUpdatedAt) || 0;
+  d.settings.rateUpdatedAt = Number(o.settings && o.settings.rateUpdatedAt) || 0;
+  d.settings.alerts = Object.assign({}, (o.settings && o.settings.alerts) || {});
+  d.settings.alertsFired = Object.assign({}, (o.settings && o.settings.alertsFired) || {});
   ['stocks', 'fx', 'cash'].forEach(k => { d[k] = Array.isArray(o[k]) ? o[k].filter(x => x && typeof x === 'object') : []; });
   let maxSeq = 0;
   ['stocks', 'fx', 'cash'].forEach(k => d[k].forEach((r, i) => {
@@ -397,14 +424,17 @@ function computeCash(S) {
 }
 
 /* ---------- Stock Transactions (Average Cost) ---------- */
+/* หมายเหตุสกุลเงิน: ต้นทุนเฉลี่ยต่อหุ้น (avg) และกำไรขาดทุนที่ขายแล้ว (pl) คำนวณในสกุลเงินเดิมของธุรกรรมนั้นๆ เสมอ (ต่อ asset หนึ่งตัวมักซื้อขายสกุลเดียวกันตลอด)
+   ส่วนเงินสดของพอร์ต (cumBuy/cumSell/cashAfter) เป็น USD ล้วน ห้ามนำ THB ไปบวกตรงๆ — ถ้าเป็น THB ต้องแปลงเป็น USD ด้วย fxRate ที่กรอก หรือเรท USD/THB ปัจจุบันก่อนเสมอ */
 function computeStocks(S, cash) {
   cash = cash || computeCash(S);
   const rows = S.stocks.slice().sort(cmpRows);
   const start = N(S.settings.startValue);
   const tol = S.settings.tolerance == null ? 0.01 : N(S.settings.tolerance);
+  const rateNow = num(S.settings.usdThb);
   const cf = cash.rows.filter(r => r.impact !== null && r.date);
   const per = {};
-  let cumBuy = 0, cumSell = 0, fees = 0, nonUsd = 0, oversell = 0, incomplete = 0, negCash = 0, realized = 0;
+  let cumBuy = 0, cumSell = 0, fees = 0, nonUsd = 0, oversell = 0, incomplete = 0, negCash = 0, realized = 0, fxMissing = 0;
   const out = [];
   for (const r of rows) {
     const asset = String(r.asset || '').trim().toUpperCase();
@@ -413,7 +443,7 @@ function computeStocks(S, cash) {
     const cur = r.currency ? String(r.currency).toUpperCase() : 'USD';
     const o = Object.assign({}, r, {
       asset, action, shares, price, fee, cur,
-      gross: null, net: null, thb: null, cost: null, pl: null, sharesAfter: null, cashAfter: null, status: 'OK'
+      gross: null, net: null, netUsd: null, thb: null, cost: null, pl: null, sharesAfter: null, cashAfter: null, status: 'OK'
     });
     const complete = r.date && asset && (action === 'BUY' || action === 'SELL') &&
       shares !== null && price !== null && shares > 0 && price > 0;
@@ -425,26 +455,35 @@ function computeStocks(S, cash) {
     const net = action === 'BUY' ? gross + fee : gross - fee;
     o.gross = gross; o.net = net; fees += fee;
     const fxRate = num(r.fxRate);
-    o.thb = cur === 'THB' ? net : (fxRate ? net * fxRate : null);
+    const useRate = fxRate || rateNow; // ให้ความสำคัญกับเรทที่กรอกในรายการก่อน ถ้าไม่มีค่อยใช้เรทตลาดปัจจุบัน
+    o.thb = cur === 'THB' ? net : (useRate ? net * useRate : null);
+    // netUsd: มูลค่าสุทธิแปลงเป็น USD แล้ว — ใช้ตัวนี้เท่านั้นในการคำนวณเงินสดรวมของพอร์ต ห้ามใช้ net (สกุลเดิม) ปนกัน
+    if (cur === 'USD') o.netUsd = net;
+    else if (useRate) o.netUsd = net / useRate;
+    else { o.netUsd = null; fxMissing++; }
     if (action === 'SELL') {
       const held = p.bs - p.ss;
-      const avg = held !== 0 ? (p.bn - p.scb) / held : 0;
+      const avg = held !== 0 ? (p.bn - p.scb) / held : 0; // ต้นทุนเฉลี่ยในสกุลเงินเดิมของ asset นี้
       const cost = shares * avg;
-      o.cost = cost; o.pl = net - cost;
-      p.ss += shares; p.scb += cost; p.rl += o.pl; realized += o.pl;
-      cumSell += net;
+      o.cost = cost; o.pl = net - cost; // กำไร/ขาดทุนในสกุลเงินเดิม (แสดงผลรายแถว)
+      const plUsd = cur === 'USD' ? o.pl : (useRate ? o.pl / useRate : null); // แปลงเป็น USD ก่อนรวมยอดพอร์ต
+      p.ss += shares; p.scb += cost; p.rl += o.pl;
+      if (plUsd !== null) realized += plUsd;
+      if (o.netUsd !== null) cumSell += o.netUsd;
     } else {
-      p.bs += shares; p.bn += net; cumBuy += net;
+      p.bs += shares; p.bn += net; // ต้นทุนสะสมเก็บในสกุลเดิม เพื่อให้ต้นทุนเฉลี่ย/กำไรขาดทุนของ asset นี้ยังถูกต้อง
+      if (o.netUsd !== null) cumBuy += o.netUsd;
     }
     o.sharesAfter = p.bs - p.ss;
     let cfSum = 0;
     for (const c of cf) if (c.date <= r.date) cfSum += c.impact;
     o.cashAfter = start + cfSum + cumSell - cumBuy;
     if (action === 'SELL' && o.sharesAfter < -EPS) { o.status = 'SELL > held'; oversell++; }
+    if (o.netUsd === null) o.status = 'NO FX RATE';
     if (o.cashAfter < -tol) negCash++;
     out.push(o);
   }
-  return { rows: out, per, buys: cumBuy, sells: cumSell, fees, realized, nonUsd, oversell, incomplete, negCash };
+  return { rows: out, per, buys: cumBuy, sells: cumSell, fees, realized, nonUsd, oversell, incomplete, negCash, fxMissing };
 }
 
 /* ---------- FX (THB <-> USD) ---------- */
@@ -582,6 +621,7 @@ function computeAll(S) {
   cnt('incomplete', 'หุ้น: แถวข้อมูลไม่ครบ', st.incomplete, 'ต้องมีวันที่ ชื่อหุ้น ซื้อ/ขาย จำนวน ราคา');
   cnt('negcash', 'หุ้น: เงินสดหลังทำรายการติดลบ', st.negCash, 'ขาดรายการฝากหรือเปล่า?');
   cnt('cur-stock', 'หุ้น: สกุลเงินไม่ใช่ USD', st.nonUsd, 'สรุปนี้คิดเป็น USD');
+  cnt('fx-missing-stock', 'หุ้น: สกุลอื่นที่ยังแปลงเป็น USD ไม่ได้', st.fxMissing, 'ใส่เรท ฿ ต่อ USD ในรายการ หรือใส่เรทตลาดในตั้งค่า');
   cnt('noprice', 'หุ้น: ถืออยู่แต่ยังไม่ใส่ราคาปัจจุบัน', noPrice, 'ใส่ในหน้าภาพรวม');
   cnt('sharesdiff', 'หุ้น: จำนวนไม่ตรงกับโบรกเกอร์', sharesDiff, 'ดูจำนวนหุ้นจริงในหน้าภาพรวม');
   cnt('cur-cash', 'ฝาก/ถอน: สกุลเงินไม่ใช่ USD', cash.nonUsd, 'สรุปนับเฉพาะ USD');
@@ -738,12 +778,13 @@ function importSheets(sheets) {
         const core = ['Date', 'Type', 'Amount'].map(k => g(row, k));
         if (core.every(blank)) continue;
         const t = txt(g(row, 'Type')).toLowerCase();
-        S.cash.push({
+        const linkedFx = txt(g(row, 'Linked FX Id'));
+        S.cash.push(Object.assign({
           id: 'c' + seq + '_' + Math.random().toString(36).slice(2, 7), seq: seq++,
           date: parseDate(g(row, 'Date')), type: t === 'deposit' ? 'Deposit' : t === 'withdrawal' ? 'Withdrawal' : '',
           amount: num(g(row, 'Amount')), currency: txt(g(row, 'Currency')) || 'USD', fee: N(g(row, 'Fee')),
           source: txt(g(row, 'Source')), note: txt(g(row, 'Note'))
-        });
+        }, linkedFx ? { mirrorFxId: linkedFx } : {}));
       }
     }
   }
@@ -764,6 +805,7 @@ function importSheets(sheets) {
       else if (k === 'fxStartUsd') set.fxStartUsd = N(v);
       else if (k === 'fxStartThb') set.fxStartThb = N(v);
       else if (k === 'fxStartCost') set.fxStartCost = num(v);
+      else if (k === 'username') set.username = String(v || '').slice(0, 50);
       else if (k.startsWith('price:')) { const p = num(v); if (p !== null) set.prices[k.slice(6).toUpperCase()] = p; }
       else if (k.startsWith('brokerShares:')) { const p = num(v); if (p !== null) set.brokerShares[k.slice(13).toUpperCase()] = p; }
     });
@@ -1072,6 +1114,129 @@ async function flushRemote() {
   if (remote.again) { remote.again = false; flushRemote(); }
 }
 
+/* ---------- แจ้งเตือน (Notification + Sound) ---------- */
+// ป้องกันแจ้งเตือนซ้ำรัวๆ: เก็บ flag ต่อ ticker/ประเภทไว้ใน S.settings.alertsFired ยิงครั้งเดียวต่อการข้ามเส้นแต่ละครั้ง (ราคาต้องกลับไปฝั่งตรงข้ามก่อนถึงจะยิงซ้ำได้)
+async function requestNotifPermission() {
+  if (!('Notification' in window)) { toast('เบราว์เซอร์นี้ไม่รองรับการแจ้งเตือนแบบระบบ (ใช้เสียง+ข้อความในแอปแทนได้)'); return; }
+  try {
+    const perm = await Notification.requestPermission();
+    if (perm === 'granted') { toast('เปิดการแจ้งเตือนแล้ว'); notify('success', 'ทดสอบการแจ้งเตือน', 'สมุดซื้อขายจะแจ้งเตือนคุณแบบนี้'); }
+    else toast('ยังไม่ได้รับอนุญาตแจ้งเตือนจากเบราว์เซอร์');
+  } catch (e) { toast('เปิดการแจ้งเตือนไม่สำเร็จ'); }
+  render();
+}
+function notify(kind, title, body) {
+  toast(body ? title + ' — ' + body : title);
+  playSound(kind === 'error' ? 'error' : kind === 'warn' ? 'warn' : 'success');
+  if (S.settings.notifEnabled && 'Notification' in window && Notification.permission === 'granted') {
+    try { new Notification(title, { body: body || '', tag: title, icon: './icon-192.png' }); } catch (e) { /* ห้ามให้แจ้งเตือนทำแอปพัง */ }
+  }
+}
+function checkPriceAlerts() {
+  const st = S.settings; let changed = false;
+  Object.keys(st.alerts).forEach(t => {
+    const a = st.alerts[t]; if (!a) return;
+    const price = num(st.prices[t]); if (price === null) return;
+    if (!st.alertsFired[t]) st.alertsFired[t] = {};
+    const fired = st.alertsFired[t];
+    const tgt = num(a.target), stp = num(a.stop);
+    if (tgt !== null) {
+      const hit = price >= tgt;
+      if (hit && !fired.target) {
+        fired.target = true; changed = true;
+        notify('warn', 'ถึงราคาเป้าหมาย: ' + t, t + ' ราคาปัจจุบัน ' + money(price) + ' · เป้าหมาย ' + money(tgt) + ' · ' + new Date().toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' }));
+      } else if (!hit && fired.target) { fired.target = false; changed = true; }
+    }
+    if (stp !== null) {
+      const hit = price <= stp;
+      if (hit && !fired.stop) {
+        fired.stop = true; changed = true;
+        notify('error', 'ถึงจุด Stop Loss: ' + t, t + ' ราคาปัจจุบัน ' + money(price) + ' · Stop Loss ' + money(stp) + ' · ' + new Date().toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' }));
+      } else if (!hit && fired.stop) { fired.stop = false; changed = true; }
+    }
+  });
+  if (changed) saveLocal();
+}
+
+/* ---------- ราคาหุ้น/เรท USD-THB สด (ไม่ใช้ API key ฝั่ง client — ดึงจากปลายทางสาธารณะที่ไม่ต้องสมัคร) ---------- */
+const live = { priceStatus: 'idle', rateStatus: 'idle', priceBusy: false, rateBusy: false, priceTimer: null, rateTimer: null };
+const PRICE_REFRESH_MS = 60000, RATE_REFRESH_MS = 60000;
+async function fetchJson(url) {
+  const res = await fetch(url, { cache: 'no-store' });
+  if (!res.ok) throw new Error('http ' + res.status);
+  return res.json();
+}
+function heldTickers() { return Object.keys(C.st.per).filter(t => Math.abs(C.st.per[t].bs - C.st.per[t].ss) > 1e-7); }
+async function refreshPricesNow() {
+  const tickers = heldTickers();
+  if (!tickers.length) { toast('ยังไม่มีหุ้นที่ถืออยู่'); return; }
+  if (live.priceBusy) return;
+  live.priceBusy = true; live.priceStatus = 'updating'; render();
+  let got = {};
+  try {
+    if (!navigator.onLine) throw new Error('offline');
+    const data = await fetchJson('https://query1.finance.yahoo.com/v7/finance/quote?symbols=' + encodeURIComponent(tickers.join(',')));
+    const results = (data && data.quoteResponse && data.quoteResponse.result) || [];
+    results.forEach(q => { if (q && q.symbol && isFinite(q.regularMarketPrice)) got[String(q.symbol).toUpperCase()] = q.regularMarketPrice; });
+  } catch (e) { /* จะลองทีละตัวด้านล่างต่อ ไม่ต้อง throw ทิ้งตรงนี้ */ }
+  const missing = tickers.filter(t => got[t] === undefined);
+  if (missing.length) {
+    const results = await Promise.allSettled(missing.map(t =>
+      fetchJson('https://query1.finance.yahoo.com/v8/finance/chart/' + encodeURIComponent(t) + '?interval=1d&range=1d').then(d => ({ t, p: d && d.chart && d.chart.result && d.chart.result[0] && d.chart.result[0].meta && d.chart.result[0].meta.regularMarketPrice }))
+    ));
+    results.forEach(r => { if (r.status === 'fulfilled' && r.value && isFinite(r.value.p)) got[r.value.t] = r.value.p; });
+  }
+  const gotCount = Object.keys(got).length;
+  if (gotCount) {
+    Object.keys(got).forEach(t => { S.settings.prices[t] = got[t]; });
+    S.settings.priceUpdatedAt = Date.now();
+    live.priceStatus = gotCount === tickers.length ? 'live' : 'partial';
+    persist(); checkPriceAlerts();
+  } else {
+    live.priceStatus = navigator.onLine ? 'error' : 'offline'; // ไม่ลบราคาที่มีอยู่เดิม ใช้ค่าล่าสุดที่เคยดึงได้ต่อไป
+  }
+  live.priceBusy = false; render();
+}
+async function refreshRateNow() {
+  if (live.rateBusy) return;
+  live.rateBusy = true; live.rateStatus = 'updating'; render();
+  try {
+    if (!navigator.onLine) throw new Error('offline');
+    const data = await fetchJson('https://api.frankfurter.dev/v1/latest?from=USD&to=THB');
+    const r = data && data.rates && num(data.rates.THB);
+    if (!r) throw new Error('no rate');
+    S.settings.usdThb = r; S.settings.rateUpdatedAt = Date.now();
+    live.rateStatus = 'live';
+    persist(); checkPriceAlerts();
+  } catch (e) {
+    live.rateStatus = navigator.onLine ? 'error' : 'offline'; // ใช้เรทล่าสุดที่เคยดึงได้ต่อไป ไม่ลบทิ้ง
+  }
+  live.rateBusy = false; render();
+}
+function startLiveTimers() {
+  clearInterval(live.priceTimer); clearInterval(live.rateTimer);
+  live.priceTimer = setInterval(() => { if (S.settings.autoPrice && document.visibilityState === 'visible') refreshPricesNow(); }, PRICE_REFRESH_MS);
+  live.rateTimer = setInterval(() => { if (S.settings.autoRate && document.visibilityState === 'visible') refreshRateNow(); }, RATE_REFRESH_MS);
+  if (S.settings.autoPrice) refreshPricesNow();
+  if (S.settings.autoRate) refreshRateNow();
+}
+function liveLabel(status) {
+  const map = { idle: ['ยังไม่อัปเดต', ''], updating: ['กำลังอัปเดต…', ''], live: ['สด', 'ok'], partial: ['อัปเดตบางส่วน', 'warn'], offline: ['ออฟไลน์', 'warn'], error: ['ผิดพลาด', 'bad'] };
+  return map[status] || map.idle;
+}
+function timeLabel(ts) {
+  if (!ts) return 'ยังไม่เคยอัปเดต';
+  const d = new Date(ts), pad = n => String(n).padStart(2, '0');
+  const sameDay = d.toDateString() === new Date().toDateString();
+  return (sameDay ? '' : shortDate(ymd(d.getFullYear(), d.getMonth() + 1, d.getDate())) + ' ') + pad(d.getHours()) + ':' + pad(d.getMinutes());
+}
+function liveRow(kind, status, updatedAt) {
+  const [label, cls] = liveLabel(status);
+  const act = kind === 'price' ? 'refresh-prices' : 'refresh-rate';
+  const title = kind === 'price' ? 'ราคาหุ้น' : 'เรท USD/THB';
+  return `<div class="live-row"><span class="pill ${cls}"><span class="dot"></span>${title}: ${label}</span><span class="muted" style="font-size:12px">อัปเดต ${timeLabel(updatedAt)}</span><button type="button" class="btn ghost sm" data-act="${act}">รีเฟรชตอนนี้</button></div>`;
+}
+
 /* ---------- UI shell ---------- */
 function toast(msg) {
   const t = $('#toastEl'); t.textContent = msg; t.classList.add('show');
@@ -1135,6 +1300,7 @@ function holdHTML(h) {
     return `<div class="hold sold"><div class="hold-top"><span class="tk">${esc(h.t)}</span><span class="grow">ขายหมดแล้ว · กำไรที่ขายแล้ว</span><span class="${sgn(h.realized)}">${money(h.realized, '$', { sign: true })}</span></div></div>`;
   }
   const avgDec = Math.abs(h.avg) < 10 ? 4 : 2;
+  const al = S.settings.alerts[h.t] || {};
   return `<div class="hold">
     <div class="hold-top"><span class="tk">${esc(h.t)}</span><span class="grow">${fmtShares(h.shares)} หุ้น · ต้นทุนเฉลี่ย ${money(h.avg, '$', { dec: avgDec })}</span><span class="mv">${h.mv === null ? '–' : money(h.mv)}</span></div>
     <div class="hold-mid">
@@ -1142,6 +1308,10 @@ function holdHTML(h) {
       <span class="${sgn(h.unreal)}">${h.unreal === null ? 'ยังไม่ใส่ราคา' : money(h.unreal, '$', { sign: true }) + (h.unrealPct !== null ? ' (' + pct(h.unrealPct, true) + ')' : '')}</span>
     </div>
     <div class="hold-bot">ขายไปแล้ว <span class="${sgn(h.realized)}">${money(h.realized, '$', { sign: true })}</span>${h.total !== null ? ` · รวม <span class="${sgn(h.total)}">${money(h.total, '$', { sign: true })}</span>` : ''}${h.status === 'SHARES DIFF' ? ` <span class="tag bad">ไม่ตรงโบรกเกอร์ ต่าง ${fmtShares(h.diff)}</span>` : ''}</div>
+    <div class="hold-alert">
+      <label>🎯 Target $<input inputmode="decimal" data-alert-target="${esc(h.t)}" value="${al.target == null ? '' : al.target}" placeholder="ไม่ตั้ง" aria-label="ราคาเป้าหมายของ ${esc(h.t)}"></label>
+      <label>🛑 Stop $<input inputmode="decimal" data-alert-stop="${esc(h.t)}" value="${al.stop == null ? '' : al.stop}" placeholder="ไม่ตั้ง" aria-label="Stop loss ของ ${esc(h.t)}"></label>
+    </div>
   </div>`;
 }
 
@@ -1155,10 +1325,14 @@ function checksHTML() {
 }
 
 function viewSummary() {
-  if (isEmpty()) return onboardHTML();
+  const uname = (S.settings.username || '').trim();
+  const greet = `<div class="greet">${uname ? `สวัสดีคุณ "${esc(uname)}" 👋` : 'สวัสดี 👋'}</div>`;
+  if (isEmpty()) return greet + onboardHTML();
   const s = C.sum, rate = num(S.settings.usdThb);
   const nop = C.holdings.filter(h => h.status === 'NO PRICE').map(h => h.t);
   let h = '<div class="stack">';
+  h += greet;
+  if (heldTickers().length) h += `<section class="panel panel-pad live-panel">${liveRow('price', live.priceStatus, S.settings.priceUpdatedAt)}${liveRow('rate', live.rateStatus, S.settings.rateUpdatedAt)}</section>`;
   h += `<section class="hero">
     <div class="hero-label">มูลค่าพอร์ตตอนนี้ (USD)</div>
     <div class="hero-num">${money(s.value)}</div>
@@ -1245,7 +1419,7 @@ function viewStocks() {
     ${['ALL'].concat(tick).map(t => `<button class="chip" data-act="filter" data-v="${esc(t)}" aria-pressed="${ui.stockFilter === t}">${t === 'ALL' ? 'ทั้งหมด' : esc(t)}</button>`).join('')}</div>` : '';
   const fees = rows.reduce((a, r) => a + (r.fee || 0), 0);
   const pl = rows.reduce((a, r) => a + (r.pl || 0), 0);
-  return `<div class="stack">${chips}
+  return `<div class="stack">${tick.length ? `<section class="panel panel-pad live-panel">${liveRow('price', live.priceStatus, S.settings.priceUpdatedAt)}</section>` : ''}${chips}
     <section class="panel">
       ${rows.length ? `<div class="sec-head"><h2>${rows.length} รายการ</h2><small>ค่าธรรมเนียม ${money(fees)} · กำไรที่ขายแล้ว <span class="${sgn(pl)}">${money(pl, '$', { sign: true })}</span></small></div>` : ''}
       ${rows.length ? groupedList(rows, stockRowHTML) : `<div class="empty"><b>ยังไม่มีรายการหุ้น</b>กดปุ่มด้านล่างเพื่อบันทึกการซื้อหรือขายหุ้น</div>`}
@@ -1287,6 +1461,7 @@ function viewFx() {
     volChart = `<section class="panel panel-pad"><h2 style="font-size:15px;margin-bottom:2px">ซื้อ/ขาย USD รายเดือน</h2><p class="muted" style="font-size:12.5px;margin:0 0 10px">รวม ${esc(scope)}</p>${barChart(cats, series, { aria: 'ปริมาณซื้อขาย USD รายเดือน' })}<div class="chart-legend">${barLegend(series, v => money(v, ''))}</div></section>`;
   }
   return `<div class="stack">
+  <section class="panel panel-pad live-panel">${liveRow('rate', live.rateStatus, S.settings.rateUpdatedAt)}</section>
   ${rateChart}${volChart}
   <section class="panel">
     <div class="grid4">
@@ -1361,10 +1536,15 @@ function setField(label, key, o) {
 function viewSettings() {
   const tick = Object.keys(C.st.per).sort();
   const cloud = remote.db ? 'ข้อมูลอยู่ในเครื่องนี้ และสำรองไว้ในพื้นที่ส่วนตัวของบัญชีคุณ (เปิดจากเครื่องอื่นก็เห็นข้อมูลเดียวกัน)' : 'ข้อมูลอยู่ในเครื่องนี้เท่านั้น แนะนำให้กด “สำรอง/กู้คืน” เก็บไว้เป็นระยะ';
+  const notifPerm = ('Notification' in window) ? Notification.permission : 'unsupported';
   return `<div class="stack">
+  <section class="panel panel-pad"><h2 style="font-size:15px">ชื่อผู้ใช้</h2>
+    <div class="field"><label for="unameInput">ชื่อที่แสดงในแอป</label><input id="unameInput" maxlength="50" value="${esc(S.settings.username || '')}" placeholder="เช่น ช่างไฟสุดหล่อ ⚡"></div>
+    <button type="button" class="btn block" data-act="save-username" style="margin-top:2px">บันทึกชื่อ</button>
+  </section>
   <section class="panel panel-pad"><h2 style="font-size:15px">ค่าตั้งต้น</h2>
     ${setField('มูลค่าพอร์ตตั้งต้น (USD)', 'startValue', { ph: '0.00', hint: 'เงินสด + ต้นทุนหุ้นที่ถืออยู่ก่อนเริ่มบันทึก · เงินฝากหลังจากนั้นบันทึกในแท็บฝาก/ถอน' })}
-    ${setField('เรทตลาด USD/THB (บาทต่อ 1 USD)', 'usdThb', { ph: 'เช่น 33.32', hint: 'ใช้ดูมูลค่าเป็นบาทและกำไรขาดทุนจากค่าเงิน' })}
+    ${setField('เรทตลาด USD/THB (บาทต่อ 1 USD)', 'usdThb', { ph: 'เช่น 33.32', hint: 'ดึงอัตโนมัติจากตลาดจริงแล้ว — แก้ไขตรงนี้เพื่อใส่ค่าเองแทนได้ชั่วคราว' })}
     ${setField('ความคลาดเคลื่อนที่ยอมรับ (USD)', 'tolerance', { ph: '0.01', hint: 'ส่วนต่างเท่านี้หรือน้อยกว่าไม่ขึ้นเตือน' })}
   </section>
   <section class="panel panel-pad"><h2 style="font-size:15px">ตรวจกับโบรกเกอร์</h2>
@@ -1377,10 +1557,17 @@ function viewSettings() {
     ${setField('THB ตั้งต้น (฿)', 'fxStartThb', { ph: '0' })}
     ${setField('ต้นทุนเฉลี่ย USD ตั้งต้น (฿ ต่อ USD)', 'fxStartCost', { ph: 'ไม่บังคับ', hint: 'ใส่แล้ว รายการขาย USD ที่เกิดก่อนการซื้อ จะคำนวณกำไรขาดทุนได้' })}
   </section>
-  <section class="panel panel-pad"><h2 style="font-size:15px;margin-bottom:2px">เสียงแจ้งเตือน</h2><p class="muted" style="font-size:12.5px;margin:0 0 4px">เสียงสั้นๆ ตอนบันทึก/นำเข้า/ส่งออกสำเร็จ หรือมีข้อผิดพลาด — ไม่ต้องต่อเน็ต</p>
+  <section class="panel panel-pad"><h2 style="font-size:15px;margin-bottom:2px">ราคาตลาดอัตโนมัติ</h2><p class="muted" style="font-size:12.5px;margin:0 0 4px">ดึงราคาหุ้นและเรท USD/THB จากตลาดจริงให้เอง ไม่ต้องกรอกเองรายวัน</p>
+    <div class="rate-row" style="padding-left:0;padding-right:0"><span class="lbl" style="margin:0">อัปเดตราคาหุ้นอัตโนมัติ</span>${seg('autoPrice', [['on', 'เปิด'], ['off', 'ปิด']], S.settings.autoPrice ? 'on' : 'off', 'เปิดหรือปิดการดึงราคาหุ้นอัตโนมัติ')}</div>
+    <div class="rate-row" style="padding-left:0;padding-right:0;margin-top:8px"><span class="lbl" style="margin:0">อัปเดตเรท USD/THB อัตโนมัติ</span>${seg('autoRate', [['on', 'เปิด'], ['off', 'ปิด']], S.settings.autoRate ? 'on' : 'off', 'เปิดหรือปิดการดึงเรท USD/THB อัตโนมัติ')}</div>
+  </section>
+  <section class="panel panel-pad"><h2 style="font-size:15px;margin-bottom:2px">เสียงและการแจ้งเตือน</h2><p class="muted" style="font-size:12.5px;margin:0 0 4px">เสียงสั้นๆ และแจ้งเตือนตอนบันทึก/ราคาถึงเป้าหมาย/Stop Loss หรือมีข้อผิดพลาด — ไม่ต้องต่อเน็ต</p>
     <div class="rate-row" style="padding-left:0;padding-right:0"><span class="lbl" style="margin:0">เปิดเสียง</span>${seg('soundEnabled', [['on', 'เปิด'], ['off', 'ปิด']], S.settings.soundEnabled ? 'on' : 'off', 'เปิดหรือปิดเสียงแจ้งเตือน')}</div>
     <div class="field"><label for="s_soundVolume">ระดับเสียง ${Math.round(S.settings.soundVolume * 100)}%</label><input id="s_soundVolume" type="range" min="0" max="100" step="5" data-soundvol value="${Math.round(S.settings.soundVolume * 100)}" ${S.settings.soundEnabled ? '' : 'disabled'}></div>
     <button type="button" class="btn block" data-act="sound-test" style="margin-top:6px" ${S.settings.soundEnabled ? '' : 'disabled'}>🔊 ทดสอบเสียง</button>
+    <div class="rate-row" style="padding-left:0;padding-right:0;margin-top:12px"><span class="lbl" style="margin:0">แจ้งเตือนแบบระบบ (Push)</span>${seg('notifEnabled', [['on', 'เปิด'], ['off', 'ปิด']], S.settings.notifEnabled ? 'on' : 'off', 'เปิดหรือปิดการแจ้งเตือนแบบระบบ')}</div>
+    <button type="button" class="btn block" data-act="notif-request" style="margin-top:6px">${notifPerm === 'granted' ? '✅ อนุญาตแจ้งเตือนแล้ว' : notifPerm === 'denied' ? '🔕 ถูกบล็อก — เปิดในตั้งค่าเบราว์เซอร์' : '🔔 ขออนุญาตแจ้งเตือน'}</button>
+    <p class="muted" style="font-size:12px;margin:6px 0 0">ตั้ง Target Price / Stop Loss ได้ที่การ์ดของแต่ละหุ้นในหน้า “ภาพรวม”</p>
   </section>
   <section class="panel"><div class="sec-head"><h2>ข้อมูล</h2></div>
     <div class="btnlist">
@@ -1435,7 +1622,7 @@ function lastBroker() {
   const r = rows.find(x => x.broker);
   return r ? r.broker : (S.settings.defaultBroker || '');
 }
-function afterSave() { closeSheet(); persist(); render(); toast('บันทึกแล้ว'); playSound('success'); }
+function afterSave(msg) { closeSheet(); persist(); render(); notify('success', msg || 'บันทึกแล้ว'); }
 
 /* ----- stock form ----- */
 function openStock(id) {
@@ -1524,7 +1711,7 @@ async function saveStock(f) {
   if (id) Object.assign(S.stocks.find(x => x.id === id), v);
   else S.stocks.push(Object.assign({ id: uid(), seq: S.seq++ }, v));
   if (v.broker) S.settings.defaultBroker = v.broker;
-  afterSave();
+  afterSave(v.action === 'SELL' ? 'บันทึก SELL สำเร็จ' : 'บันทึก BUY สำเร็จ');
 }
 
 /* ----- fx form ----- */
@@ -1566,14 +1753,23 @@ function saveFx(f) {
   if (v.fee < 0) err.push('ค่าธรรมเนียมต้องไม่ติดลบ');
   if (err.length) { $('#err').textContent = err.join(' · '); playSound('error'); return; }
   const id = f.dataset.id;
-  if (id) Object.assign(S.fx.find(x => x.id === id), v);
-  else {
-    S.fx.push(Object.assign({ id: uid(), seq: S.seq++ }, v));
+  if (id) {
+    Object.assign(S.fx.find(x => x.id === id), v);
+    // ถ้ารายการแลกเงินนี้มีฝาก/ถอนคู่กันอยู่ (สร้างตอนบันทึกครั้งแรก) ให้แก้ไขตามกันไปเสมอ ห้ามหลุดความสัมพันธ์
+    const mirror = S.cash.find(x => x.mirrorFxId === id);
+    if (mirror) {
+      mirror.date = v.date;
+      mirror.type = v.action === 'BUY USD' ? 'Deposit' : 'Withdrawal';
+      mirror.amount = v.usd;
+    }
+  } else {
+    const fxId = uid();
+    S.fx.push(Object.assign({ id: fxId, seq: S.seq++ }, v));
     if (f.elements['mirror'] && f.elements['mirror'].checked) {
-      S.cash.push({ id: uid(), seq: S.seq++, date: v.date, type: v.action === 'BUY USD' ? 'Deposit' : 'Withdrawal', amount: v.usd, currency: 'USD', fee: 0, source: '', note: 'จากรายการแลกเงิน' });
+      S.cash.push({ id: uid(), seq: S.seq++, date: v.date, type: v.action === 'BUY USD' ? 'Deposit' : 'Withdrawal', amount: v.usd, currency: 'USD', fee: 0, source: '', note: 'จากรายการแลกเงิน', mirrorFxId: fxId });
     }
   }
-  afterSave();
+  afterSave('บันทึกการแลกเงินสำเร็จ');
 }
 
 /* ----- cash form ----- */
@@ -1608,14 +1804,17 @@ function saveCash(f) {
   const id = f.dataset.id;
   if (id) Object.assign(S.cash.find(x => x.id === id), v);
   else S.cash.push(Object.assign({ id: uid(), seq: S.seq++ }, v));
-  afterSave();
+  afterSave(v.type === 'Withdrawal' ? 'บันทึกถอนออกสำเร็จ' : 'บันทึกฝากเข้าสำเร็จ');
 }
 
 async function deleteCurrent() {
   const f = $('#frm'); if (!f || !f.dataset.id) return;
-  if (!(await confirmBox('ลบรายการนี้? การลบย้อนกลับไม่ได้', 'ลบ', true))) return;
+  const hasMirror = f.dataset.kind === 'fx' && S.cash.some(x => x.mirrorFxId === f.dataset.id);
+  const msg = hasMirror ? 'ลบรายการนี้? รายการฝาก/ถอนบัญชีเทรดที่สร้างคู่กันจะถูกลบไปด้วย การลบย้อนกลับไม่ได้' : 'ลบรายการนี้? การลบย้อนกลับไม่ได้';
+  if (!(await confirmBox(msg, 'ลบ', true))) return;
   const key = { stock: 'stocks', fx: 'fx', cash: 'cash' }[f.dataset.kind];
   S[key] = S[key].filter(x => x.id !== f.dataset.id);
+  if (f.dataset.kind === 'fx') S.cash = S.cash.filter(x => x.mirrorFxId !== f.dataset.id); // ลบคู่กันเสมอ ห้ามสร้างเงินฝาก/ถอนค้างที่ไม่มี FX อ้างอิงแล้ว
   closeSheet(); persist(); render(); toast('ลบแล้ว');
 }
 
@@ -1652,9 +1851,9 @@ async function exportXlsx() {
     .concat(C.st.rows.map(r => [ser(r.date), r.time || '', r.asset, r.action, v(r.shares), v(r.price), r.cur, v(r.gross), r.fee, v(r.net), v(num(r.fxRate)), v(r.thb), v(r.cost), v(r.pl), v(r.sharesAfter), v(r.cashAfter), r.txId || '', r.broker || '', r.note || '', r.source || '', r.status === 'Incomplete' ? 'Incomplete' : r.status])));
   add('FX Transactions', [['Date', 'Action', 'THB Used/Received', 'USD Received/Used', 'FX Rate', 'Fee', 'Net USD', 'Note', 'Source', 'USD Balance', 'THB Balance', 'ต้นทุนเฉลี่ยสะสม', 'FX Realized P/L']]
     .concat(C.fx.rows.map(r => [ser(r.date), r.action, v(r.thb), v(r.usd), v(r.rate), r.fee, v(r.netUsd), r.note || '', r.source || '', v(r.usdBal), v(r.thbBal), v(r.avgCost), v(r.realized)])));
-  add('Cash Flow', [['Date', 'Type', 'Amount', 'Currency', 'Direction', 'Fee', 'Net Amount', 'Source', 'Note', 'Account Impact (USD)']]
-    .concat(C.cash.rows.map(r => [ser(r.date), r.type || '', v(r.amount), r.cur, r.type === 'Deposit' ? 'IN' : r.type === 'Withdrawal' ? 'OUT' : '', r.fee, r.amount === null ? '' : (r.type === 'Deposit' ? r.amount - r.fee : r.amount + r.fee), r.source || '', r.note || '', v(r.impact)])));
-  const st = S.settings, kv = [['key', 'value'], ['startValue', st.startValue], ['tolerance', st.tolerance], ['usdThb', v(st.usdThb)], ['brokerCash', v(st.brokerCash)], ['brokerValue', v(st.brokerValue)], ['fxStartUsd', st.fxStartUsd], ['fxStartThb', st.fxStartThb], ['fxStartCost', v(st.fxStartCost)]];
+  add('Cash Flow', [['Date', 'Type', 'Amount', 'Currency', 'Direction', 'Fee', 'Net Amount', 'Source', 'Note', 'Account Impact (USD)', 'Linked FX Id']]
+    .concat(C.cash.rows.map(r => [ser(r.date), r.type || '', v(r.amount), r.cur, r.type === 'Deposit' ? 'IN' : r.type === 'Withdrawal' ? 'OUT' : '', r.fee, r.amount === null ? '' : (r.type === 'Deposit' ? r.amount - r.fee : r.amount + r.fee), r.source || '', r.note || '', v(r.impact), r.mirrorFxId || ''])));
+  const st = S.settings, kv = [['key', 'value'], ['startValue', st.startValue], ['tolerance', st.tolerance], ['usdThb', v(st.usdThb)], ['brokerCash', v(st.brokerCash)], ['brokerValue', v(st.brokerValue)], ['fxStartUsd', st.fxStartUsd], ['fxStartThb', st.fxStartThb], ['fxStartCost', v(st.fxStartCost)], ['username', st.username || '']];
   Object.keys(st.prices).forEach(k => kv.push(['price:' + k, st.prices[k]]));
   Object.keys(st.brokerShares).forEach(k => kv.push(['brokerShares:' + k, st.brokerShares[k]]));
   add('Settings', kv);
@@ -1707,13 +1906,17 @@ document.addEventListener('click', async e => {
   else if (a === 'bk-copy') { const ok = await copyText(backupJson); toast(ok ? 'คัดลอกแล้ว วางเก็บไว้ในที่ปลอดภัย' : 'คัดลอกไม่สำเร็จ'); playSound(ok ? 'success' : 'error'); }
   else if (a === 'bk-restore') { const v = $('#restoreBox').value.trim(); if (!v) toast('วางข้อความที่สำรองไว้ก่อน'); else restoreFrom(v); }
   else if (a === 'sound-test') playSound('success');
+  else if (a === 'refresh-prices') refreshPricesNow();
+  else if (a === 'refresh-rate') refreshRateNow();
+  else if (a === 'notif-request') requestNotifPermission();
+  else if (a === 'save-username') { const inp = $('#unameInput'); if (inp) { S.settings.username = inp.value.trim().slice(0, 50); persist(); render(); toast('บันทึกชื่อแล้ว'); playSound('success'); } }
   else if (a === 'wipe') { if (await confirmBox('ล้างข้อมูลทั้งหมดในสมุดนี้? แนะนำให้สำรองข้อมูลก่อน', 'ล้างทั้งหมด', true)) { S = newState(); persist(); go('sum'); toast('ล้างข้อมูลแล้ว'); } }
 });
 document.addEventListener('change', async e => {
   const t = e.target;
   if (t.dataset && t.dataset.price !== undefined) {
     const p = num(t.value); if (p === null) delete S.settings.prices[t.dataset.price]; else S.settings.prices[t.dataset.price] = p;
-    persist(); render();
+    persist(); checkPriceAlerts(); render();
   } else if (t.dataset && t.dataset.bshare !== undefined) {
     const p = num(t.value); if (p === null) delete S.settings.brokerShares[t.dataset.bshare]; else S.settings.brokerShares[t.dataset.bshare] = p;
     persist(); render();
@@ -1727,6 +1930,20 @@ document.addEventListener('change', async e => {
   else if (t.id === 'fileJson') { const f = t.files && t.files[0]; t.value = ''; if (f) { try { $('#restoreBox').value = await f.text(); toast('อ่านไฟล์แล้ว กด “กู้คืน” เพื่อยืนยัน'); } catch (er) { toast('อ่านไฟล์ไม่สำเร็จ'); } } }
   else if (t.name === 'soundEnabled') { S.settings.soundEnabled = t.value === 'on'; persist(); render(); if (S.settings.soundEnabled) playSound('success'); }
   else if (t.dataset && t.dataset.soundvol !== undefined) { S.settings.soundVolume = Math.max(0, Math.min(100, Number(t.value))) / 100; persist(); }
+  else if (t.name === 'autoPrice') { S.settings.autoPrice = t.value === 'on'; persist(); render(); if (S.settings.autoPrice) refreshPricesNow(); }
+  else if (t.name === 'autoRate') { S.settings.autoRate = t.value === 'on'; persist(); render(); if (S.settings.autoRate) refreshRateNow(); }
+  else if (t.name === 'notifEnabled') { S.settings.notifEnabled = t.value === 'on'; persist(); render(); }
+  else if (t.dataset && t.dataset.alertTarget !== undefined) {
+    const tk = t.dataset.alertTarget, p = num(t.value);
+    S.settings.alerts[tk] = Object.assign({ target: null, stop: null }, S.settings.alerts[tk]);
+    S.settings.alerts[tk].target = p; if (S.settings.alertsFired[tk]) S.settings.alertsFired[tk].target = false;
+    persist();
+  } else if (t.dataset && t.dataset.alertStop !== undefined) {
+    const tk = t.dataset.alertStop, p = num(t.value);
+    S.settings.alerts[tk] = Object.assign({ target: null, stop: null }, S.settings.alerts[tk]);
+    S.settings.alerts[tk].stop = p; if (S.settings.alertsFired[tk]) S.settings.alertsFired[tk].stop = false;
+    persist();
+  }
 });
 document.addEventListener('input', e => {
   if (e.target.dataset && e.target.dataset.soundvol !== undefined) {
@@ -1751,6 +1968,14 @@ document.addEventListener('keydown', e => {
 });
 $('#sheetWrap').addEventListener('click', e => { if (e.target.id === 'sheetWrap') closeSheet(); });
 
+/* ---------- ป้องกันการคัดลอกข้อความในแอป (ให้รู้สึกเหมือนแอป ไม่ใช่เว็บไซต์) ---------- */
+// อนุญาตเฉพาะใน input / textarea / select ที่ผู้ใช้ต้องกรอกหรือแก้ไขข้อมูลเอง — ปุ่ม/Export/Backup ใช้ clipboard API แบบโปรแกรม ไม่ผ่านทางนี้ จึงไม่กระทบ
+function isEditable(t) { return t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.tagName === 'SELECT' || t.isContentEditable); }
+document.addEventListener('contextmenu', e => { if (!isEditable(e.target)) e.preventDefault(); });
+document.addEventListener('copy', e => { if (!isEditable(e.target)) e.preventDefault(); });
+document.addEventListener('selectstart', e => { if (!isEditable(e.target)) e.preventDefault(); });
+document.addEventListener('dragstart', e => { if (!isEditable(e.target)) e.preventDefault(); });
+
 /* ---------- App Shortcuts (manifest.json) → route ด้วย hash ---------- */
 let pendingShortcutAdd = null;
 (function routeFromShortcut() {
@@ -1764,6 +1989,8 @@ buildTabbar();
 render();
 if (pendingShortcutAdd === 'stock') openStock();
 initRemote();
+startLiveTimers();
+window.addEventListener('online', () => { if (S.settings.autoPrice) refreshPricesNow(); if (S.settings.autoRate) refreshRateNow(); });
 
 /* ---------- offline indicator (ไม่แตะ state/ข้อมูลใดๆ) ---------- */
 function updateOfflineBar() {

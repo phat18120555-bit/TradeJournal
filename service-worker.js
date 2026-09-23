@@ -2,13 +2,18 @@
  * Trade Journal — Service Worker
  * หน้าที่: แคช "เปลือกแอป" (index.html, manifest, ไอคอน, ฟอนต์/สคริปต์ CDN) ให้เปิดออฟไลน์ได้
  * ไม่แตะต้อง localStorage / IndexedDB ของแอปเลย — ข้อมูลธุรกรรมทั้งหมดยังคงอยู่ในเบราว์เซอร์ตามเดิม
- * ไม่มี API ราคาหุ้นภายนอกให้แคชในแอปนี้ (ราคาเป็นค่าที่ผู้ใช้กรอกเอง จึงไม่มีความเสี่ยงเรื่องราคาเก่าค้างแคช)
+ * แอปนี้ดึงราคาหุ้น/เรท USD-THB สดจาก API ภายนอก (ดู LIVE_DATA_HOSTS) — Service Worker ตั้งใจไม่แคชโฮสต์เหล่านี้เด็ดขาด
+ * เพื่อไม่ให้ราคาที่แสดงเป็นค่าค้างแคชเก่า การ fallback เมื่อ API ล่มเป็นหน้าที่ของโค้ดในแอป (เก็บค่าล่าสุดไว้ใน state เอง)
  */
 
 // เปลี่ยนเลขเวอร์ชันทุกครั้งที่แก้ไฟล์แอป เพื่อบังคับให้แคชเก่าถูกล้างและโหลดของใหม่
-const CACHE_VERSION = 'tj-v1';
+const CACHE_VERSION = 'tj-v2';
 const SHELL_CACHE = CACHE_VERSION + '-shell';
 const RUNTIME_CACHE = CACHE_VERSION + '-runtime';
+
+// โฮสต์ของ API ราคาหุ้น/เรทแลกเปลี่ยนแบบ real-time — ห้ามแคชเด็ดขาด ต้องขอข้อมูลสดจากเน็ตทุกครั้ง
+// ถ้าออฟไลน์/ล้มเหลว ให้ fetch() พังตามจริง แล้วให้โค้ดในแอปเป็นคนจัดการ fallback ไปใช้ค่าล่าสุดที่เก็บไว้เอง (ไม่ใช่หน้าที่ Service Worker)
+const LIVE_DATA_HOSTS = ['query1.finance.yahoo.com', 'query2.finance.yahoo.com', 'api.frankfurter.dev', 'api.frankfurter.app'];
 
 const SHELL_FILES = [
   './',
@@ -44,6 +49,12 @@ self.addEventListener('fetch', event => {
   const req = event.request;
   if (req.method !== 'GET') return;
   const url = new URL(req.url);
+
+  if (LIVE_DATA_HOSTS.includes(url.hostname)) {
+    // ราคาหุ้น/เรทแลกเปลี่ยนต้องสดเสมอ — network-only ไม่แตะแคช
+    event.respondWith(fetch(req));
+    return;
+  }
 
   if (isShellRequest(url)) {
     // ไฟล์ของแอปเอง: cache-first, เติมแคชใหม่เงียบๆ เมื่อมีเน็ต
