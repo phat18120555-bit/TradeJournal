@@ -107,9 +107,8 @@ main { max-width: 680px; margin: 0 auto; padding: 12px 14px calc(160px + env(saf
 .stack > * + * { margin-top: 12px; }
 
 /* ---------- panels & rows ---------- */
-.panel { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; overflow: hidden; box-shadow: 0 1px 2px rgba(15, 27, 37, .04); transition: background-color .15s, border-color .15s, box-shadow .2s, transform .2s; animation: fadeUp .4s ease-out both; }
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; overflow: hidden; box-shadow: 0 1px 2px rgba(15, 27, 37, .04); transition: background-color .15s, border-color .15s, box-shadow .2s, transform .2s; }
 @media (hover: hover) { .panel:hover { box-shadow: 0 6px 18px -6px color-mix(in srgb, var(--accent) 22%, transparent); } }
-@keyframes fadeUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 .panel-pad { padding: 12px 14px; }
 .sec-head { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; padding: 12px 14px 6px; }
 .sec-head h2 { font-size: 15px; }
@@ -124,10 +123,11 @@ main { max-width: 680px; margin: 0 auto; padding: 12px 14px calc(160px + env(saf
   position: relative; color: #fff;
   --ink2: rgba(255,255,255,.8); --ink3: rgba(255,255,255,.62);
   --line: rgba(255,255,255,.28); --line2: rgba(255,255,255,.18);
+  --gain: #4ADE80; --loss: #FF8A80;
   background: linear-gradient(150deg, var(--accent) 0%, var(--accent2, var(--accent)) 65%, color-mix(in srgb, var(--accent2, var(--accent)) 70%, #fff 15%) 100%);
   border: 1px solid transparent; border-radius: 20px; padding: 22px 18px 18px;
   box-shadow: 0 10px 26px -8px color-mix(in srgb, var(--accent) 55%, transparent);
-  overflow: hidden; animation: fadeUp .45s ease-out both;
+  overflow: hidden;
 }
 .hero::before { content: ""; position: absolute; width: 190px; height: 190px; border-radius: 50%; background: radial-gradient(circle, rgba(255,255,255,.22), transparent 70%); top: -70px; right: -50px; pointer-events: none; }
 .hero::after { content: ""; position: absolute; width: 140px; height: 140px; border-radius: 50%; background: radial-gradient(circle, rgba(255,255,255,.14), transparent 70%); bottom: -60px; left: -30px; pointer-events: none; }
@@ -308,7 +308,7 @@ details.more > summary { cursor: pointer; padding: 10px 0; color: var(--accent);
 .tab svg { width: 24px; height: 24px; transition: transform .18s cubic-bezier(.34,1.56,.64,1); }
 .tab:active svg { transform: scale(.88); }
 .tab[aria-current="page"] { color: var(--accent); font-weight: 600; }
-.tab[aria-current="page"]::before { content: ""; position: absolute; top: 0; left: 26%; right: 26%; height: 3px; border-radius: 0 0 3px 3px; background: var(--accent); animation: fadeUp .2s ease-out both; }
+.tab[aria-current="page"]::before { content: ""; position: absolute; top: 0; left: 26%; right: 26%; height: 3px; border-radius: 0 0 3px 3px; background: var(--accent); }
 .tab[aria-current="page"] svg { transform: scale(1.08); filter: drop-shadow(0 0 0 var(--accent)); }
 
 /* ---------- sheet / dialog ---------- */
@@ -329,7 +329,6 @@ textarea.mono { font-size: 12px; min-height: 120px; }
 @media (prefers-reduced-motion: reduce) {
   .sheet { animation: none; }
   .toast, details.panel > summary::after { transition: none; }
-  .panel, .hero, .tab[aria-current="page"]::before { animation: none; }
   .btn, .chip, .tab, .tab svg, .fab, .trow, .seg span { transition: none; }
 }
 @media (min-width: 700px) {
@@ -1504,7 +1503,7 @@ function viewFx() {
   ${rateChart}${volChart}
   <section class="panel">
     <div class="grid4">
-      <div><div class="k">USD คงเหลือ</div><div class="v">${money(f.usdNow)}</div></div>
+      <div><div class="k">USD ที่แลกเข้าระบบ</div><div class="v">${money(f.usdNow)}</div></div>
       <div><div class="k">ต้นทุนเฉลี่ย</div><div class="v">${money(f.avgCost, '฿', { dec: 4 })}</div><div class="s muted">ต่อ 1 USD</div></div>
       <div><div class="k">มูลค่าตอนนี้</div><div class="v">${f.valueNow === null ? '–' : money(f.valueNow, '฿', { dec: 0 })}</div><div class="s muted">ต้นทุน ${money(f.totalCost, '฿', { dec: 0 })}</div></div>
       <div><div class="k">กำไร/ขาดทุนที่ยังไม่ขาย</div><div class="v ${sgn(f.unreal)}">${f.unreal === null ? '–' : money(f.unreal, '฿', { sign: true })}</div><div class="s ${sgn(f.unreal)}">${f.unrealPct === null ? '' : pct(f.unrealPct, true)}</div></div>

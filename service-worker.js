@@ -7,7 +7,7 @@
  */
 
 // เปลี่ยนเลขเวอร์ชันทุกครั้งที่แก้ไฟล์แอป เพื่อบังคับให้แคชเก่าถูกล้างและโหลดของใหม่
-const CACHE_VERSION = 'tj-v5';
+const CACHE_VERSION = 'tj-v6';
 const SHELL_CACHE = CACHE_VERSION + '-shell';
 const RUNTIME_CACHE = CACHE_VERSION + '-runtime';
 
