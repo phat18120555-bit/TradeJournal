@@ -100,13 +100,13 @@ button.pill { min-height: 28px; }
 .dot { width: 7px; height: 7px; border-radius: 50%; background: currentColor; display: inline-block; }
 
 [hidden] { display: none !important; }
-main { max-width: 680px; margin: 0 auto; padding: 14px 16px calc(150px + env(safe-area-inset-bottom, 0px)); }
-.stack > * + * { margin-top: 14px; }
+main { max-width: 680px; margin: 0 auto; padding: 12px 14px calc(160px + env(safe-area-inset-bottom, 0px)); }
+.stack > * + * { margin-top: 12px; }
 
 /* ---------- panels & rows ---------- */
 .panel { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; overflow: hidden; box-shadow: 0 1px 2px rgba(15, 27, 37, .04); transition: background-color .15s, border-color .15s; }
-.panel-pad { padding: 14px 16px; }
-.sec-head { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; padding: 14px 16px 6px; }
+.panel-pad { padding: 12px 14px; }
+.sec-head { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; padding: 12px 14px 6px; }
 .sec-head h2 { font-size: 15px; }
 .sec-head small { color: var(--ink2); font-size: 12px; }
 .notice { margin: 10px 0 0; padding: 9px 12px; border-radius: 10px; font-size: 13px; line-height: 1.45; }
@@ -981,7 +981,7 @@ function fxRateChart(rows, opts) {
   let grid = '';
   for (let i = 0; i <= 3; i++) { const v = minY + (maxY - minY) * i / 3; const yy = y(v); grid += `<line x1="${PL}" y1="${yy.toFixed(1)}" x2="${W - PR}" y2="${yy.toFixed(1)}" class="gl"/><text x="0" y="${(yy - 2).toFixed(1)}" class="ax">${v.toFixed(1)}</text>`; }
   const d = pts.map((p, i) => (i ? 'L' : 'M') + x(i).toFixed(1) + ' ' + y(p.rate).toFixed(1)).join(' ');
-  const dots = pts.map((p, i) => `<circle cx="${x(i).toFixed(1)}" cy="${y(p.rate).toFixed(1)}" r="2.3" style="fill:${p.action === 'BUY USD' ? 'var(--buy)' : 'var(--sell)'}"/>`).join('');
+  const dots = pts.map((p, i) => `<circle cx="${x(i).toFixed(1)}" cy="${y(p.rate).toFixed(1)}" r="2.3" style="fill:${p.action === 'BUY USD' ? 'var(--buy)' : 'var(--sell)'}"><title>${esc(shortDate(p.date))} · ${p.action === 'BUY USD' ? 'ซื้อ' : 'ขาย'} USD · เรท ${p.rate.toFixed(2)}</title></circle>`).join('');
   const li = [0, n - 1];
   const labels = li.map(i => `<text x="${x(i).toFixed(1)}" y="${H - 4}" class="ax" text-anchor="${i === 0 ? 'start' : 'end'}">${esc(shortDate(pts[i].date))}</text>`).join('');
   return `<svg viewBox="0 0 ${W} ${H}" class="chartsvg" role="img" aria-label="${esc((opts && opts.aria) || '')}">${grid}<path d="${d}" fill="none" style="stroke:var(--ink3)" stroke-width="1.5"/>${dots}${labels}</svg>`;
@@ -1002,7 +1002,7 @@ function barChart(cats, series, opts) {
     const gx = PL + groupW * i + groupW / 2 - (series.length * barW) / 2;
     series.forEach((s, si) => {
       const v = s.values[i] || 0, bx = gx + si * barW, by = y(v);
-      bars += `<rect x="${bx.toFixed(1)}" y="${by.toFixed(1)}" width="${barW.toFixed(1)}" height="${Math.max(0, H - PB - by).toFixed(1)}" rx="1.5" style="fill:${s.color}"/>`;
+      bars += `<rect x="${bx.toFixed(1)}" y="${by.toFixed(1)}" width="${barW.toFixed(1)}" height="${Math.max(0, H - PB - by).toFixed(1)}" rx="1.5" style="fill:${s.color}"><title>${esc(c.label)} · ${esc(s.name)}: ${v.toLocaleString('en-US', { maximumFractionDigits: 2 })}</title></rect>`;
     });
     if (i % step === 0 || i === n - 1) bars += `<text x="${(PL + groupW * i + groupW / 2).toFixed(1)}" y="${H - 4}" class="ax" text-anchor="middle">${esc(c.label)}</text>`;
   });
@@ -1020,10 +1020,11 @@ function donutChart(segs, opts) {
   let a0 = -Math.PI / 2, paths = '';
   segs.forEach(s => {
     const frac = s.value / total, a1 = a0 + frac * Math.PI * 2, large = (a1 - a0) > Math.PI ? 1 : 0;
-    if (frac >= 0.9995) { paths += `<circle cx="${cx}" cy="${cy}" r="${(R + r) / 2}" fill="none" style="stroke:${s.color}" stroke-width="${R - r}"/>`; a0 = a1; return; }
+    const tip = `<title>${esc(s.label)}: ${money(s.value, '$', { dec: 0 })} · ${pct(s.value / total)}</title>`;
+    if (frac >= 0.9995) { paths += `<circle cx="${cx}" cy="${cy}" r="${(R + r) / 2}" fill="none" style="stroke:${s.color}" stroke-width="${R - r}">${tip}</circle>`; a0 = a1; return; }
     const x0 = cx + R * Math.cos(a0), y0 = cy + R * Math.sin(a0), x1 = cx + R * Math.cos(a1), y1 = cy + R * Math.sin(a1);
     const ix0 = cx + r * Math.cos(a1), iy0 = cy + r * Math.sin(a1), ix1 = cx + r * Math.cos(a0), iy1 = cy + r * Math.sin(a0);
-    paths += `<path d="M${x0.toFixed(2)} ${y0.toFixed(2)} A${R} ${R} 0 ${large} 1 ${x1.toFixed(2)} ${y1.toFixed(2)} L${ix0.toFixed(2)} ${iy0.toFixed(2)} A${r} ${r} 0 ${large} 0 ${ix1.toFixed(2)} ${iy1.toFixed(2)} Z" style="fill:${s.color}"/>`;
+    paths += `<path d="M${x0.toFixed(2)} ${y0.toFixed(2)} A${R} ${R} 0 ${large} 1 ${x1.toFixed(2)} ${y1.toFixed(2)} L${ix0.toFixed(2)} ${iy0.toFixed(2)} A${r} ${r} 0 ${large} 0 ${ix1.toFixed(2)} ${iy1.toFixed(2)} Z" style="fill:${s.color}">${tip}</path>`;
     a0 = a1;
   });
   const legend = segs.map(s => `<div class="lg-item"><span class="lg-dot" style="background:${s.color}"></span><span class="lg-l">${esc(s.label)}</span><span class="lg-v">${money(s.value, '$', { dec: 0 })} · ${pct(s.value / total)}</span></div>`).join('');
@@ -1352,7 +1353,6 @@ function viewSummary() {
   const nop = C.holdings.filter(h => h.status === 'NO PRICE').map(h => h.t);
   let h = '<div class="stack">';
   h += greet;
-  if (heldTickers().length) h += `<section class="panel panel-pad live-panel">${liveRow('price', live.priceStatus, S.settings.priceUpdatedAt)}${liveRow('rate', live.rateStatus, S.settings.rateUpdatedAt)}</section>`;
   h += `<section class="hero">
     <div class="hero-label">มูลค่าพอร์ตตอนนี้ (USD)</div>
     <div class="hero-num">${money(s.value)}</div>
@@ -1439,7 +1439,7 @@ function viewStocks() {
     ${['ALL'].concat(tick).map(t => `<button class="chip" data-act="filter" data-v="${esc(t)}" aria-pressed="${ui.stockFilter === t}">${t === 'ALL' ? 'ทั้งหมด' : esc(t)}</button>`).join('')}</div>` : '';
   const fees = rows.reduce((a, r) => a + (r.fee || 0), 0);
   const pl = rows.reduce((a, r) => a + (r.pl || 0), 0);
-  return `<div class="stack">${tick.length ? `<section class="panel panel-pad live-panel">${liveRow('price', live.priceStatus, S.settings.priceUpdatedAt)}</section>` : ''}${chips}
+  return `<div class="stack">${chips}
     <section class="panel">
       ${rows.length ? `<div class="sec-head"><h2>${rows.length} รายการ</h2><small>ค่าธรรมเนียม ${money(fees)} · กำไรที่ขายแล้ว <span class="${sgn(pl)}">${money(pl, '$', { sign: true })}</span></small></div>` : ''}
       ${rows.length ? groupedList(rows, stockRowHTML) : `<div class="empty"><b>ยังไม่มีรายการหุ้น</b>กดปุ่มด้านล่างเพื่อบันทึกการซื้อหรือขายหุ้น</div>`}
@@ -1481,7 +1481,6 @@ function viewFx() {
     volChart = `<section class="panel panel-pad"><h2 style="font-size:15px;margin-bottom:2px">ซื้อ/ขาย USD รายเดือน</h2><p class="muted" style="font-size:12.5px;margin:0 0 10px">รวม ${esc(scope)}</p>${barChart(cats, series, { aria: 'ปริมาณซื้อขาย USD รายเดือน' })}<div class="chart-legend">${barLegend(series, v => money(v, ''))}</div></section>`;
   }
   return `<div class="stack">
-  <section class="panel panel-pad live-panel">${liveRow('rate', live.rateStatus, S.settings.rateUpdatedAt)}</section>
   ${rateChart}${volChart}
   <section class="panel">
     <div class="grid4">
@@ -1515,10 +1514,13 @@ function cashRowHTML(r) {
     return `<button class="trow" data-act="edit-cash" data-id="${r.id}"><span class="tdate"><b>${d ? Number(d.slice(8)) : '?'}</b><span>${d ? MONTHS[Number(d.slice(5, 7)) - 1] : ''}</span></span><span class="tmain"><span class="tline1"><b>ฝาก/ถอน</b><span class="tag bad">ข้อมูลไม่ครบ</span></span><span class="tline2">แตะเพื่อแก้ไข</span></span></button>`;
   }
   const dep = r.type === 'Deposit', sym = r.cur === 'THB' ? '฿' : '$';
+  // ที่มา: ถ้าเชื่อมกับรายการแลกเงิน (mirrorFxId) แสดงว่า "แลกเงิน" เสมอ ไม่ว่าช่อง source ที่ผู้ใช้กรอกจะว่างหรือไม่
+  // ถ้าไม่เชื่อมกับ FX ให้ใช้ข้อความในช่องแหล่งที่มาที่ผู้ใช้กรอกเอง หรือ "ผู้ใช้บันทึก" ถ้าไม่ได้กรอก
+  const srcLabel = r.mirrorFxId ? 'แลกเงิน' : (r.source || 'ผู้ใช้บันทึก');
   return `<button class="trow" data-act="edit-cash" data-id="${r.id}">
     <span class="tdate"><b>${Number(d.slice(8))}</b><span>${MONTHS[Number(d.slice(5, 7)) - 1]}</span></span>
     <span class="tmain"><span class="tline1"><b>${dep ? 'ฝากเข้า' : 'ถอนออก'}</b><span class="tag ${dep ? 'buy' : 'sell'}">${dep ? 'เข้า' : 'ออก'}</span>${r.cur !== 'USD' ? '<span class="tag bad">ไม่ใช่ USD</span>' : ''}</span>
-    <span class="tline2">${r.fee ? 'ค่าธรรมเนียม ' + money(r.fee, sym) : ''}${r.fee && (r.note || r.source) ? ' · ' : ''}${esc(r.note || r.source || '')}</span></span>
+    <span class="tline2">${r.fee ? 'ค่าธรรมเนียม ' + money(r.fee, sym) + ' · ' : ''}ที่มา: ${esc(srcLabel)}${r.note ? ' · ' + esc(r.note) : ''}</span></span>
     <span class="tamt"><b>${money(dep ? r.amount : -r.amount, sym, { sign: dep })}</b></span>
   </button>`;
 }
@@ -1531,17 +1533,18 @@ function viewCash() {
     const recent = mc.slice(-8);
     const multiYear = recent[0].k.slice(0, 4) !== recent[recent.length - 1].k.slice(0, 4);
     const cats = recent.map(m => ({ k: m.k, label: monthShort(m.k, multiYear) }));
-    const series = [{ name: 'ฝากเข้า', color: 'var(--gain)', values: recent.map(m => m.dep) }, { name: 'ถอนออก', color: 'var(--loss)', values: recent.map(m => m.wd) }];
+    // ป้ายกำกับช่วงเวลาต้องชัดเจนว่าเป็น "N เดือนล่าสุด" (ตามกราฟ) ไม่ใช่ "ทั้งหมด" (ตาม Summary ด้านล่าง) — คนละช่วงเวลากันโดยตั้งใจ ห้ามทำให้ตัวเลขสองที่นี้เท่ากัน
     const scope = mc.length > recent.length ? `${recent.length} เดือนล่าสุด` : 'ทุกเดือนที่มีรายการ';
-    cashChart = `<section class="panel panel-pad"><h2 style="font-size:15px;margin-bottom:2px">เงินเข้า/ออกรายเดือน</h2><p class="muted" style="font-size:12.5px;margin:0 0 10px">รวม ${esc(scope)}</p>${barChart(cats, series, { aria: 'เงินฝากถอนรายเดือน' })}<div class="chart-legend">${barLegend(series, v => money(v))}</div></section>`;
+    const series = [{ name: 'ฝากเข้า (' + scope + ')', color: 'var(--gain)', values: recent.map(m => m.dep) }, { name: 'ถอนออก (' + scope + ')', color: 'var(--loss)', values: recent.map(m => m.wd) }];
+    cashChart = `<section class="panel panel-pad"><h2 style="font-size:15px;margin-bottom:2px">เงินเข้า/ออกรายเดือน</h2><p class="muted" style="font-size:12.5px;margin:0 0 10px">${esc(scope)}</p>${barChart(cats, series, { aria: 'เงินฝากถอนรายเดือน' })}<div class="chart-legend">${barLegend(series, v => money(v))}</div></section>`;
   }
   return `<div class="stack">
   ${cashChart}
   <section class="panel"><dl class="kv" style="padding-top:10px">
-    <div class="r"><dt>ฝากเข้ารวม</dt><dd>${money(c.dep)}</dd></div>
-    <div class="r"><dt>ถอนออกรวม</dt><dd>${money(c.wd)}</dd></div>
+    <div class="r"><dt>ฝากเข้าทั้งหมด</dt><dd>${money(c.dep)}</dd></div>
+    <div class="r"><dt>ถอนออกทั้งหมด</dt><dd>${money(c.wd)}</dd></div>
     <div class="r"><dt>ค่าโอนเข้า/ออก</dt><dd>${money(c.fees)}</dd></div>
-    <div class="r"><dt>สุทธิเข้าบัญชีเทรด</dt><dd><b>${money(c.net)}</b></dd></div>
+    <div class="r" style="border-top:1px solid var(--line2);margin-top:6px;padding-top:12px"><dt><b>เงินสุทธิเข้าบัญชีเทรด</b></dt><dd><b style="font-size:19px">${money(c.net)}</b></dd></div>
   </dl>
   <div style="padding:0 16px 14px"><div class="notice info" style="margin:0">บันทึกเฉพาะเงินที่โอนเข้า/ออกบัญชีโบรกเกอร์จริง กำไรจากการขายหุ้นที่เอาไปซื้อต่อไม่ใช่เงินฝาก</div></div></section>
   <section class="panel">
@@ -1577,8 +1580,16 @@ function viewSettings() {
     ${setField('THB ตั้งต้น (฿)', 'fxStartThb', { ph: '0' })}
     ${setField('ต้นทุนเฉลี่ย USD ตั้งต้น (฿ ต่อ USD)', 'fxStartCost', { ph: 'ไม่บังคับ', hint: 'ใส่แล้ว รายการขาย USD ที่เกิดก่อนการซื้อ จะคำนวณกำไรขาดทุนได้' })}
   </section>
-  <section class="panel panel-pad"><h2 style="font-size:15px;margin-bottom:2px">ราคาตลาดอัตโนมัติ</h2><p class="muted" style="font-size:12.5px;margin:0 0 4px">ดึงราคาหุ้นและเรท USD/THB จากตลาดจริงให้เอง ไม่ต้องกรอกเองรายวัน</p>
-    <div class="rate-row" style="padding-left:0;padding-right:0"><span class="lbl" style="margin:0">อัปเดตราคาหุ้นอัตโนมัติ</span>${seg('autoPrice', [['on', 'เปิด'], ['off', 'ปิด']], S.settings.autoPrice ? 'on' : 'off', 'เปิดหรือปิดการดึงราคาหุ้นอัตโนมัติ')}</div>
+  <section class="panel panel-pad"><h2 style="font-size:15px;margin-bottom:2px">ข้อมูลตลาด (Market Data)</h2><p class="muted" style="font-size:12.5px;margin:0 0 10px">ราคาหุ้นและเรท USD/THB ที่ใช้คำนวณทั้งแอป — ควบคุมจากที่เดียว หน้าอื่นใช้ค่าจากตรงนี้</p>
+    <div class="mkt-item">
+      <div class="rate-row" style="padding-left:0;padding-right:0">${liveRow('price', live.priceStatus, S.settings.priceUpdatedAt)}</div>
+    </div>
+    <div class="mkt-item" style="margin-top:14px;padding-top:14px;border-top:1px solid var(--line2)">
+      <div class="muted" style="font-size:13.5px;margin-bottom:6px">${num(S.settings.usdThb) === null ? 'ยังไม่มีเรท USD/THB' : '1 USD = ' + money(num(S.settings.usdThb), '', { dec: 4 }) + ' THB'}</div>
+      <div class="rate-row" style="padding-left:0;padding-right:0">${liveRow('rate', live.rateStatus, S.settings.rateUpdatedAt)}</div>
+    </div>
+    <button type="button" class="btn primary block" data-act="refresh-all" style="margin-top:14px">รีเฟรชทั้งหมด</button>
+    <div class="rate-row" style="padding-left:0;padding-right:0;margin-top:14px;padding-top:14px;border-top:1px solid var(--line2)"><span class="lbl" style="margin:0">อัปเดตราคาหุ้นอัตโนมัติ</span>${seg('autoPrice', [['on', 'เปิด'], ['off', 'ปิด']], S.settings.autoPrice ? 'on' : 'off', 'เปิดหรือปิดการดึงราคาหุ้นอัตโนมัติ')}</div>
     <div class="rate-row" style="padding-left:0;padding-right:0;margin-top:8px"><span class="lbl" style="margin:0">อัปเดตเรท USD/THB อัตโนมัติ</span>${seg('autoRate', [['on', 'เปิด'], ['off', 'ปิด']], S.settings.autoRate ? 'on' : 'off', 'เปิดหรือปิดการดึงเรท USD/THB อัตโนมัติ')}</div>
   </section>
   <section class="panel panel-pad"><h2 style="font-size:15px;margin-bottom:2px">เสียงและการแจ้งเตือน</h2><p class="muted" style="font-size:12.5px;margin:0 0 4px">เสียงสั้นๆ และแจ้งเตือนตอนบันทึก/ราคาถึงเป้าหมาย/Stop Loss หรือมีข้อผิดพลาด — ไม่ต้องต่อเน็ต</p>
@@ -1748,7 +1759,8 @@ function openFx(id) {
     </div>
     ${fld('ค่าธรรมเนียม (บาท)', 'fee', d.fee ? d.fee : '', { im: 'decimal', ph: '0' })}
     <div class="preview" id="preview"></div>
-    ${r ? '' : `<label class="check-row"><input type="checkbox" name="mirror" checked><span>บันทึกฝาก/ถอนบัญชีเทรดพร้อมกัน <span class="muted">(ซื้อ USD = ฝากเข้า, ขาย USD = ถอนออก จำนวน USD เท่ากัน)</span></span></label>`}
+    ${!r && d.action !== 'SELL USD' ? '<div class="notice info" style="margin-top:12px">ซื้อ USD จะสร้างรายการ “ฝากเข้า” ในฝาก/ถอนบัญชีเทรดให้อัตโนมัติ (จำนวน USD เท่ากัน)</div>' : ''}
+    ${!r ? '<div class="notice info" style="margin-top:12px" data-sellnote hidden>ขาย USD ไม่สร้างรายการฝาก/ถอนอัตโนมัติ — เป็นการแลกสกุลเงิน ไม่ใช่การถอนเงินออกจากบัญชีเทรด ถ้าถอนเงินจริงให้บันทึกแยกในแท็บฝาก/ถอน</div>' : ''}
     <details class="more"><summary>รายละเอียดเพิ่มเติม</summary>${fld('แหล่งที่มา', 'source', d.source)}<div class="field"><label for="f_note">หมายเหตุ</label><textarea id="f_note" name="note">${esc(d.note || '')}</textarea></div></details>
     <div class="err" id="err" role="alert"></div>
     <div class="actions">${r ? '<button type="button" class="btn danger" data-act="del">ลบ</button>' : ''}<button type="submit" class="btn primary">บันทึก</button></div>
@@ -1760,6 +1772,10 @@ function fxLabels() {
   const sell = f.elements['action'].value === 'SELL USD';
   $('#lblThb').textContent = sell ? 'บาทที่ได้รับ (฿)' : 'บาทที่จ่าย (฿)';
   $('#lblUsd').textContent = sell ? 'USD ที่ขาย' : 'USD ที่ได้รับ';
+  const buyNote = f.querySelector('.notice.info:not([data-sellnote])');
+  const sellNote = f.querySelector('[data-sellnote]');
+  if (buyNote) buyNote.hidden = sell;
+  if (sellNote) sellNote.hidden = !sell;
 }
 function readFx(f) {
   const g = n => (f.elements[n] ? f.elements[n].value : ''); const fee = num(g('fee'));
@@ -1775,7 +1791,8 @@ function saveFx(f) {
   const id = f.dataset.id;
   if (id) {
     Object.assign(S.fx.find(x => x.id === id), v);
-    // ถ้ารายการแลกเงินนี้มีฝาก/ถอนคู่กันอยู่ (สร้างตอนบันทึกครั้งแรก) ให้แก้ไขตามกันไปเสมอ ห้ามหลุดความสัมพันธ์
+    // ถ้ารายการแลกเงินนี้มีฝาก/ถอนคู่กันอยู่ (สร้างอัตโนมัติตอนซื้อ USD หรือเชื่อมมาจากข้อมูลเก่า) ให้แก้ไขตามกันไปเสมอ ห้ามหลุดความสัมพันธ์
+    // หมายเหตุ: รายการฝาก/ถอนที่ผู้ใช้สร้างเองไม่มี mirrorFxId จึงไม่ถูกแตะต้องโดยฟังก์ชันนี้
     const mirror = S.cash.find(x => x.mirrorFxId === id);
     if (mirror) {
       mirror.date = v.date;
@@ -1785,8 +1802,10 @@ function saveFx(f) {
   } else {
     const fxId = uid();
     S.fx.push(Object.assign({ id: fxId, seq: S.seq++ }, v));
-    if (f.elements['mirror'] && f.elements['mirror'].checked) {
-      S.cash.push({ id: uid(), seq: S.seq++, date: v.date, type: v.action === 'BUY USD' ? 'Deposit' : 'Withdrawal', amount: v.usd, currency: 'USD', fee: 0, source: '', note: 'จากรายการแลกเงิน', mirrorFxId: fxId });
+    // กฎใหม่: ซื้อ USD → สร้างฝากเข้าบัญชีเทรดอัตโนมัติเสมอ (ผู้ใช้ไม่ต้องกรอกซ้ำ)
+    // ขาย USD → ไม่สร้างถอนออกอัตโนมัติ (เป็นการแลกสกุลเงิน ไม่ใช่การถอนเงินออกจากบัญชีเทรดจริง — ถ้าถอนจริงให้บันทึกแยกในแท็บฝาก/ถอน)
+    if (v.action === 'BUY USD') {
+      S.cash.push({ id: uid(), seq: S.seq++, date: v.date, type: 'Deposit', amount: v.usd, currency: 'USD', fee: 0, source: '', note: 'สร้างอัตโนมัติจากการแลกเงิน', mirrorFxId: fxId });
     }
   }
   afterSave('บันทึกการแลกเงินสำเร็จ');
@@ -1928,6 +1947,7 @@ document.addEventListener('click', async e => {
   else if (a === 'sound-test') playSound('success');
   else if (a === 'refresh-prices') refreshPricesNow();
   else if (a === 'refresh-rate') refreshRateNow();
+  else if (a === 'refresh-all') { refreshPricesNow(); refreshRateNow(); }
   else if (a === 'notif-request') requestNotifPermission();
   else if (a === 'save-username') { const inp = $('#unameInput'); if (inp) { S.settings.username = inp.value.trim().slice(0, 50); persist(); render(); toast('บันทึกชื่อแล้ว'); playSound('success'); } }
   else if (a === 'wipe') { if (await confirmBox('ล้างข้อมูลทั้งหมดในสมุดนี้? แนะนำให้สำรองข้อมูลก่อน', 'ล้างทั้งหมด', true)) { S = newState(); persist(); go('sum'); toast('ล้างข้อมูลแล้ว'); } }
