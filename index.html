@@ -66,6 +66,11 @@ body {
   font-family: var(--font-body); font-size: 15px; line-height: 1.5;
   font-variant-numeric: tabular-nums; -webkit-tap-highlight-color: transparent;
 }
+body::before, body::after {
+  content: ""; position: fixed; z-index: -1; border-radius: 50%; filter: blur(60px); pointer-events: none;
+}
+body::before { width: 62vw; height: 62vw; max-width: 420px; max-height: 420px; top: -14vh; right: -18vw; background: radial-gradient(circle, color-mix(in srgb, var(--accent) 45%, transparent) 0%, transparent 72%); }
+body::after { width: 70vw; height: 70vw; max-width: 460px; max-height: 460px; bottom: -20vh; left: -22vw; background: radial-gradient(circle, color-mix(in srgb, var(--accent2, var(--accent)) 40%, transparent) 0%, transparent 72%); }
 body.noscroll { overflow: hidden; }
 /* ---------- ป้องกันการเลือก/คัดลอกข้อความแบบเว็บไซต์ (ให้รู้สึกเป็นแอป ไม่ใช่หน้าเว็บ) — ยกเว้น input/textarea ที่ต้องกรอกข้อมูล ---------- */
 body {
@@ -302,14 +307,29 @@ details.more > summary { cursor: pointer; padding: 10px 0; color: var(--accent);
 @media (hover: hover) { .fab:hover { transform: translateY(-2px); } }
 .fab svg { width: 20px; height: 20px; }
 .fab[hidden] { display: none; }
-.tabbar { position: fixed; left: 0; right: 0; bottom: 0; z-index: 25; background: var(--surface); border-top: 1px solid var(--line); padding-bottom: env(safe-area-inset-bottom, 0px); }
-.tabbar-in { max-width: 680px; margin: 0 auto; display: grid; grid-template-columns: repeat(5, 1fr); }
-.tab { position: relative; background: transparent; border: 0; padding: 9px 2px 8px; min-height: 58px; color: var(--ink3); display: flex; flex-direction: column; align-items: center; gap: 2px; font-size: 11.5px; transition: color .18s; }
-.tab svg { width: 24px; height: 24px; transition: transform .18s cubic-bezier(.34,1.56,.64,1); }
-.tab:active svg { transform: scale(.88); }
-.tab[aria-current="page"] { color: var(--accent); font-weight: 600; }
-.tab[aria-current="page"]::before { content: ""; position: absolute; top: 0; left: 26%; right: 26%; height: 3px; border-radius: 0 0 3px 3px; background: var(--accent); }
-.tab[aria-current="page"] svg { transform: scale(1.08); filter: drop-shadow(0 0 0 var(--accent)); }
+.tabbar { position: fixed; left: 0; right: 0; bottom: 0; z-index: 25; background: transparent; padding: 0 12px calc(12px + env(safe-area-inset-bottom, 0px)); pointer-events: none; }
+.tabbar-in {
+  position: relative; max-width: 420px; margin: 0 auto; display: grid; grid-template-columns: repeat(5, 1fr);
+  pointer-events: auto;
+  background: linear-gradient(175deg, #241A44 0%, #150F28 100%);
+  border: 1px solid rgba(255,255,255,.07);
+  border-radius: 24px;
+  padding: 5px 3px;
+  box-shadow: 0 16px 34px -12px rgba(20, 8, 45, .55), 0 2px 10px rgba(10, 4, 24, .35), inset 0 1px 0 rgba(255,255,255,.06);
+  -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px);
+}
+.tab { position: relative; background: transparent; border: 0; padding: 6px 2px 5px; min-height: 50px; color: rgba(232,226,255,.5); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; font-size: 10.5px; transition: color .18s; }
+.tab-ic { display: flex; align-items: center; justify-content: center; width: 38px; height: 38px; border-radius: 50%; transition: transform .3s cubic-bezier(.34,1.56,.64,1), background .25s, box-shadow .25s; }
+.tab-ic svg { width: 21px; height: 21px; transition: transform .18s; }
+.tab:active .tab-ic svg { transform: scale(.88); }
+.tab-lb { transition: opacity .15s, margin-top .15s; }
+.tab[aria-current="page"] { color: #fff; font-weight: 600; }
+.tab[aria-current="page"] .tab-ic {
+  background: linear-gradient(150deg, var(--accent) 0%, var(--accent2, var(--accent)) 100%);
+  color: #fff; transform: translateY(-16px) scale(1.08);
+  box-shadow: 0 6px 16px -3px color-mix(in srgb, var(--accent) 75%, transparent), 0 0 0 5px #1A1330;
+}
+.tab[aria-current="page"] .tab-lb { opacity: 0; margin-top: -12px; height: 0; }
 
 /* ---------- sheet / dialog ---------- */
 .overlay { position: fixed; inset: 0; z-index: 40; background: var(--overlay); display: none; }
@@ -1288,7 +1308,7 @@ function go(tab, opts) {
 }
 function buildTabbar() {
   $('#tabbar').innerHTML = '<div class="tabbar-in">' + TABS.map(t =>
-    `<button class="tab" data-act="tab" data-tab="${t.id}">${t.icon}<span>${t.label}</span></button>`).join('') + '</div>';
+    `<button class="tab" data-act="tab" data-tab="${t.id}"><span class="tab-ic">${t.icon}</span><span class="tab-lb">${t.label}</span></button>`).join('') + '</div>';
 }
 function render() {
   const y = window.scrollY;
@@ -1503,7 +1523,7 @@ function viewFx() {
   ${rateChart}${volChart}
   <section class="panel">
     <div class="grid4">
-      <div><div class="k">USD ที่แลกเข้าระบบ</div><div class="v">${money(f.usdNow)}</div></div>
+      <div><div class="k">USD คงเหลือ</div><div class="v">${money(f.usdNow)}</div></div>
       <div><div class="k">ต้นทุนเฉลี่ย</div><div class="v">${money(f.avgCost, '฿', { dec: 4 })}</div><div class="s muted">ต่อ 1 USD</div></div>
       <div><div class="k">มูลค่าตอนนี้</div><div class="v">${f.valueNow === null ? '–' : money(f.valueNow, '฿', { dec: 0 })}</div><div class="s muted">ต้นทุน ${money(f.totalCost, '฿', { dec: 0 })}</div></div>
       <div><div class="k">กำไร/ขาดทุนที่ยังไม่ขาย</div><div class="v ${sgn(f.unreal)}">${f.unreal === null ? '–' : money(f.unreal, '฿', { sign: true })}</div><div class="s ${sgn(f.unreal)}">${f.unrealPct === null ? '' : pct(f.unrealPct, true)}</div></div>
