@@ -1475,7 +1475,7 @@ function viewSummary() {
   const eq = equityCurve(S, C);
   if (eq.length >= 2) {
     const RANGES = [['1D', '1D'], ['1W', '1W'], ['1M', '1M'], ['3M', '3M'], ['6M', '6M'], ['1Y', '1Y'], ['ALL', 'ALL']];
-    const SERIES_DEFS = [['capital', 'เงินที่ฝากเข้า (สะสม)', 'var(--accent)'], ['realized', 'กำไร/ขาดทุนจากการเทรด (สะสม)', 'var(--gain)'], ['cash', 'เงินสดคงเหลือ', 'var(--buy)']];
+    const SERIES_DEFS = [['capital', 'เงินที่ฝากเข้า (สะสม)', 'var(--accent)'], ['realized', 'กำไร/ขาดทุนจากการเทรด (สะสม)', 'var(--gain)'], ['cash', 'เงินสดคงเหลือ', '#FFD34D']];
     const cutoff = rangeCutoff(ui.histRange);
     const eqF = cutoff ? eq.filter(p => p.date >= cutoff) : eq;
     const activeSeries = SERIES_DEFS.filter(sd => ui.histSeries.includes(sd[0]));
