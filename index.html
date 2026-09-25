@@ -1643,7 +1643,7 @@ function viewFx() {
   ${rateChart}${volChart}
   <section class="panel">
     <div class="grid4">
-      <div><div class="k">USD คงเหลือ</div><div class="v">${money(f.usdNow)}</div></div>
+      <div><div class="k">USD ที่แลกเข้าระบบแล้ว</div><div class="v">${money(f.usdNow)}</div></div>
       <div><div class="k">ต้นทุนเฉลี่ย</div><div class="v">${money(f.avgCost, '฿', { dec: 4 })}</div><div class="s muted">ต่อ 1 USD</div></div>
       <div><div class="k">มูลค่าตอนนี้</div><div class="v">${f.valueNow === null ? '–' : money(f.valueNow, '฿', { dec: 0 })}</div><div class="s muted">ต้นทุน ${money(f.totalCost, '฿', { dec: 0 })}</div></div>
       <div><div class="k">กำไร/ขาดทุนที่ยังไม่ขาย</div><div class="v ${sgn(f.unreal)}">${f.unreal === null ? '–' : money(f.unreal, '฿', { sign: true })}</div><div class="s ${sgn(f.unreal)}">${f.unrealPct === null ? '' : pct(f.unrealPct, true)}</div></div>
