@@ -196,6 +196,11 @@ details.panel > summary .sum-l { flex: 1; display: flex; align-items: center; ga
 /* ---------- transaction rows ---------- */
 .chips { display: flex; gap: 8px; overflow-x: auto; padding: 2px 0 4px; scrollbar-width: none; }
 .chips::-webkit-scrollbar { display: none; }
+.search-wrap { padding: 2px 0 6px; }
+.search-input { display: block; width: 100%; min-height: 44px; padding: 0 14px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); color: var(--ink); font-size: 15px; }
+.search-input::placeholder { color: var(--ink3); }
+.search-input:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+.search-input::-webkit-search-cancel-button { cursor: pointer; }
 .chip { flex: none; border: 1px solid var(--line); background: var(--surface); border-radius: 999px; padding: 6px 14px; font-size: 13.5px; min-height: 36px; color: var(--ink2); transition: background-color .18s, border-color .18s, color .18s, transform .12s; }
 .chip:active { transform: scale(.95); }
 .chip[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); font-weight: 500; }
@@ -271,6 +276,15 @@ input:focus, select:focus, textarea:focus { outline: 2px solid var(--accent); ou
 .seg input[value="BUY"]:checked + span, .seg input[value="BUY USD"]:checked + span, .seg input[value="Deposit"]:checked + span { background: var(--buy-soft); color: var(--buy); box-shadow: 0 0 0 1px var(--buy); }
 .seg input[value="SELL"]:checked + span, .seg input[value="SELL USD"]:checked + span, .seg input[value="Withdrawal"]:checked + span { background: var(--sell-soft); color: var(--sell); box-shadow: 0 0 0 1px var(--sell); }
 .seg input:focus-visible + span { outline: 2px solid var(--accent); outline-offset: 1px; }
+.switch { position: relative; display: inline-flex; flex: none; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+.switch input { position: absolute; inset: 0; opacity: 0; margin: 0; width: 100%; height: 100%; cursor: pointer; }
+.switch-track { display: block; width: 50px; height: 30px; background: var(--line); border: 1px solid var(--line); border-radius: 999px; position: relative; transition: background-color .2s, border-color .2s; }
+.switch-thumb { position: absolute; top: 2px; left: 2px; width: 24px; height: 24px; border-radius: 50%; background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,.35), 0 0 0 .5px rgba(0,0,0,.06); transition: transform .22s cubic-bezier(.34,1.56,.64,1); }
+.switch input:checked + .switch-track { background: var(--gain); border-color: var(--gain); }
+.switch input:checked + .switch-track .switch-thumb { transform: translateX(20px); }
+.switch input:focus-visible + .switch-track { outline: 2px solid var(--accent); outline-offset: 2px; }
+.switch input:disabled + .switch-track { opacity: .5; cursor: not-allowed; }
+@media (prefers-reduced-motion: reduce) { .switch-track, .switch-thumb { transition: none; } }
 .check-row { display: flex; gap: 10px; align-items: flex-start; margin-top: 14px; font-size: 14px; }
 .check-row input { width: 22px; height: 22px; min-height: 0; margin: 1px 0 0; flex: none; accent-color: var(--accent); }
 .preview { margin-top: 14px; background: var(--surface2); border: 1px solid var(--line2); border-radius: 12px; padding: 10px 12px; font-size: 13.5px; }
@@ -703,25 +717,40 @@ function monthlyCash(C) {
   return Object.values(m).sort((a, b) => a.k.localeCompare(b.k));
 }
 
-/* จุดสะสมตามเวลา: เงินทุนสะสม (ตั้งต้น+ฝาก-ถอน) เทียบกับกำไรที่ขายแล้วสะสม */
+/* จุดสะสมตามเวลา: เงินทุนสะสม (ตั้งต้น+ฝาก-ถอน), กำไรที่ขายแล้วสะสม, และเงินสดสะสม — ทั้งหมดคำนวณย้อนหลังได้จากประวัติธุรกรรมจริง ไม่ต้องพึ่งราคาหุ้นย้อนหลัง */
 function equityCurve(S, C) {
   const start = N(S.settings.startValue);
   const events = [];
-  C.cash.rows.forEach(r => { if (r.status === 'OK' && r.date && r.cur === 'USD') events.push({ date: r.date, cap: r.type === 'Deposit' ? r.usdAmt : -r.usdAmt, real: 0 }); });
-  C.st.rows.forEach(r => { if (r.action === 'SELL' && r.pl !== null && r.date) events.push({ date: r.date, cap: 0, real: r.pl }); });
-  if (!events.length) return [{ date: '', capital: start, realized: 0 }];
+  C.cash.rows.forEach(r => { if (r.status === 'OK' && r.date && r.cur === 'USD') events.push({ date: r.date, cap: r.type === 'Deposit' ? r.usdAmt : -r.usdAmt, real: 0, cash: r.impact }); });
+  C.st.rows.forEach(r => {
+    if (r.status === 'Incomplete' || !r.date) return;
+    if (r.action === 'SELL' && r.pl !== null) events.push({ date: r.date, cap: 0, real: r.pl, cash: 0 });
+    if (r.netUsd !== null) events.push({ date: r.date, cap: 0, real: 0, cash: r.action === 'SELL' ? r.netUsd : -r.netUsd });
+  });
+  if (!events.length) return [{ date: '', capital: start, realized: 0, cash: start }];
   events.sort((a, b) => a.date.localeCompare(b.date));
-  const out = [{ date: events[0].date, capital: start, realized: 0 }];
-  let cap = start, real = 0;
+  const out = [{ date: events[0].date, capital: start, realized: 0, cash: start }];
+  let cap = start, real = 0, cash = start;
   events.forEach(e => {
-    cap += e.cap; real += e.real;
+    cap += e.cap; real += e.real; cash += e.cash;
     const last = out[out.length - 1];
-    if (last.date === e.date) { last.capital = cap; last.realized = real; }
-    else out.push({ date: e.date, capital: cap, realized: real });
+    if (last.date === e.date) { last.capital = cap; last.realized = real; last.cash = cash; }
+    else out.push({ date: e.date, capital: cap, realized: real, cash });
   });
   return out;
 }
 
+function rangeCutoff(range) {
+  const d = new Date();
+  if (range === '1D') d.setDate(d.getDate() - 1);
+  else if (range === '1W') d.setDate(d.getDate() - 7);
+  else if (range === '1M') d.setMonth(d.getMonth() - 1);
+  else if (range === '3M') d.setMonth(d.getMonth() - 3);
+  else if (range === '6M') d.setMonth(d.getMonth() - 6);
+  else if (range === '1Y') d.setFullYear(d.getFullYear() - 1);
+  else return null;
+  return d.toISOString().slice(0, 10);
+}
 function monthlyStats(C) {
   const m = {};
   const get = k => m[k] || (m[k] = { k, n: 0, buyUsd: 0, sellUsd: 0, buyThb: 0, sellThb: 0, fee: 0, plStock: 0, sells: 0 });
@@ -1102,9 +1131,25 @@ function loadLocal() {
 function saveLocal() { try { localStorage.setItem(LS_KEY, JSON.stringify(S)); } catch (e) { /* เก็บในเครื่องไม่ได้ */ } }
 let S = loadLocal() || newState();
 let C = null;
-const ui = { tab: 'sum', stockFilter: 'ALL', checksOpen: null, monthOpen: false, scrollChecks: false };
+const ui = { tab: 'sum', stockFilter: 'ALL', checksOpen: null, monthOpen: false, scrollChecks: false,
+  search: { stock: '', fx: '', cash: '' }, dateRange: { stock: 'ALL', fx: 'ALL', cash: 'ALL' }, typeFilter: { stock: 'ALL', fx: 'ALL', cash: 'ALL' },
+  histRange: 'ALL', histSeries: ['capital', 'realized', 'cash'] };
 
 function persist() { S.updatedAt = Date.now(); saveLocal(); scheduleRemote(); }
+function recordSnapshot() {
+  if (!C || !C.sum) return;
+  const today = new Date().toISOString().slice(0, 10);
+  if (!Array.isArray(S.history)) S.history = [];
+  const snap = { date: today, value: Math.round(C.sum.value * 100) / 100, cash: Math.round(C.sum.curCash * 100) / 100, stock: Math.round(C.sum.mvTotal * 100) / 100 };
+  const last = S.history[S.history.length - 1];
+  if (last && last.date === today) {
+    if (last.value !== snap.value || last.cash !== snap.cash || last.stock !== snap.stock) { S.history[S.history.length - 1] = snap; saveLocal(); }
+  } else {
+    S.history.push(snap);
+    if (S.history.length > 3660) S.history.shift();
+    saveLocal();
+  }
+}
 function hasData(s) { return s.stocks.length + s.fx.length + s.cash.length > 0 || N(s.settings.startValue) !== 0; }
 
 /* ---------- cloud sync (ส่วนตัวต่อบัญชี ถ้ามี) ---------- */
@@ -1317,6 +1362,10 @@ function buildTabbar() {
 }
 function render() {
   const y = window.scrollY;
+  const mainEl = $('#main');
+  const af = document.activeElement;
+  const afId = (af && af.id && mainEl.contains(af)) ? af.id : null;
+  const afSel = (afId && (af.tagName === 'INPUT' || af.tagName === 'TEXTAREA') && typeof af.selectionStart === 'number') ? [af.selectionStart, af.selectionEnd] : null;
   C = computeAll(S);
   const tab = TABS.find(t => t.id === ui.tab) || TABS[0];
   $('#title').textContent = tab.title;
@@ -1327,8 +1376,16 @@ function render() {
     pc.innerHTML = '<span class="dot"></span>' + (C.issues ? 'ต้องตรวจ ' + C.issues : 'ตรวจแล้วปกติ');
   }
   setSync(remote.status);
+  if (!isEmpty()) recordSnapshot();
   const views = { sum: viewSummary, stock: viewStocks, fx: viewFx, cash: viewCash, set: viewSettings };
-  $('#main').innerHTML = views[tab.id]();
+  mainEl.innerHTML = views[tab.id]();
+  if (afId) {
+    const el = document.getElementById(afId);
+    if (el) {
+      el.focus({ preventScroll: true });
+      if (afSel && el.setSelectionRange) { try { el.setSelectionRange(afSel[0], afSel[1]); } catch (e) { /* ignore */ } }
+    }
+  }
   $$('.tab').forEach(b => b.setAttribute('aria-current', b.dataset.tab === tab.id ? 'page' : 'false'));
   const fab = $('#fab');
   if (FAB[tab.id]) { fab.hidden = false; $('#fabLabel').textContent = FAB[tab.id]; } else fab.hidden = true;
@@ -1417,9 +1474,23 @@ function viewSummary() {
   </section>`;
   const eq = equityCurve(S, C);
   if (eq.length >= 2) {
-    const capSeries = { name: 'เงินทุนสะสม (ฝาก − ถอน)', color: 'var(--accent)', points: eq.map(p => ({ x: shortDate(p.date), y: p.capital })) };
-    const realSeries = { name: 'กำไรสะสมที่ขายแล้ว', color: 'var(--gain)', points: eq.map(p => ({ x: shortDate(p.date), y: p.realized })) };
-    h += `<section class="panel panel-pad"><h2 style="font-size:15px;margin-bottom:2px">การเติบโตของพอร์ต</h2><p class="muted" style="font-size:12.5px;margin:0 0 10px">เงินทุนสะสมเทียบกับกำไรที่ขายแล้วสะสม ตามเวลา</p>${lineChart([capSeries, realSeries], { aria: 'กราฟการเติบโตของพอร์ต' })}<div class="chart-legend">${lineLegend([capSeries, realSeries], v => money(v, '$', { sign: true }))}</div></section>`;
+    const RANGES = [['1D', '1D'], ['1W', '1W'], ['1M', '1M'], ['3M', '3M'], ['6M', '6M'], ['1Y', '1Y'], ['ALL', 'ALL']];
+    const SERIES_DEFS = [['capital', 'เงินที่ฝากเข้า (สะสม)', 'var(--accent)'], ['realized', 'กำไร/ขาดทุนจากการเทรด (สะสม)', 'var(--gain)'], ['cash', 'เงินสดคงเหลือ', 'var(--buy)']];
+    const cutoff = rangeCutoff(ui.histRange);
+    const eqF = cutoff ? eq.filter(p => p.date >= cutoff) : eq;
+    const activeSeries = SERIES_DEFS.filter(sd => ui.histSeries.includes(sd[0]));
+    const rangeChips = `<div class="chips" role="group" aria-label="ช่วงเวลา">${RANGES.map(r => `<button class="chip" data-act="histrange" data-v="${r[0]}" aria-pressed="${ui.histRange === r[0]}">${r[1]}</button>`).join('')}</div>`;
+    const seriesChips = `<div class="chips" role="group" aria-label="เลือกข้อมูลที่แสดง">${SERIES_DEFS.map(sd => `<button class="chip" data-act="histseries" data-v="${sd[0]}" aria-pressed="${ui.histSeries.includes(sd[0])}">${esc(sd[1].split(' (')[0])}</button>`).join('')}</div>`;
+    let chartHtml;
+    if (!activeSeries.length) {
+      chartHtml = `<div class="empty" style="padding:20px 0"><b>เลือกอย่างน้อย 1 รายการด้านบน</b>เพื่อแสดงกราฟ</div>`;
+    } else if (eqF.length >= 2) {
+      const chartSeries = activeSeries.map(sd => ({ name: sd[1], color: sd[2], points: eqF.map(p => ({ x: shortDate(p.date), y: p[sd[0]] })) }));
+      chartHtml = `${lineChart(chartSeries, { aria: 'กราฟประวัติพอร์ต' })}<div class="chart-legend">${lineLegend(chartSeries, v => money(v, '$', { sign: true }))}</div>`;
+    } else {
+      chartHtml = `<div class="empty" style="padding:20px 0"><b>ข้อมูลในช่วงนี้ยังไม่พอสำหรับกราฟ</b>ลองเลือกช่วงเวลาที่ยาวขึ้น</div>`;
+    }
+    h += `<section class="panel panel-pad"><h2 style="font-size:15px;margin-bottom:2px">ประวัติพอร์ต</h2><p class="muted" style="font-size:12.5px;margin:0 0 10px">ดูว่าพอร์ตโตเพราะฝากเงินเพิ่ม หรือโตเพราะกำไรจริง — คำนวณย้อนหลังจากประวัติธุรกรรม</p>${rangeChips}${seriesChips}${chartHtml}</section>`;
   }
   const palette = ['var(--accent)', 'var(--sell)', 'var(--warn)', 'var(--gain)', 'var(--loss)'];
   const segs = [];
@@ -1473,20 +1544,49 @@ function groupedList(rows, rowFn) {
   });
   return out;
 }
+function inDateRange(dateStr, range) {
+  if (!dateStr || range === 'ALL') return true;
+  const today = new Date(); const todayStr = today.toISOString().slice(0, 10);
+  if (range === 'today') return dateStr === todayStr;
+  if (range === '7d') { const cut = new Date(today); cut.setDate(cut.getDate() - 7); return dateStr >= cut.toISOString().slice(0, 10); }
+  if (range === 'month') return dateStr.slice(0, 7) === todayStr.slice(0, 7);
+  if (range === 'year') return dateStr.slice(0, 4) === todayStr.slice(0, 4);
+  return true;
+}
+function rowMatches(q, fields) {
+  const needle = (q || '').trim().toLowerCase();
+  if (!needle) return true;
+  return fields.some(f => f !== null && f !== undefined && String(f).toLowerCase().includes(needle));
+}
+function searchFilterBar(scope, typeOpts) {
+  const q = ui.search[scope] || '', dr = ui.dateRange[scope] || 'ALL';
+  const ranges = [['ALL', 'ทั้งหมด'], ['today', 'วันนี้'], ['7d', '7 วัน'], ['month', 'เดือนนี้'], ['year', 'ปีนี้']];
+  let h = `<div class="search-wrap"><input type="search" class="search-input" placeholder="ค้นหา..." value="${esc(q)}" data-search="${scope}" aria-label="ค้นหารายการ"></div>
+    <div class="chips" role="group" aria-label="กรองตามช่วงวันที่">${ranges.map(r => `<button class="chip" data-act="daterange" data-scope="${scope}" data-v="${r[0]}" aria-pressed="${dr === r[0]}">${r[1]}</button>`).join('')}</div>`;
+  if (typeOpts) {
+    const tf = ui.typeFilter[scope] || 'ALL';
+    h += `<div class="chips" role="group" aria-label="กรองตามประเภท">${typeOpts.map(o => `<button class="chip" data-act="typefilter" data-scope="${scope}" data-v="${o[0]}" aria-pressed="${tf === o[0]}">${o[1]}</button>`).join('')}</div>`;
+  }
+  return h;
+}
 
 function viewStocks() {
   const tick = Object.keys(C.st.per).sort();
   if (ui.stockFilter !== 'ALL' && !tick.includes(ui.stockFilter)) ui.stockFilter = 'ALL';
+  const total = C.st.rows.length;
   let rows = C.st.rows.slice().reverse();
   if (ui.stockFilter !== 'ALL') rows = rows.filter(r => r.asset === ui.stockFilter);
+  if (ui.typeFilter.stock !== 'ALL') rows = rows.filter(r => r.action === ui.typeFilter.stock);
+  rows = rows.filter(r => inDateRange(r.date, ui.dateRange.stock) && rowMatches(ui.search.stock, [r.asset, r.action, r.date, r.id, r.shares, r.price, r.fee]));
   const chips = tick.length > 1 ? `<div class="chips" role="group" aria-label="กรองตามหุ้น">
     ${['ALL'].concat(tick).map(t => `<button class="chip" data-act="filter" data-v="${esc(t)}" aria-pressed="${ui.stockFilter === t}">${t === 'ALL' ? 'ทั้งหมด' : esc(t)}</button>`).join('')}</div>` : '';
+  const search = total ? searchFilterBar('stock', [['ALL', 'ทั้งหมด'], ['BUY', 'ซื้อ'], ['SELL', 'ขาย']]) : '';
   const fees = rows.reduce((a, r) => a + (r.fee || 0), 0);
   const pl = rows.reduce((a, r) => a + (r.pl || 0), 0);
-  return `<div class="stack">${chips}
+  return `<div class="stack">${chips}${search}
     <section class="panel">
       ${rows.length ? `<div class="sec-head"><h2>${rows.length} รายการ</h2><small>ค่าธรรมเนียม ${money(fees)} · กำไรที่ขายแล้ว <span class="${sgn(pl)}">${money(pl, '$', { sign: true })}</span></small></div>` : ''}
-      ${rows.length ? groupedList(rows, stockRowHTML) : `<div class="empty"><b>ยังไม่มีรายการหุ้น</b>กดปุ่มด้านล่างเพื่อบันทึกการซื้อหรือขายหุ้น</div>`}
+      ${rows.length ? groupedList(rows, stockRowHTML) : (total ? `<div class="empty"><b>ไม่พบรายการที่ตรงกับตัวกรอง</b>ลองเปลี่ยนคำค้นหรือช่วงวันที่ดู</div>` : `<div class="empty"><b>ยังไม่มีรายการหุ้น</b>กดปุ่มด้านล่างเพื่อบันทึกการซื้อหรือขายหุ้น</div>`)}
     </section></div>`;
 }
 
@@ -1506,7 +1606,10 @@ function fxRowHTML(r) {
 
 function viewFx() {
   const f = C.fx, rate = f.rateNow;
-  const rows = f.rows.slice().reverse();
+  const totalFx = f.rows.length;
+  let rows = f.rows.slice().reverse();
+  if (ui.typeFilter.fx !== 'ALL') rows = rows.filter(r => r.action === ui.typeFilter.fx);
+  rows = rows.filter(r => inDateRange(r.date, ui.dateRange.fx) && rowMatches(ui.search.fx, [r.action, r.date, r.id, r.note, r.usd, r.thb, r.rate]));
   const msAsc = monthlyStats(C);
   const ms = msAsc.slice().reverse();
   const nomo = !ms.length;
@@ -1547,8 +1650,9 @@ function viewFx() {
     <div class="tscroll"><table class="mt"><thead><tr><th>เดือน</th><th>ครั้ง</th><th>ซื้อ USD</th><th>ขาย USD</th><th>เรทซื้อเฉลี่ย</th><th>เรทขายเฉลี่ย</th><th>ค่าธรรมเนียม ฿</th><th>กำไรขายหุ้น $</th></tr></thead><tbody>
     ${ms.map(m => `<tr><td>${monthLabel(m.k)}</td><td>${m.n}</td><td>${m.buyUsd ? money(m.buyUsd, '') : '–'}</td><td>${m.sellUsd ? money(m.sellUsd, '') : '–'}</td><td>${m.avgBuy === null ? '–' : money(m.avgBuy, '')}</td><td>${m.avgSell === null ? '–' : money(m.avgSell, '')}</td><td>${m.fee ? money(m.fee, '') : '–'}</td><td class="${sgn(m.plStock)}">${m.sells ? money(m.plStock, '', { sign: true }) : '–'}</td></tr>`).join('')}
     </tbody></table></div></details>`}
+  ${totalFx ? searchFilterBar('fx', [['ALL', 'ทั้งหมด'], ['BUY USD', 'ซื้อ USD'], ['SELL USD', 'ขาย USD']]) : ''}
   <section class="panel">
-    ${rows.length ? `<div class="sec-head"><h2>${rows.length} รายการ</h2><small>ซื้อ ${money(f.usdBought)} · ขาย ${money(f.usdSold)}</small></div>${groupedList(rows, fxRowHTML)}` : `<div class="empty"><b>ยังไม่มีรายการแลกเงิน</b>บันทึกเมื่อแลกบาทเป็น USD หรือ USD กลับเป็นบาท</div>`}
+    ${rows.length ? `<div class="sec-head"><h2>${rows.length} รายการ</h2><small>ซื้อ ${money(f.usdBought)} · ขาย ${money(f.usdSold)}</small></div>${groupedList(rows, fxRowHTML)}` : (totalFx ? `<div class="empty"><b>ไม่พบรายการที่ตรงกับตัวกรอง</b>ลองเปลี่ยนคำค้นหรือช่วงวันที่ดู</div>` : `<div class="empty"><b>ยังไม่มีรายการแลกเงิน</b>บันทึกเมื่อแลกบาทเป็น USD หรือ USD กลับเป็นบาท</div>`)}
   </section></div>`;
 }
 
@@ -1570,7 +1674,10 @@ function cashRowHTML(r) {
 }
 
 function viewCash() {
-  const c = C.cash, rows = c.rows.slice().reverse();
+  const c = C.cash, totalCash = c.rows.length;
+  let rows = c.rows.slice().reverse();
+  if (ui.typeFilter.cash !== 'ALL') rows = rows.filter(r => r.type === ui.typeFilter.cash);
+  rows = rows.filter(r => inDateRange(r.date, ui.dateRange.cash) && rowMatches(ui.search.cash, [r.type, r.date, r.id, r.note, r.amount, r.source]));
   const mc = monthlyCash(C);
   let cashChart = '';
   if (mc.length >= 2) {
@@ -1591,8 +1698,9 @@ function viewCash() {
     <div class="r" style="border-top:1px solid var(--line2);margin-top:6px;padding-top:12px"><dt><b>เงินสุทธิเข้าบัญชีเทรด</b></dt><dd><b style="font-size:19px">${money(c.net)}</b></dd></div>
   </dl>
   <div style="padding:0 16px 14px"><div class="notice info" style="margin:0">บันทึกเฉพาะเงินที่โอนเข้า/ออกบัญชีโบรกเกอร์จริง กำไรจากการขายหุ้นที่เอาไปซื้อต่อไม่ใช่เงินฝาก</div></div></section>
+  ${totalCash ? searchFilterBar('cash', [['ALL', 'ทั้งหมด'], ['Deposit', 'ฝากเข้า'], ['Withdrawal', 'ถอนออก']]) : ''}
   <section class="panel">
-    ${rows.length ? `<div class="sec-head"><h2>${rows.length} รายการ</h2></div>${groupedList(rows, cashRowHTML)}` : `<div class="empty"><b>ยังไม่มีรายการฝาก/ถอน</b>กดปุ่มด้านล่างเพื่อบันทึกเงินเข้าหรือออกบัญชีเทรด</div>`}
+    ${rows.length ? `<div class="sec-head"><h2>${rows.length} รายการ</h2></div>${groupedList(rows, cashRowHTML)}` : (totalCash ? `<div class="empty"><b>ไม่พบรายการที่ตรงกับตัวกรอง</b>ลองเปลี่ยนคำค้นหรือช่วงวันที่ดู</div>` : `<div class="empty"><b>ยังไม่มีรายการฝาก/ถอน</b>กดปุ่มด้านล่างเพื่อบันทึกเงินเข้าหรือออกบัญชีเทรด</div>`)}
   </section></div>`;
 }
 
@@ -1633,14 +1741,14 @@ function viewSettings() {
       <div class="rate-row" style="padding-left:0;padding-right:0">${liveRow('rate', live.rateStatus, S.settings.rateUpdatedAt)}</div>
     </div>
     <button type="button" class="btn primary block" data-act="refresh-all" style="margin-top:14px">รีเฟรชทั้งหมด</button>
-    <div class="rate-row" style="padding-left:0;padding-right:0;margin-top:14px;padding-top:14px;border-top:1px solid var(--line2)"><span class="lbl" style="margin:0">อัปเดตราคาหุ้นอัตโนมัติ</span>${seg('autoPrice', [['on', 'เปิด'], ['off', 'ปิด']], S.settings.autoPrice ? 'on' : 'off', 'เปิดหรือปิดการดึงราคาหุ้นอัตโนมัติ')}</div>
-    <div class="rate-row" style="padding-left:0;padding-right:0;margin-top:8px"><span class="lbl" style="margin:0">อัปเดตเรท USD/THB อัตโนมัติ</span>${seg('autoRate', [['on', 'เปิด'], ['off', 'ปิด']], S.settings.autoRate ? 'on' : 'off', 'เปิดหรือปิดการดึงเรท USD/THB อัตโนมัติ')}</div>
+    <div class="rate-row" style="padding-left:0;padding-right:0;margin-top:14px;padding-top:14px;border-top:1px solid var(--line2)"><span class="lbl" style="margin:0">อัปเดตราคาหุ้นอัตโนมัติ</span>${toggleSwitch('autoPrice', S.settings.autoPrice, 'เปิดหรือปิดการดึงราคาหุ้นอัตโนมัติ')}</div>
+    <div class="rate-row" style="padding-left:0;padding-right:0;margin-top:8px"><span class="lbl" style="margin:0">อัปเดตเรท USD/THB อัตโนมัติ</span>${toggleSwitch('autoRate', S.settings.autoRate, 'เปิดหรือปิดการดึงเรท USD/THB อัตโนมัติ')}</div>
   </section>
   <section class="panel panel-pad"><h2 style="font-size:15px;margin-bottom:2px">เสียงและการแจ้งเตือน</h2><p class="muted" style="font-size:12.5px;margin:0 0 4px">เสียงสั้นๆ และแจ้งเตือนตอนบันทึก/ราคาถึงเป้าหมาย/Stop Loss หรือมีข้อผิดพลาด — ไม่ต้องต่อเน็ต</p>
-    <div class="rate-row" style="padding-left:0;padding-right:0"><span class="lbl" style="margin:0">เปิดเสียง</span>${seg('soundEnabled', [['on', 'เปิด'], ['off', 'ปิด']], S.settings.soundEnabled ? 'on' : 'off', 'เปิดหรือปิดเสียงแจ้งเตือน')}</div>
+    <div class="rate-row" style="padding-left:0;padding-right:0"><span class="lbl" style="margin:0">เปิดเสียง</span>${toggleSwitch('soundEnabled', S.settings.soundEnabled, 'เปิดหรือปิดเสียงแจ้งเตือน')}</div>
     <div class="field"><label for="s_soundVolume">ระดับเสียง ${Math.round(S.settings.soundVolume * 100)}%</label><input id="s_soundVolume" type="range" min="0" max="100" step="5" data-soundvol value="${Math.round(S.settings.soundVolume * 100)}" ${S.settings.soundEnabled ? '' : 'disabled'}></div>
     <button type="button" class="btn block" data-act="sound-test" style="margin-top:6px" ${S.settings.soundEnabled ? '' : 'disabled'}>🔊 ทดสอบเสียง</button>
-    <div class="rate-row" style="padding-left:0;padding-right:0;margin-top:12px"><span class="lbl" style="margin:0">แจ้งเตือนแบบระบบ (Push)</span>${seg('notifEnabled', [['on', 'เปิด'], ['off', 'ปิด']], S.settings.notifEnabled ? 'on' : 'off', 'เปิดหรือปิดการแจ้งเตือนแบบระบบ')}</div>
+    <div class="rate-row" style="padding-left:0;padding-right:0;margin-top:12px"><span class="lbl" style="margin:0">แจ้งเตือนแบบระบบ (Push)</span>${toggleSwitch('notifEnabled', S.settings.notifEnabled, 'เปิดหรือปิดการแจ้งเตือนแบบระบบ')}</div>
     <button type="button" class="btn block" data-act="notif-request" style="margin-top:6px">${notifPerm === 'granted' ? '✅ อนุญาตแจ้งเตือนแล้ว' : notifPerm === 'denied' ? '🔕 ถูกบล็อก — เปิดในตั้งค่าเบราว์เซอร์' : '🔔 ขออนุญาตแจ้งเตือน'}</button>
     <p class="muted" style="font-size:12px;margin:6px 0 0">ตั้ง Target Price / Stop Loss ได้ที่การ์ดของแต่ละหุ้นในหน้า “ภาพรวม”</p>
   </section>
@@ -1691,6 +1799,9 @@ function fld(label, name, val, o) {
 }
 function seg(name, opts, cur, label) {
   return `<div class="seg" role="radiogroup" aria-label="${label}" style="margin-top:8px">${opts.map(o => `<label><input type="radio" name="${name}" value="${o[0]}" ${cur === o[0] ? 'checked' : ''}><span>${o[1]}</span></label>`).join('')}</div>`;
+}
+function toggleSwitch(name, checked, label) {
+  return `<label class="switch" aria-label="${label}"><input type="checkbox" name="${name}" value="on" ${checked ? 'checked' : ''}><span class="switch-track"><span class="switch-thumb"></span></span></label>`;
 }
 function lastBroker() {
   const rows = S.stocks.slice().sort((a, b) => (b.seq || 0) - (a.seq || 0));
@@ -1980,6 +2091,10 @@ document.addEventListener('click', async e => {
   else if (a === 'edit-cash') openCash(id);
   else if (a === 'del') deleteCurrent();
   else if (a === 'filter') { ui.stockFilter = t.dataset.v; render(); }
+  else if (a === 'daterange') { ui.dateRange[t.dataset.scope] = t.dataset.v; render(); }
+  else if (a === 'typefilter') { ui.typeFilter[t.dataset.scope] = t.dataset.v; render(); }
+  else if (a === 'histrange') { ui.histRange = t.dataset.v; render(); }
+  else if (a === 'histseries') { const v = t.dataset.v, i = ui.histSeries.indexOf(v); if (i >= 0) ui.histSeries.splice(i, 1); else ui.histSeries.push(v); render(); }
   else if (a === 'checks') go('sum', { checks: true });
   else if (a === 'pick-xlsx') $('#fileXlsx').click();
   else if (a === 'pick-json') $('#fileJson').click();
@@ -2012,11 +2127,11 @@ document.addEventListener('change', async e => {
     persist(); render();
   } else if (t.id === 'fileXlsx') { const f = t.files && t.files[0]; t.value = ''; if (f) handleXlsx(f); }
   else if (t.id === 'fileJson') { const f = t.files && t.files[0]; t.value = ''; if (f) { try { $('#restoreBox').value = await f.text(); toast('อ่านไฟล์แล้ว กด “กู้คืน” เพื่อยืนยัน'); } catch (er) { toast('อ่านไฟล์ไม่สำเร็จ'); } } }
-  else if (t.name === 'soundEnabled') { S.settings.soundEnabled = t.value === 'on'; persist(); render(); if (S.settings.soundEnabled) playSound('success'); }
+  else if (t.name === 'soundEnabled') { S.settings.soundEnabled = t.checked; persist(); render(); if (S.settings.soundEnabled) playSound('success'); }
   else if (t.dataset && t.dataset.soundvol !== undefined) { S.settings.soundVolume = Math.max(0, Math.min(100, Number(t.value))) / 100; persist(); }
-  else if (t.name === 'autoPrice') { S.settings.autoPrice = t.value === 'on'; persist(); render(); if (S.settings.autoPrice) refreshPricesNow(); }
-  else if (t.name === 'autoRate') { S.settings.autoRate = t.value === 'on'; persist(); render(); if (S.settings.autoRate) refreshRateNow(); }
-  else if (t.name === 'notifEnabled') { S.settings.notifEnabled = t.value === 'on'; persist(); render(); }
+  else if (t.name === 'autoPrice') { S.settings.autoPrice = t.checked; persist(); render(); if (S.settings.autoPrice) refreshPricesNow(); }
+  else if (t.name === 'autoRate') { S.settings.autoRate = t.checked; persist(); render(); if (S.settings.autoRate) refreshRateNow(); }
+  else if (t.name === 'notifEnabled') { S.settings.notifEnabled = t.checked; persist(); render(); }
   else if (t.dataset && t.dataset.alertTarget !== undefined) {
     const tk = t.dataset.alertTarget, p = num(t.value);
     S.settings.alerts[tk] = Object.assign({ target: null, stop: null }, S.settings.alerts[tk]);
@@ -2035,6 +2150,7 @@ document.addEventListener('input', e => {
     if (lbl) lbl.textContent = 'ระดับเสียง ' + e.target.value + '%';
     return;
   }
+  if (e.target.dataset && e.target.dataset.search !== undefined) { ui.search[e.target.dataset.search] = e.target.value; render(); return; }
   const f = e.target.form; if (!f || f.id !== 'frm') return;
   if (e.target.name === 'action') fxLabels();
   updatePreview();
