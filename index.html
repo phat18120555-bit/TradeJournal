@@ -1017,9 +1017,16 @@ function shortDate(d) { if (!d) return ''; const mm = Number(d.slice(5, 7)); ret
 function monthShort(k, showYear) { const mm = Number(k.slice(5, 7)); return MONTHS[mm - 1] + (showYear ? ' \'' + k.slice(2, 4) : ''); }
 
 /* ---------- tiny self-contained SVG charts (no external library) ---------- */
+function fmtAxisMoney(v) {
+  const av = Math.abs(v);
+  let s;
+  if (av >= 1000) { s = (v / 1000).toFixed(av >= 10000 ? 0 : 1); if (s.endsWith('.0')) s = s.slice(0, -2); s += 'k'; }
+  else s = Math.round(v).toString();
+  return s;
+}
 function lineChart(series, opts) {
   opts = opts || {};
-  const W = 300, H = opts.h || 150, PL = 4, PR = 4, PT = 10, PB = 20;
+  const W = 300, H = opts.h || 150, PL = 30, PR = 4, PT = 10, PB = 20;
   const n = series[0].points.length;
   if (n < 2) return '';
   const allY = series.flatMap(s => s.points.map(p => p.y));
@@ -1028,10 +1035,14 @@ function lineChart(series, opts) {
   const x = i => PL + (W - PL - PR) * (i / (n - 1));
   const y = v => H - PB - (H - PT - PB) * ((v - minY) / (maxY - minY));
   let grid = '';
-  for (let i = 0; i <= 3; i++) { const yy = y(minY + (maxY - minY) * i / 3); grid += `<line x1="${PL}" y1="${yy.toFixed(1)}" x2="${W - PR}" y2="${yy.toFixed(1)}" class="gl"/>`; }
+  for (let i = 0; i <= 4; i++) {
+    const v = minY + (maxY - minY) * i / 4, yy = y(v);
+    grid += `<line x1="${PL}" y1="${yy.toFixed(1)}" x2="${W - PR}" y2="${yy.toFixed(1)}" class="gl"/><text x="${(PL - 4).toFixed(1)}" y="${(yy - 2).toFixed(1)}" class="ax" text-anchor="end">${fmtAxisMoney(v)}</text>`;
+  }
   const zy = y(Math.max(minY, Math.min(maxY, 0)));
-  const idx = [0, Math.floor((n - 1) / 2), n - 1];
-  const labels = idx.map(i => `<text x="${x(i).toFixed(1)}" y="${H - 4}" class="ax" text-anchor="${i === 0 ? 'start' : i === n - 1 ? 'end' : 'middle'}">${esc(series[0].points[i].x)}</text>`).join('');
+  const tickCount = Math.min(n, 5);
+  const idx = Array.from({ length: tickCount }, (_, k) => Math.round(k * (n - 1) / (tickCount - 1)));
+  const labels = [...new Set(idx)].map(i => `<text x="${x(i).toFixed(1)}" y="${H - 4}" class="ax" text-anchor="${i === 0 ? 'start' : i === n - 1 ? 'end' : 'middle'}">${esc(series[0].points[i].x)}</text>`).join('');
   const paths = series.map(s => {
     const d = s.points.map((p, i) => (i ? 'L' : 'M') + x(i).toFixed(1) + ' ' + y(p.y).toFixed(1)).join(' ');
     const last = s.points[n - 1];
@@ -1055,20 +1066,21 @@ function fxRateChart(rows, opts) {
   for (let i = 0; i <= 3; i++) { const v = minY + (maxY - minY) * i / 3; const yy = y(v); grid += `<line x1="${PL}" y1="${yy.toFixed(1)}" x2="${W - PR}" y2="${yy.toFixed(1)}" class="gl"/><text x="0" y="${(yy - 2).toFixed(1)}" class="ax">${v.toFixed(1)}</text>`; }
   const d = pts.map((p, i) => (i ? 'L' : 'M') + x(i).toFixed(1) + ' ' + y(p.rate).toFixed(1)).join(' ');
   const dots = pts.map((p, i) => `<circle cx="${x(i).toFixed(1)}" cy="${y(p.rate).toFixed(1)}" r="2.3" style="fill:${p.action === 'BUY USD' ? 'var(--buy)' : 'var(--sell)'}"><title>${esc(shortDate(p.date))} · ${p.action === 'BUY USD' ? 'ซื้อ' : 'ขาย'} USD · เรท ${p.rate.toFixed(2)}</title></circle>`).join('');
-  const li = [0, n - 1];
-  const labels = li.map(i => `<text x="${x(i).toFixed(1)}" y="${H - 4}" class="ax" text-anchor="${i === 0 ? 'start' : 'end'}">${esc(shortDate(pts[i].date))}</text>`).join('');
+  const tickCount = Math.min(n, 4);
+  const li = [...new Set(Array.from({ length: tickCount }, (_, k) => Math.round(k * (n - 1) / (tickCount - 1))))];
+  const labels = li.map(i => `<text x="${x(i).toFixed(1)}" y="${H - 4}" class="ax" text-anchor="${i === 0 ? 'start' : i === n - 1 ? 'end' : 'middle'}">${esc(shortDate(pts[i].date))}</text>`).join('');
   return `<svg viewBox="0 0 ${W} ${H}" class="chartsvg" role="img" aria-label="${esc((opts && opts.aria) || '')}">${grid}<path d="${d}" fill="none" style="stroke:var(--ink3)" stroke-width="1.5"/>${dots}${labels}</svg>`;
 }
 function barChart(cats, series, opts) {
   opts = opts || {};
-  const W = 300, H = opts.h || 150, PL = 4, PR = 4, PT = 10, PB = 20;
+  const W = 300, H = opts.h || 150, PL = 30, PR = 4, PT = 10, PB = 20;
   const n = cats.length; if (!n) return '';
   const maxV = niceMax(Math.max(0, ...series.flatMap(s => s.values)));
   const groupW = (W - PL - PR) / n;
   const barW = Math.max(3, Math.min(14, groupW / (series.length + 1) - 2));
   const y = v => H - PB - (H - PT - PB) * (v / maxV);
   let grid = '';
-  for (let i = 0; i <= 3; i++) { const yy = y(maxV * i / 3); grid += `<line x1="${PL}" y1="${yy.toFixed(1)}" x2="${W - PR}" y2="${yy.toFixed(1)}" class="gl"/>`; }
+  for (let i = 0; i <= 4; i++) { const v = maxV * i / 4, yy = y(v); grid += `<line x1="${PL}" y1="${yy.toFixed(1)}" x2="${W - PR}" y2="${yy.toFixed(1)}" class="gl"/><text x="${(PL - 4).toFixed(1)}" y="${(yy - 2).toFixed(1)}" class="ax" text-anchor="end">${fmtAxisMoney(v)}</text>`; }
   const step = Math.ceil(n / 6);
   let bars = '';
   cats.forEach((c, i) => {
