@@ -1851,11 +1851,13 @@ function ocrFindDate(text) {
   return null;
 }
 function ocrFindNumbers(text) {
-  const matches = text.match(/\d{1,3}(?:,\d{3})+(?:\.\d+)?|\d+\.\d{2}|\d{2,}/g) || [];
+  // จำนวนเงิน (มีคอมม่าหรือจุดทศนิยม) ไม่จำกัดความยาว + เลขดิบล้วนๆ จำกัดไม่เกิน 7 หลัก (สูงสุด 9,999,999)
+  // เลขดิบยาวเกินนี้ (เลขบัญชี/เลขอ้างอิง/วันเวลาที่ OCR อ่านติดกันไม่มีตัวคั่น) จะถูกข้ามไปทั้งก้อน ไม่ถูกตัดครึ่งมาใช้
+  const matches = text.match(/\d{1,3}(?:,\d{3})+(?:\.\d+)?|\d+\.\d{2}|\b\d{1,7}\b/g) || [];
   const seen = new Set(), out = [];
   matches.forEach(raw => {
     const v = Number(raw.replace(/,/g, ''));
-    if (!isFinite(v) || v <= 0) return;
+    if (!isFinite(v) || v <= 0 || v > 100000000) return; // ตัดทิ้งถ้าเกิน 100 ล้าน กันเคส OCR อ่านมั่วรวมเป็นก้อนใหญ่ผิดปกติ
     const key = v.toFixed(4); if (seen.has(key)) return; seen.add(key); out.push(v);
   });
   return out.sort((a, b) => b - a);
