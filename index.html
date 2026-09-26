@@ -1840,7 +1840,14 @@ function loadTesseract() {
   return tesseractLoadPromise;
 }
 function scanBtn(kind) {
-  return `<button type="button" class="btn block" data-act="scan-slip" data-kind="${kind}" style="margin-bottom:10px">${ICON.cam || ''} สแกนสลิป (ทดลอง)</button><div class="muted" id="scanStatus" style="font-size:12.5px;margin:-4px 0 10px" hidden></div>`;
+  return `<button type="button" class="btn block" data-act="scan-slip" data-kind="${kind}" style="margin-bottom:10px">${ICON.cam || ''} สแกนสลิป (ทดลอง)</button><div class="muted" id="scanStatus" style="font-size:12.5px;margin:-4px 0 10px" hidden></div>
+  <div id="scanRawWrap" style="margin:-4px 0 10px" hidden>
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:8px">
+      <small class="muted">ข้อความดิบจาก OCR (ไว้เทียบ/ส่งให้ช่วยปรับความแม่นยำ)</small>
+      <button type="button" class="btn" data-act="copy-scan-raw" style="padding:4px 10px;font-size:12px">คัดลอก</button>
+    </div>
+    <pre id="scanRaw" style="white-space:pre-wrap;font-size:11.5px;max-height:130px;overflow:auto;background:var(--surface2,rgba(255,255,255,.04));border:1px solid var(--line);border-radius:8px;padding:8px;margin:4px 0 0"></pre>
+  </div>`;
 }
 function toCE(y) { return y > 2400 ? y - 543 : y; } // ปี พ.ศ. → ค.ศ. ถ้าเจอ
 function ocrFindDate(text) {
@@ -1889,6 +1896,8 @@ function applyScanResult(kind, date, numbers, rawText) {
   }
   const noteEl = f.elements['note'];
   if (noteEl) { const hint = 'ข้อความจากสลิป: ' + rawText.replace(/\s+/g, ' ').trim().slice(0, 200); noteEl.value = noteEl.value ? noteEl.value + '\n' + hint : hint; }
+  const rawBox = $('#scanRaw'), rawWrap = $('#scanRawWrap');
+  if (rawBox && rawWrap) { rawBox.textContent = rawText.trim() || '(ไม่พบข้อความ)'; rawWrap.hidden = false; }
   toast('อ่านสลิปแล้ว — ตรวจตัวเลขให้ตรงก่อนบันทึกด้วยนะ');
   updatePreview();
 }
@@ -2197,6 +2206,7 @@ document.addEventListener('click', async e => {
   else if (a === 'save-username') { const inp = $('#unameInput'); if (inp) { S.settings.username = inp.value.trim().slice(0, 50); persist(); render(); toast('บันทึกชื่อแล้ว'); playSound('success'); } }
   else if (a === 'wipe') { if (await confirmBox('ล้างข้อมูลทั้งหมดในสมุดนี้? แนะนำให้สำรองข้อมูลก่อน', 'ล้างทั้งหมด', true)) { S = newState(); persist(); go('sum'); toast('ล้างข้อมูลแล้ว'); } }
   else if (a === 'scan-slip') { scanKind = t.dataset.kind; $('#fileSlip').click(); }
+  else if (a === 'copy-scan-raw') { const box = $('#scanRaw'); const ok = box && await copyText(box.textContent); toast(ok ? 'คัดลอกข้อความดิบแล้ว' : 'คัดลอกไม่สำเร็จ'); }
 });
 document.addEventListener('change', async e => {
   const t = e.target;
