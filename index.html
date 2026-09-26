@@ -1850,9 +1850,11 @@ function scanBtn(kind) {
   </div>`;
 }
 function toCE(y) { if (y < 100) y += 2500; return y > 2400 ? y - 543 : y; } // ปี พ.ศ. (2 หรือ 4 หลัก) → ค.ศ.
-// เดือนย่อไทยแบบมีจุด เช่น "ก.ย." — regex ต้องกันไว้ทั้งแบบมีจุดและ OCR อ่านจุดหาย
-const MONTH_RE = new RegExp('(' + MONTHS.map(m => m.replace(/\./g, '\\.?')).join('|') + ')', 'i');
-function monthIndex(raw) { const norm = raw.replace(/\./g, ''); return MONTHS.findIndex(m => m.replace(/\./g, '') === norm); }
+// เดือนย่อไทยแบบมีจุด เช่น "ก.ย." — OCR ภาษาไทยมักแยกตัวอักษรออกจากกันด้วยช่องว่าง (เช่น "ก . ย .")
+// จึงต้องอนุญาตให้มี \s* คั่นระหว่างทุกตัวอักษร ไม่ใช่แค่จุดที่หายไปเฉยๆ
+function monthPatternSource(m) { return m.split('').map(ch => ch === '.' ? '\\.?' : ch).join('\\s*'); }
+const MONTH_RE = new RegExp('(' + MONTHS.map(monthPatternSource).join('|') + ')', 'i');
+function monthIndex(raw) { const norm = raw.replace(/[\s.]/g, ''); return MONTHS.findIndex(m => m.replace(/\./g, '') === norm); }
 function ocrFindDate(text) {
   // แบบไทย: "23 ก.ย. 69" หรือ "23 ก.ย. 2569" (รองรับเดือนย่อไทย + ปี พ.ศ. 2 หรือ 4 หลัก)
   let m = text.match(new RegExp('\\b(\\d{1,2})\\s*' + MONTH_RE.source + '\\s*(\\d{2,4})\\b', 'i'));
