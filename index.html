@@ -1849,12 +1849,32 @@ function scanBtn(kind) {
     <pre id="scanRaw" style="white-space:pre-wrap;font-size:11.5px;max-height:130px;overflow:auto;background:var(--surface2,rgba(255,255,255,.04));border:1px solid var(--line);border-radius:8px;padding:8px;margin:4px 0 0"></pre>
   </div>`;
 }
-function toCE(y) { return y > 2400 ? y - 543 : y; } // ปี พ.ศ. → ค.ศ. ถ้าเจอ
+function toCE(y) { if (y < 100) y += 2500; return y > 2400 ? y - 543 : y; } // ปี พ.ศ. (2 หรือ 4 หลัก) → ค.ศ.
+// เดือนย่อไทยแบบมีจุด เช่น "ก.ย." — regex ต้องกันไว้ทั้งแบบมีจุดและ OCR อ่านจุดหาย
+const MONTH_RE = new RegExp('(' + MONTHS.map(m => m.replace(/\./g, '\\.?')).join('|') + ')', 'i');
+function monthIndex(raw) { const norm = raw.replace(/\./g, ''); return MONTHS.findIndex(m => m.replace(/\./g, '') === norm); }
 function ocrFindDate(text) {
-  let m = text.match(/\b(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{4})\b/);
+  // แบบไทย: "23 ก.ย. 69" หรือ "23 ก.ย. 2569" (รองรับเดือนย่อไทย + ปี พ.ศ. 2 หรือ 4 หลัก)
+  let m = text.match(new RegExp('\\b(\\d{1,2})\\s*' + MONTH_RE.source + '\\s*(\\d{2,4})\\b', 'i'));
+  if (m) { const dd = +m[1], mi = monthIndex(m[2]), yy = toCE(+m[3]); if (mi >= 0 && dd >= 1 && dd <= 31) return yy + '-' + String(mi + 1).padStart(2, '0') + '-' + String(dd).padStart(2, '0'); }
+  // dd/mm/yyyy หรือ dd-mm-yyyy
+  m = text.match(/\b(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{4})\b/);
   if (m) { const dd = +m[1], mm = +m[2], yy = toCE(+m[3]); if (mm >= 1 && mm <= 12 && dd >= 1 && dd <= 31) return yy + '-' + String(mm).padStart(2, '0') + '-' + String(dd).padStart(2, '0'); }
+  // yyyy-mm-dd
   m = text.match(/\b(\d{4})[\/\-.](\d{1,2})[\/\-.](\d{1,2})\b/);
   if (m) { const yy = toCE(+m[1]), mm = +m[2], dd = +m[3]; if (mm >= 1 && mm <= 12 && dd >= 1 && dd <= 31) return yy + '-' + String(mm).padStart(2, '0') + '-' + String(dd).padStart(2, '0'); }
+  return null;
+}
+// รูปแบบสลิปแลกเงิน "Exchange from X USD ... To Y THB ... Exchange Rate 1USD = Z THB" (เช่นแอป Dime!)
+// ยึดคำนำหน้าตรงๆ แทนการเดาจากขนาดตัวเลข จะได้ไม่หลุดไปเจอเรทแลกเงินหรือเลขวันที่/เวลาแทน
+function parseFxSlip(text) {
+  const fromM = text.match(/from\D{0,20}?([\d,]+\.\d{1,4})\s*(USD|THB)/i);
+  const toM = text.match(/\bto\D{0,20}?([\d,]+\.\d{1,4})\s*(USD|THB)/i);
+  if (!fromM || !toM) return null;
+  const fromVal = Number(fromM[1].replace(/,/g, '')), fromCur = fromM[2].toUpperCase();
+  const toVal = Number(toM[1].replace(/,/g, '')), toCur = toM[2].toUpperCase();
+  if (fromCur === 'USD' && toCur === 'THB') return { usd: fromVal, thb: toVal, action: 'SELL USD' };
+  if (fromCur === 'THB' && toCur === 'USD') return { usd: toVal, thb: fromVal, action: 'BUY USD' };
   return null;
 }
 function ocrFindNumbers(text) {
@@ -1873,8 +1893,8 @@ async function scanSlip(file, kind) {
   const box = $('#scanStatus'); if (box) { box.hidden = false; box.textContent = 'กำลังโหลดตัวอ่าน (ครั้งแรกอาจใช้เน็ตสักครู่)...'; }
   try {
     await loadTesseract();
-    if (box) box.textContent = 'กำลังอ่านตัวเลขจากรูป... ประมวลผลในเครื่อง ไม่ส่งรูปออกไปไหน';
-    const { data } = await window.Tesseract.recognize(file, 'eng');
+    if (box) box.textContent = 'กำลังอ่านตัวเลขจากรูป... ประมวลผลในเครื่อง ไม่ส่งรูปออกไปไหน (ครั้งแรกโหลดภาษาไทยเพิ่ม อาจช้ากว่าปกตินิดหน่อย)';
+    const { data } = await window.Tesseract.recognize(file, 'eng+tha');
     applyScanResult(kind, ocrFindDate(data.text || ''), ocrFindNumbers(data.text || ''), data.text || '');
     if (box) box.hidden = true;
     playSound('success');
@@ -1888,7 +1908,13 @@ function applyScanResult(kind, date, numbers, rawText) {
   if (date && f.elements['date']) f.elements['date'].value = date;
   if (kind === 'cash') { if (f.elements['amount'] && numbers[0] != null) f.elements['amount'].value = numbers[0]; }
   else if (kind === 'fx') {
-    if (numbers.length >= 2 && f.elements['thb'] && f.elements['usd']) { f.elements['thb'].value = numbers[0]; f.elements['usd'].value = numbers[numbers.length - 1]; }
+    const parsed = parseFxSlip(rawText);
+    if (parsed) {
+      if (f.elements['thb']) f.elements['thb'].value = parsed.thb;
+      if (f.elements['usd']) f.elements['usd'].value = parsed.usd;
+      f.querySelectorAll('input[name="action"]').forEach(r => { r.checked = (r.value === parsed.action); });
+      fxLabels();
+    } else if (numbers.length >= 2 && f.elements['thb'] && f.elements['usd']) { f.elements['thb'].value = numbers[0]; f.elements['usd'].value = numbers[numbers.length - 1]; }
     else if (numbers.length && f.elements['thb']) f.elements['thb'].value = numbers[0];
   } else if (kind === 'stock' && numbers.length) {
     const priceLike = numbers.find(n => String(n).includes('.'));
