@@ -392,6 +392,7 @@ textarea.mono { font-size: 12px; min-height: 120px; }
 <div id="toastEl" class="toast" role="status" aria-live="polite"></div>
 <input type="file" id="fileXlsx" accept=".xlsx,.xls,.xlsm" hidden>
 <input type="file" id="fileJson" accept=".json,application/json" hidden>
+<input type="file" id="fileSlip" accept="image/*" capture="environment" hidden>
 <noscript>ต้องเปิด JavaScript เพื่อใช้งานสมุดซื้อขาย</noscript>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script>
@@ -1125,7 +1126,8 @@ const ICON = {
   cash: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 9.5L12 4l9 5.5M5.5 11v6M10 11v6M14 11v6M18.5 11v6M3 20h18"/></svg>',
   set: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h9M17 7h3M4 17h3M11 17h9"/><circle cx="15" cy="7" r="2"/><circle cx="9" cy="17" r="2"/></svg>',
   plus: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>',
-  x: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>'
+  x: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>',
+  cam: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-3px;margin-right:4px"><path d="M4 8h3l1.5-2h7L17 8h3v11H4z"/><circle cx="12" cy="13.5" r="3.2"/></svg>'
 };
 const TABS = [
   { id: 'sum', label: 'ภาพรวม', title: 'ภาพรวมพอร์ต', icon: ICON.sum },
@@ -1143,6 +1145,7 @@ function loadLocal() {
 function saveLocal() { try { localStorage.setItem(LS_KEY, JSON.stringify(S)); } catch (e) { /* เก็บในเครื่องไม่ได้ */ } }
 let S = loadLocal() || newState();
 let C = null;
+let scanKind = null; // จำว่ากำลังสแกนสลิปให้ฟอร์มไหนอยู่ (stock / fx / cash)
 const ui = { tab: 'sum', stockFilter: 'ALL', checksOpen: null, monthOpen: false, scrollChecks: false,
   search: { stock: '', fx: '', cash: '' }, dateRange: { stock: 'ALL', fx: 'ALL', cash: 'ALL' }, typeFilter: { stock: 'ALL', fx: 'ALL', cash: 'ALL' },
   histRange: 'ALL', histSeries: ['capital', 'realized', 'cash'] };
@@ -1643,7 +1646,7 @@ function viewFx() {
   ${rateChart}${volChart}
   <section class="panel">
     <div class="grid4">
-      <div><div class="k">USD ที่แลกเข้าระบบแล้ว</div><div class="v">${money(f.usdNow)}</div></div>
+      <div><div class="k">USD คงเหลือ</div><div class="v">${money(f.usdNow)}</div></div>
       <div><div class="k">ต้นทุนเฉลี่ย</div><div class="v">${money(f.avgCost, '฿', { dec: 4 })}</div><div class="s muted">ต่อ 1 USD</div></div>
       <div><div class="k">มูลค่าตอนนี้</div><div class="v">${f.valueNow === null ? '–' : money(f.valueNow, '฿', { dec: 0 })}</div><div class="s muted">ต้นทุน ${money(f.totalCost, '฿', { dec: 0 })}</div></div>
       <div><div class="k">กำไร/ขาดทุนที่ยังไม่ขาย</div><div class="v ${sgn(f.unreal)}">${f.unreal === null ? '–' : money(f.unreal, '฿', { sign: true })}</div><div class="s ${sgn(f.unreal)}">${f.unrealPct === null ? '' : pct(f.unrealPct, true)}</div></div>
@@ -1822,6 +1825,72 @@ function lastBroker() {
 }
 function afterSave(msg) { closeSheet(); persist(); render(); notify('success', msg || 'บันทึกแล้ว'); }
 
+/* ----- สแกนสลิป (OCR ในเครื่อง — รูปไม่ถูกส่งออกไปไหน) ----- */
+let tesseractLoadPromise = null;
+function loadTesseract() {
+  if (window.Tesseract) return Promise.resolve();
+  if (tesseractLoadPromise) return tesseractLoadPromise;
+  tesseractLoadPromise = new Promise((resolve, reject) => {
+    const s = document.createElement('script');
+    s.src = 'https://cdnjs.cloudflare.com/ajax/libs/tesseract.js/6.0.1/tesseract.min.js';
+    s.onload = () => resolve();
+    s.onerror = () => { tesseractLoadPromise = null; reject(new Error('load-fail')); };
+    document.head.appendChild(s);
+  });
+  return tesseractLoadPromise;
+}
+function scanBtn(kind) {
+  return `<button type="button" class="btn block" data-act="scan-slip" data-kind="${kind}" style="margin-bottom:10px">${ICON.cam || ''} สแกนสลิป (ทดลอง)</button><div class="muted" id="scanStatus" style="font-size:12.5px;margin:-4px 0 10px" hidden></div>`;
+}
+function toCE(y) { return y > 2400 ? y - 543 : y; } // ปี พ.ศ. → ค.ศ. ถ้าเจอ
+function ocrFindDate(text) {
+  let m = text.match(/\b(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{4})\b/);
+  if (m) { const dd = +m[1], mm = +m[2], yy = toCE(+m[3]); if (mm >= 1 && mm <= 12 && dd >= 1 && dd <= 31) return yy + '-' + String(mm).padStart(2, '0') + '-' + String(dd).padStart(2, '0'); }
+  m = text.match(/\b(\d{4})[\/\-.](\d{1,2})[\/\-.](\d{1,2})\b/);
+  if (m) { const yy = toCE(+m[1]), mm = +m[2], dd = +m[3]; if (mm >= 1 && mm <= 12 && dd >= 1 && dd <= 31) return yy + '-' + String(mm).padStart(2, '0') + '-' + String(dd).padStart(2, '0'); }
+  return null;
+}
+function ocrFindNumbers(text) {
+  const matches = text.match(/\d{1,3}(?:,\d{3})+(?:\.\d+)?|\d+\.\d{2}|\d{2,}/g) || [];
+  const seen = new Set(), out = [];
+  matches.forEach(raw => {
+    const v = Number(raw.replace(/,/g, ''));
+    if (!isFinite(v) || v <= 0) return;
+    const key = v.toFixed(4); if (seen.has(key)) return; seen.add(key); out.push(v);
+  });
+  return out.sort((a, b) => b - a);
+}
+async function scanSlip(file, kind) {
+  const box = $('#scanStatus'); if (box) { box.hidden = false; box.textContent = 'กำลังโหลดตัวอ่าน (ครั้งแรกอาจใช้เน็ตสักครู่)...'; }
+  try {
+    await loadTesseract();
+    if (box) box.textContent = 'กำลังอ่านตัวเลขจากรูป... ประมวลผลในเครื่อง ไม่ส่งรูปออกไปไหน';
+    const { data } = await window.Tesseract.recognize(file, 'eng');
+    applyScanResult(kind, ocrFindDate(data.text || ''), ocrFindNumbers(data.text || ''), data.text || '');
+    if (box) box.hidden = true;
+    playSound('success');
+  } catch (e) {
+    if (box) { box.hidden = false; box.textContent = 'อ่านสลิปไม่สำเร็จ (' + (navigator.onLine ? 'ลองรูปที่ชัดกว่านี้' : 'ต้องต่อเน็ตอย่างน้อยครั้งแรก') + ') — กรอกเองแทนได้เลย'; }
+    playSound('error');
+  }
+}
+function applyScanResult(kind, date, numbers, rawText) {
+  const f = $('#frm'); if (!f) return;
+  if (date && f.elements['date']) f.elements['date'].value = date;
+  if (kind === 'cash') { if (f.elements['amount'] && numbers[0] != null) f.elements['amount'].value = numbers[0]; }
+  else if (kind === 'fx') {
+    if (numbers.length >= 2 && f.elements['thb'] && f.elements['usd']) { f.elements['thb'].value = numbers[0]; f.elements['usd'].value = numbers[numbers.length - 1]; }
+    else if (numbers.length && f.elements['thb']) f.elements['thb'].value = numbers[0];
+  } else if (kind === 'stock' && numbers.length) {
+    const priceLike = numbers.find(n => String(n).includes('.'));
+    if (priceLike != null && f.elements['price']) f.elements['price'].value = priceLike;
+  }
+  const noteEl = f.elements['note'];
+  if (noteEl) { const hint = 'ข้อความจากสลิป: ' + rawText.replace(/\s+/g, ' ').trim().slice(0, 200); noteEl.value = noteEl.value ? noteEl.value + '\n' + hint : hint; }
+  toast('อ่านสลิปแล้ว — ตรวจตัวเลขให้ตรงก่อนบันทึกด้วยนะ');
+  updatePreview();
+}
+
 /* ----- stock form ----- */
 function openStock(id) {
   const r = id ? S.stocks.find(x => x.id === id) : null;
@@ -1829,6 +1898,7 @@ function openStock(id) {
   const tick = Object.keys(C.st.per).sort();
   openSheet(`<form id="frm" data-kind="stock" data-id="${r ? r.id : ''}" novalidate>
     ${head(r ? 'แก้ไขรายการหุ้น' : 'เพิ่มรายการหุ้น')}
+    ${r ? '' : scanBtn('stock')}
     ${seg('action', [['BUY', 'ซื้อ'], ['SELL', 'ขาย']], d.action === 'SELL' ? 'SELL' : 'BUY', 'ซื้อหรือขาย')}
     <div class="grid2">${fld('วันที่', 'date', d.date, { type: 'date' })}${fld('ชื่อหุ้น (Ticker)', 'asset', d.asset, { list: 'tickers', cap: true, ph: 'เช่น SMCI' })}</div>
     <datalist id="tickers">${tick.map(t => `<option value="${esc(t)}">`).join('')}</datalist>
@@ -1918,6 +1988,7 @@ function openFx(id) {
   const d = r || { date: today(), action: 'BUY USD' };
   openSheet(`<form id="frm" data-kind="fx" data-id="${r ? r.id : ''}" novalidate>
     ${head(r ? 'แก้ไขการแลกเงิน' : 'เพิ่มการแลกเงิน')}
+    ${r ? '' : scanBtn('fx')}
     ${seg('action', [['BUY USD', 'ซื้อ USD'], ['SELL USD', 'ขาย USD']], d.action === 'SELL USD' ? 'SELL USD' : 'BUY USD', 'ซื้อหรือขาย USD')}
     ${fld('วันที่', 'date', d.date, { type: 'date' })}
     <div class="grid2">
@@ -1984,6 +2055,7 @@ function openCash(id) {
   const d = r || { date: today(), type: 'Deposit', currency: 'USD' };
   openSheet(`<form id="frm" data-kind="cash" data-id="${r ? r.id : ''}" novalidate>
     ${head(r ? 'แก้ไขฝาก/ถอน' : 'เพิ่มฝาก/ถอน')}
+    ${r ? '' : scanBtn('cash')}
     ${seg('type', [['Deposit', 'ฝากเข้า'], ['Withdrawal', 'ถอนออก']], d.type === 'Withdrawal' ? 'Withdrawal' : 'Deposit', 'ฝากหรือถอน')}
     ${fld('วันที่', 'date', d.date, { type: 'date' })}
     <div class="grid2">${fld('จำนวนเงิน', 'amount', d.amount, { im: 'decimal' })}${fld('ค่าธรรมเนียมโอน', 'fee', d.fee ? d.fee : '', { im: 'decimal', ph: '0' })}</div>
@@ -2122,6 +2194,7 @@ document.addEventListener('click', async e => {
   else if (a === 'notif-request') requestNotifPermission();
   else if (a === 'save-username') { const inp = $('#unameInput'); if (inp) { S.settings.username = inp.value.trim().slice(0, 50); persist(); render(); toast('บันทึกชื่อแล้ว'); playSound('success'); } }
   else if (a === 'wipe') { if (await confirmBox('ล้างข้อมูลทั้งหมดในสมุดนี้? แนะนำให้สำรองข้อมูลก่อน', 'ล้างทั้งหมด', true)) { S = newState(); persist(); go('sum'); toast('ล้างข้อมูลแล้ว'); } }
+  else if (a === 'scan-slip') { scanKind = t.dataset.kind; $('#fileSlip').click(); }
 });
 document.addEventListener('change', async e => {
   const t = e.target;
@@ -2137,7 +2210,8 @@ document.addEventListener('change', async e => {
     else if (k === 'tolerance') S.settings[k] = p === null || p < 0 ? 0.01 : p;
     else S.settings[k] = p;
     persist(); render();
-  } else if (t.id === 'fileXlsx') { const f = t.files && t.files[0]; t.value = ''; if (f) handleXlsx(f); }
+  } else if (t.id === 'fileSlip') { const f = t.files && t.files[0]; t.value = ''; if (f && scanKind) scanSlip(f, scanKind); }
+  else if (t.id === 'fileXlsx') { const f = t.files && t.files[0]; t.value = ''; if (f) handleXlsx(f); }
   else if (t.id === 'fileJson') { const f = t.files && t.files[0]; t.value = ''; if (f) { try { $('#restoreBox').value = await f.text(); toast('อ่านไฟล์แล้ว กด “กู้คืน” เพื่อยืนยัน'); } catch (er) { toast('อ่านไฟล์ไม่สำเร็จ'); } } }
   else if (t.name === 'soundEnabled') { S.settings.soundEnabled = t.checked; persist(); render(); if (S.settings.soundEnabled) playSound('success'); }
   else if (t.dataset && t.dataset.soundvol !== undefined) { S.settings.soundVolume = Math.max(0, Math.min(100, Number(t.value))) / 100; persist(); }
