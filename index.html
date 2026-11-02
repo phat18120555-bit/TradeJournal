@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
 <meta name="color-scheme" content="light dark">
 <title>สมุดซื้อขาย</title>
 <meta name="description" content="สมุดบันทึกซื้อขายหุ้นและแลกเงิน บาท ↔ USD คำนวณต้นทุนเฉลี่ยและกำไรขาดทุนอัตโนมัติ">
@@ -375,6 +375,19 @@ textarea.mono { font-size: 12px; min-height: 120px; }
   .sheet { border-radius: 20px; bottom: 24px; }
 }
 
+
+/* ===== V2 ===== */
+.pmeta { margin-top: 6px; font-size: 12px; color: var(--ink2); display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+.pbadge { display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; border-radius: 999px; font-size: 11.5px; background: var(--surface2); border: 1px solid var(--line); color: var(--ink2); }
+.pbadge.ok { color: var(--gain); } .pbadge.warn { color: var(--warn); } .pbadge.bad { color: var(--loss); }
+.closed-box > summary { list-style: none; cursor: pointer; display: flex; justify-content: space-between; gap: 10px; padding: 14px 16px; min-height: 48px; align-items: center; }
+.closed-box > summary::-webkit-details-marker { display: none; }
+.ocr-filled { outline: 2px solid var(--accent); outline-offset: -1px; border-radius: 10px; }
+.ocr-review { border: 1px solid var(--line); border-radius: 12px; padding: 10px 12px; margin: 0 0 12px; font-size: 13px; background: var(--surface2); }
+.ocr-review .r { display: flex; justify-content: space-between; gap: 8px; padding: 2px 0; }
+.ocr-review .miss { color: var(--ink2); }
+.ocr-review .w { margin-top: 6px; color: var(--warn); }
+.btn.primary { min-height: 44px; }
 </style>
 </head>
 <body>
@@ -399,7 +412,7 @@ textarea.mono { font-size: 12px; min-height: 120px; }
 /* ===================== CORE: state, engine, importer ===================== */
 function newState() {
   return {
-    v: 1, updatedAt: 0, seq: 1,
+    v: 2, updatedAt: 0, seq: 1, history: [],
     settings: {
       startValue: 0, tolerance: 0.01, usdThb: null,
       brokerCash: null, brokerValue: null,
@@ -408,7 +421,7 @@ function newState() {
       soundEnabled: true, soundVolume: 0.6,
       username: '',
       autoPrice: true, autoRate: true, notifEnabled: true,
-      priceUpdatedAt: 0, rateUpdatedAt: 0,
+      priceUpdatedAt: 0, rateUpdatedAt: 0, priceMeta: {},
       alerts: {}, alertsFired: {}
     },
     stocks: [], fx: [], cash: []
@@ -418,6 +431,11 @@ function newState() {
 function normalizeState(o) {
   const d = newState();
   if (!o || typeof o !== 'object') return d;
+  // V2 migration: เก็บฟิลด์ระดับบนที่ไม่รู้จักไว้ทั้งหมด (กันข้อมูลเดิม/ข้อมูลจากเวอร์ชันอื่นหาย) แล้วค่อยทับด้วยฟิลด์ที่ normalize แล้ว
+  Object.keys(o).forEach(k => { if (!(k in d) && k !== 'settings') d[k] = o[k]; });
+  // history (Historical Snapshots): V1 เดิมถูกตัดทิ้งตอนโหลด — V2 เก็บไว้ครบ กรองเฉพาะรายการที่โครงสร้างถูกต้อง
+  d.history = Array.isArray(o.history) ? o.history.filter(h => h && typeof h === 'object' && typeof h.date === 'string') : [];
+  d.v = 2;
   d.updatedAt = Number(o.updatedAt) || 0;
   d.seq = Number(o.seq) || 1;
   Object.assign(d.settings, o.settings || {});
@@ -433,6 +451,9 @@ function normalizeState(o) {
   d.settings.rateUpdatedAt = Number(o.settings && o.settings.rateUpdatedAt) || 0;
   d.settings.alerts = Object.assign({}, (o.settings && o.settings.alerts) || {});
   d.settings.alertsFired = Object.assign({}, (o.settings && o.settings.alertsFired) || {});
+  // priceMeta: แยก Last Updated / Data Source / Status ต่อหุ้น (V1 ไม่มี → เติมจาก priceUpdatedAt เดิมให้ ไม่ลบราคาเดิม)
+  d.settings.priceMeta = Object.assign({}, (o.settings && o.settings.priceMeta) || {});
+  Object.keys(d.settings.prices).forEach(t => { if (!d.settings.priceMeta[t]) d.settings.priceMeta[t] = { at: d.settings.priceUpdatedAt || 0, src: '', state: '' }; });
   ['stocks', 'fx', 'cash'].forEach(k => { d[k] = Array.isArray(o[k]) ? o[k].filter(x => x && typeof x === 'object') : []; });
   let maxSeq = 0;
   ['stocks', 'fx', 'cash'].forEach(k => d[k].forEach((r, i) => {
@@ -440,6 +461,7 @@ function normalizeState(o) {
     if (!r.seq) r.seq = ++maxSeq; else maxSeq = Math.max(maxSeq, r.seq);
   }));
   d.seq = Math.max(d.seq, maxSeq + 1);
+  if (!d.history) d.history = [];
   return d;
 }
 
@@ -508,7 +530,7 @@ function computeStocks(S, cash) {
       shares !== null && price !== null && shares > 0 && price > 0;
     if (!complete) { o.status = 'Incomplete'; incomplete++; out.push(o); continue; }
     if (r.currency && cur !== 'USD') nonUsd++;
-    const p = per[asset] || (per[asset] = { bs: 0, ss: 0, bn: 0, scb: 0, rl: 0, count: 0 });
+    const p = per[asset] || (per[asset] = { bs: 0, ss: 0, bn: 0, scb: 0, rl: 0, count: 0, cyc: null, cycles: [] });
     p.count++;
     const gross = shares * price;
     const net = action === 'BUY' ? gross + fee : gross - fee;
@@ -520,6 +542,8 @@ function computeStocks(S, cash) {
     if (cur === 'USD') o.netUsd = net;
     else if (useRate) o.netUsd = net / useRate;
     else { o.netUsd = null; fxMissing++; }
+    if (!p.cyc) p.cyc = { t: asset, cur, first: r.date, last: r.date, closed: null, bought: 0, sold: 0, cost: 0, proceeds: 0, pl: 0, n: 0 };
+    p.cyc.n++; p.cyc.last = r.date;
     if (action === 'SELL') {
       const held = p.bs - p.ss;
       const avg = held !== 0 ? (p.bn - p.scb) / held : 0; // ต้นทุนเฉลี่ยในสกุลเงินเดิมของ asset นี้
@@ -527,13 +551,19 @@ function computeStocks(S, cash) {
       o.cost = cost; o.pl = net - cost; // กำไร/ขาดทุนในสกุลเงินเดิม (แสดงผลรายแถว)
       const plUsd = cur === 'USD' ? o.pl : (useRate ? o.pl / useRate : null); // แปลงเป็น USD ก่อนรวมยอดพอร์ต
       p.ss += shares; p.scb += cost; p.rl += o.pl;
+      p.cyc.sold += shares; p.cyc.proceeds += net; p.cyc.pl += o.pl;
       if (plUsd !== null) realized += plUsd;
       if (o.netUsd !== null) cumSell += o.netUsd;
     } else {
+      p.cyc.bought += shares; p.cyc.cost += net;
       p.bs += shares; p.bn += net; // ต้นทุนสะสมเก็บในสกุลเดิม เพื่อให้ต้นทุนเฉลี่ย/กำไรขาดทุนของ asset นี้ยังถูกต้อง
       if (o.netUsd !== null) cumBuy += o.netUsd;
     }
     o.sharesAfter = p.bs - p.ss;
+    if (Math.abs(o.sharesAfter) < EPS && p.cyc) { // ขายหมดพอดี → ปิดรอบการถือครอง (ซื้อใหม่ภายหลังจะเปิดรอบใหม่)
+      p.cyc.closed = r.date; p.cyc.pct = p.cyc.cost > 0 ? p.cyc.pl / p.cyc.cost : null;
+      p.cycles.push(p.cyc); p.cyc = null;
+    }
     let cfSum = 0;
     for (const c of cf) if (c.date <= r.date) cfSum += c.impact;
     o.cashAfter = start + cfSum + cumSell - cumBuy;
@@ -542,7 +572,10 @@ function computeStocks(S, cash) {
     if (o.cashAfter < -tol) negCash++;
     out.push(o);
   }
-  return { rows: out, per, buys: cumBuy, sells: cumSell, fees, realized, nonUsd, oversell, incomplete, negCash, fxMissing };
+  const cycles = [];
+  Object.keys(per).forEach(t => per[t].cycles.forEach(c => cycles.push(c)));
+  cycles.sort((a, b) => (b.closed || '').localeCompare(a.closed || ''));
+  return { rows: out, per, cycles, buys: cumBuy, sells: cumSell, fees, realized, nonUsd, oversell, incomplete, negCash, fxMissing };
 }
 
 /* ---------- FX (THB <-> USD) ---------- */
@@ -618,16 +651,18 @@ function computeAll(S) {
     const shares = p.bs - p.ss;
     const cost = p.bn - p.scb;
     const zero = Math.abs(shares) < EPS;
+    const short = shares < -EPS; // ติดลบ = Short/ข้อมูลผิดปกติ (เช่น ขายเกินที่ถือ) ไม่ใช่หุ้นปกติ
+    const kind = zero ? 'closed' : (short ? 'short' : 'active');
     const price = num(set.prices[t]);
     const mv = zero ? 0 : (price === null ? null : shares * price);
-    const unreal = mv === null ? null : mv - cost;
+    const unreal = zero ? 0 : (mv === null ? null : mv - cost); // หุ้นที่ขายหมด: Unrealized = 0 เสมอ (ตัดเศษทศนิยมค้าง ไม่นับกำไรซ้ำ)
     const bShares = num(set.brokerShares[t]);
     const diff = bShares === null ? null : shares - bShares;
     let status = 'OK';
     if (!zero && price === null) status = 'NO PRICE';
     else if (diff !== null && Math.abs(diff) > 0.0001) status = 'SHARES DIFF';
     return {
-      t, shares, cost, zero, price, mv, unreal, realized: p.rl, count: p.count,
+      t, shares, kind, short, cost: zero ? 0 : cost, zero, price, mv, unreal, realized: p.rl, count: p.count,
       avg: zero ? 0 : cost / shares,
       unrealPct: unreal !== null && Math.abs(cost) >= 0.005 ? unreal / cost : null,
       total: unreal === null ? null : p.rl + unreal,
@@ -637,7 +672,7 @@ function computeAll(S) {
 
   const mvTotal = holdings.reduce((a, h) => a + (h.mv === null ? 0 : h.mv), 0);
   const unreal = holdings.reduce((a, h) => a + (h.unreal === null ? 0 : h.unreal), 0);
-  const costHold = holdings.reduce((a, h) => a + h.cost, 0);
+  const costHold = holdings.reduce((a, h) => a + (h.kind === 'active' ? h.cost : 0), 0);
   const realized = st.realized;
 
   const curCash = start + cash.dep - cash.wd - cash.fees + st.sells - st.buys;
@@ -647,6 +682,7 @@ function computeAll(S) {
   const capital = start + cash.dep;
   const ret = realized + unreal - cash.fees;
   const noPrice = holdings.filter(h => h.status === 'NO PRICE').length;
+  const shortCount = holdings.filter(h => h.kind === 'short').length;
   const sharesDiff = holdings.filter(h => h.status === 'SHARES DIFF').length;
 
   // ---- checks ----
@@ -677,6 +713,7 @@ function computeAll(S) {
   });
   const cnt = (key, label, n, hint) => checks.push({ key, group: 'data', label, count: n, status: n > 0 ? 'CHECK' : 'OK', detail: n > 0 ? n + ' รายการ' + (hint ? ' — ' + hint : '') : 'ปกติ' });
   cnt('oversell', 'หุ้น: ขายเกินจำนวนที่ถืออยู่', st.oversell, 'ตรวจจำนวนหุ้นหรือวันที่');
+  cnt('short', 'หุ้น: จำนวนคงเหลือติดลบ (Short/ข้อมูลผิดปกติ)', shortCount, 'ตรวจรายการซื้อขายของหุ้นตัวนั้น');
   cnt('incomplete', 'หุ้น: แถวข้อมูลไม่ครบ', st.incomplete, 'ต้องมีวันที่ ชื่อหุ้น ซื้อ/ขาย จำนวน ราคา');
   cnt('negcash', 'หุ้น: เงินสดหลังทำรายการติดลบ', st.negCash, 'ขาดรายการฝากหรือเปล่า?');
   cnt('cur-stock', 'หุ้น: สกุลเงินไม่ใช่ USD', st.nonUsd, 'สรุปนี้คิดเป็น USD');
@@ -694,7 +731,7 @@ function computeAll(S) {
   const issues = checks.filter(c => c.status === 'CHECK').length;
 
   return {
-    cash, st, fx, holdings, checks, issues,
+    cash, st, fx, holdings, closedCycles: st.cycles.filter(c => c.closed), checks, issues,
     overall: issues === 0 ? 'OK' : 'CHECK',
     sum: {
       start, dep: cash.dep, wd: cash.wd, transferFees: cash.fees, buys: st.buys, sells: st.sells,
@@ -1140,7 +1177,13 @@ const FAB = { stock: 'เพิ่มรายการหุ้น', fx: 'เ�
 
 /* ---------- state ---------- */
 function loadLocal() {
-  try { const t = localStorage.getItem(LS_KEY); return t ? normalizeState(JSON.parse(t)) : null; } catch (e) { return null; }
+  try {
+    const t = localStorage.getItem(LS_KEY); if (!t) return null;
+    const raw = JSON.parse(t);
+    // V1 → V2: สำเนาข้อมูล V1 ดิบไว้ก่อนแปลงครั้งแรก (เขียนครั้งเดียว ไม่ทับ) เผื่อต้องย้อนกลับ
+    if (!(Number(raw && raw.v) >= 2) && !localStorage.getItem(LS_KEY + '.pre-v2-backup')) { try { localStorage.setItem(LS_KEY + '.pre-v2-backup', t); } catch (e) { /* พื้นที่เต็มก็ไม่ขัดการเปิดแอป */ } }
+    return normalizeState(raw);
+  } catch (e) { return null; }
 }
 function saveLocal() { try { localStorage.setItem(LS_KEY, JSON.stringify(S)); } catch (e) { /* เก็บในเครื่องไม่ได้ */ } }
 let S = loadLocal() || newState();
@@ -1263,73 +1306,132 @@ function checkPriceAlerts() {
   if (changed) saveLocal();
 }
 
-/* ---------- ราคาหุ้น/เรท USD-THB สด (ไม่ใช้ API key ฝั่ง client — ดึงจากปลายทางสาธารณะที่ไม่ต้องสมัคร) ---------- */
-const live = { priceStatus: 'idle', rateStatus: 'idle', priceBusy: false, rateBusy: false, priceTimer: null, rateTimer: null, directBlocked: false };
+/* ---------- ราคาหุ้น/เรท USD-THB สด (V2 Price Engine) ----------
+   ไม่มี API key ฝั่ง client — ใช้ปลายทางสาธารณะที่ไม่ต้องสมัคร
+   ลำดับ: Yahoo Finance (query1 → query2) → Stooq (สำรอง, เฉพาะหุ้น US) ; ตรวจ HTTP status / timeout / retry+backoff / ข้อมูลไม่ครบ / ราคาผิดปกติ
+   ราคาเดิมไม่ถูกลบเมื่อ API ล้มเหลว และราคาที่เก่าเกิน STALE_MS จะไม่ถูกแสดงเป็น "สด" */
+const live = { priceStatus: Object.keys(S.settings.prices || {}).length ? 'cached' : 'idle', rateStatus: 'idle', priceBusy: false, rateBusy: false, pricePromise: null,
+  priceTimer: null, rateTimer: null, directBlocked: {}, failed: {}, lastAttempt: 0, failStreak: 0, source: '' };
 const PRICE_REFRESH_MS = 60000, RATE_REFRESH_MS = 60000;
-// บางปลายทาง (เช่น Yahoo Finance) ไม่เปิด CORS header ให้เว็บอื่นเรียกตรงๆ จากเบราว์เซอร์ — ถ้าเรียกตรงพังเพราะ CORS จะลองผ่านตัวกลางสาธารณะที่เปิด CORS ให้แทน (ไม่ใช่ API key ยังคงไม่มี key ฝังในแอป)
+const STALE_MS = 5 * 60000;        // เก่ากว่านี้ = ไม่ใช่ราคาสด
+const MIN_GAP_MS = 15000;          // กันยิงซ้ำถี่ (เฉพาะอัตโนมัติ)
+const FETCH_TIMEOUT_MS = 10000, MAX_TRIES = 3, POOL = 4, OUTLIER = 0.4;
 const CORS_RELAYS = [
   u => 'https://corsproxy.io/?url=' + encodeURIComponent(u),
   u => 'https://api.allorigins.win/raw?url=' + encodeURIComponent(u)
 ];
-const FETCH_TIMEOUT_MS = 6000;
-function fetchWithTimeout(url) {
-  const ctrl = new AbortController();
-  const timer = setTimeout(() => ctrl.abort(), FETCH_TIMEOUT_MS);
-  return fetch(url, { cache: 'no-store', signal: ctrl.signal }).finally(() => clearTimeout(timer));
-}
-// ยิงตัวกลางทุกตัวพร้อมกัน เอาตัวที่ตอบสำเร็จก่อนสุด — เร็วกว่าลองทีละตัวตามลำดับมาก
-async function fetchViaFirstRelay(url) {
-  return Promise.any(CORS_RELAYS.map(wrap =>
-    fetchWithTimeout(wrap(url)).then(res => { if (!res.ok) throw new Error('http ' + res.status); return res.json(); })
-  ));
-}
-async function fetchJson(url) {
-  if (!live.directBlocked) {
-    try { const res = await fetchWithTimeout(url); if (!res.ok) throw new Error('http ' + res.status); return await res.json(); }
-    catch (e) { live.directBlocked = true; /* เรียกตรงไม่ได้ (มักเป็น CORS) — รอบถัดไปในเซสชันนี้ข้ามไปยิงผ่านตัวกลางเลย ไม่เสียเวลาลองซ้ำ */ }
-  }
-  if (!navigator.onLine) throw new Error('offline');
-  return fetchViaFirstRelay(url);
-}
-function heldTickers() { return Object.keys(C.st.per).filter(t => Math.abs(C.st.per[t].bs - C.st.per[t].ss) > 1e-7); }
-async function refreshPricesNow() {
-  const tickers = heldTickers();
-  if (!tickers.length) { toast('ยังไม่มีหุ้นที่ถืออยู่'); return; }
-  if (live.priceBusy) return;
-  live.priceBusy = true; live.priceStatus = 'updating'; render();
-  let got = {};
+const SRC_LABEL = { yahoo: 'Yahoo Finance', stooq: 'Stooq (สำรอง)', manual: 'กรอกเอง' };
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+function httpErr(status) { const e = new Error('http ' + status); e.status = status; e.fatal = status >= 400 && status < 500 && status !== 429 && status !== 408; return e; }
+async function fetchText(url) {
+  const ctrl = new AbortController(), timer = setTimeout(() => ctrl.abort(), FETCH_TIMEOUT_MS);
   try {
-    if (!navigator.onLine) throw new Error('offline');
-    const data = await fetchJson('https://query1.finance.yahoo.com/v7/finance/quote?symbols=' + encodeURIComponent(tickers.join(',')));
-    const results = (data && data.quoteResponse && data.quoteResponse.result) || [];
-    results.forEach(q => { if (q && q.symbol && isFinite(q.regularMarketPrice)) got[String(q.symbol).toUpperCase()] = q.regularMarketPrice; });
-  } catch (e) { /* จะลองทีละตัวด้านล่างต่อ ไม่ต้อง throw ทิ้งตรงนี้ */ }
-  const missing = tickers.filter(t => got[t] === undefined);
-  if (missing.length) {
-    const results = await Promise.allSettled(missing.map(t =>
-      fetchJson('https://query1.finance.yahoo.com/v8/finance/chart/' + encodeURIComponent(t) + '?interval=1d&range=1d').then(d => ({ t, p: d && d.chart && d.chart.result && d.chart.result[0] && d.chart.result[0].meta && d.chart.result[0].meta.regularMarketPrice }))
-    ));
-    results.forEach(r => { if (r.status === 'fulfilled' && r.value && isFinite(r.value.p)) got[r.value.t] = r.value.p; });
+    const res = await fetch(url, { cache: 'no-store', signal: ctrl.signal });
+    if (!res.ok) throw httpErr(res.status);
+    return await res.text();
+  } finally { clearTimeout(timer); }
+}
+// เรียกตรงก่อน (ถ้าไม่ติด CORS) ไม่ได้ค่อยยิงตัวกลางทุกตัวพร้อมกัน เอาตัวที่สำเร็จก่อน
+async function fetchBody(url) {
+  if (!navigator.onLine) { const e = new Error('offline'); e.fatal = true; throw e; }
+  const host = new URL(url).hostname, blockedAt = live.directBlocked[host];   // จำแยกตามโฮสต์ — โฮสต์หนึ่งพัง ไม่กระทบอีกโฮสต์
+  if (!blockedAt || Date.now() - blockedAt > 30 * 60000) {
+    try { return await fetchText(url); }
+    catch (e) { if (e instanceof TypeError) live.directBlocked[host] = Date.now(); /* TypeError = CORS/เครือข่าย → ข้ามไปตัวกลาง */ else if (e.fatal) throw e; }
   }
-  const gotCount = Object.keys(got).length;
-  if (gotCount) {
-    Object.keys(got).forEach(t => { S.settings.prices[t] = got[t]; });
-    S.settings.priceUpdatedAt = Date.now();
-    live.priceStatus = gotCount === tickers.length ? 'live' : 'partial';
-    persist(); checkPriceAlerts();
-  } else {
-    live.priceStatus = navigator.onLine ? 'error' : 'offline'; // ไม่ลบราคาที่มีอยู่เดิม ใช้ค่าล่าสุดที่เคยดึงได้ต่อไป
+  return Promise.any(CORS_RELAYS.map(wrap => fetchText(wrap(url)))).catch(agg => { throw (agg && agg.errors && agg.errors[0]) || new Error('relay-fail'); });
+}
+// retry แบบจำกัดครั้ง + exponential backoff (+jitter) — ไม่ retry เมื่อ 4xx (ยกเว้น 408/429) หรือออฟไลน์
+async function withRetry(fn, tries) {
+  let err;
+  for (let i = 0; i < (tries || MAX_TRIES); i++) {
+    try { return await fn(); } catch (e) {
+      err = e; if (e.fatal || !navigator.onLine) break;
+      if (i < (tries || MAX_TRIES) - 1) await sleep(500 * Math.pow(2, i) + Math.random() * 250);
+    }
   }
-  live.priceBusy = false; render();
+  throw err;
+}
+function validPrice(p) { return typeof p === 'number' && isFinite(p) && p > 0 && p < 1e7; }
+function parseYahooChart(text, sym) {
+  const d = JSON.parse(text), c = d && d.chart;
+  if (!c || c.error || !c.result || !c.result[0] || !c.result[0].meta) throw new Error('incomplete');
+  const m = c.result[0].meta;
+  if (m.symbol && String(m.symbol).toUpperCase() !== sym) throw new Error('symbol-mismatch');
+  const price = Number(m.regularMarketPrice);
+  if (!validPrice(price)) throw new Error('incomplete');
+  const nowS = Date.now() / 1000, reg = m.currentTradingPeriod && m.currentTradingPeriod.regular;
+  const state = reg && reg.start && reg.end ? (nowS >= reg.start && nowS <= reg.end ? 'REGULAR' : 'CLOSED') : '';
+  return { price, src: 'yahoo', state, mt: Number(m.regularMarketTime) || 0 };
+}
+function stooqSymbol(t) { return /^[A-Z]{1,5}([.-][A-Z])?$/.test(t) ? t.toLowerCase().replace('.', '-') + '.us' : null; }
+function parseStooq(text) {
+  const row = String(text).trim().split(/\r?\n/)[1]; if (!row) throw new Error('incomplete');
+  const price = Number(row.split(',')[3]);
+  if (!validPrice(price)) throw new Error('incomplete');
+  return { price, src: 'stooq', state: '', mt: 0 };
+}
+async function quoteOne(t) {
+  const enc = encodeURIComponent(t), prev = num(S.settings.prices[t]);
+  let a = null, b = null;
+  for (const host of ['query1', 'query2']) {
+    try { a = await withRetry(() => fetchBody('https://' + host + '.finance.yahoo.com/v8/finance/chart/' + enc + '?interval=1d&range=1d').then(x => parseYahooChart(x, t)), host === 'query1' ? MAX_TRIES : 2); break; } catch (e) { if (e.message === 'offline') throw e; }
+  }
+  const suspicious = x => prev > 0 && Math.abs(x.price / prev - 1) > OUTLIER;
+  if (a && !suspicious(a)) return a;
+  const sq = stooqSymbol(t);
+  if (sq) { try { b = await withRetry(() => fetchBody('https://stooq.com/q/l/?s=' + sq + '&f=sd2t2c&h&e=csv').then(parseStooq), 2); } catch (e) { /* สำรองก็ไม่ได้ */ } }
+  if (a && b && Math.abs(a.price / b.price - 1) < 0.02) return a;   // ราคาขยับแรง แต่สองแหล่งตรงกัน → ยอมรับ
+  if (a) { const e = new Error('outlier'); throw e; }                  // ขยับแรงผิดปกติและไม่มีแหล่งยืนยัน → ไม่ใช้
+  if (b && !suspicious(b)) return b;
+  throw new Error(b ? 'outlier' : 'no-data');
+}
+function failReason(e) { const m = e && e.message || ''; return m === 'offline' ? 'ออฟไลน์' : m === 'outlier' ? 'ราคาผิดปกติ (ไม่ใช้)' : m === 'incomplete' || m === 'symbol-mismatch' ? 'ข้อมูลไม่ครบ' : /^http (429|5)/.test(m) ? 'เซิร์ฟเวอร์ไม่ตอบ' : e && e.name === 'AbortError' ? 'หมดเวลา' : 'ดึงไม่ได้'; }
+function heldTickers() { return Object.keys(C.st.per).filter(t => Math.abs(C.st.per[t].bs - C.st.per[t].ss) > 1e-7); }
+function refreshPricesNow(manual) {
+  if (live.priceBusy) { if (manual) toast('กำลังอัปเดตอยู่ รอสักครู่'); return live.pricePromise; }   // กันกดซ้ำ/Request ซ้อน
+  const tickers = C ? heldTickers() : [];
+  if (!tickers.length) { if (manual) toast('ยังไม่มีหุ้นที่ถืออยู่'); return Promise.resolve(); }
+  if (!manual && Date.now() - live.lastAttempt < MIN_GAP_MS) return Promise.resolve();
+  live.priceBusy = true; live.lastAttempt = Date.now(); live.priceStatus = 'updating'; render();
+  live.pricePromise = (async () => {
+    const got = {}, failed = {};
+    if (!navigator.onLine) tickers.forEach(t => failed[t] = 'ออฟไลน์');
+    else {
+      const queue = tickers.slice();
+      await Promise.all(Array.from({ length: Math.min(POOL, queue.length) }, async () => {
+        while (queue.length) { const t = queue.shift(); try { got[t] = await quoteOne(t); } catch (e) { failed[t] = failReason(e); } }
+      }));
+    }
+    const ok = Object.keys(got);
+    live.failed = failed;
+    if (ok.length) {
+      ok.forEach(t => { S.settings.prices[t] = got[t].price; S.settings.priceMeta[t] = { at: Date.now(), src: got[t].src, state: got[t].state, mt: got[t].mt }; });
+      S.settings.priceUpdatedAt = Date.now(); live.source = got[ok[0]].src; live.failStreak = 0;
+      live.priceStatus = ok.length === tickers.length ? 'live' : 'partial';
+      persist(); checkPriceAlerts();
+    } else {
+      live.failStreak++;
+      live.priceStatus = navigator.onLine ? 'error' : 'offline';   // ไม่ลบราคาเดิม
+    }
+    live.priceBusy = false; render();
+    if (manual) {
+      const bad = Object.keys(failed);
+      toast(!bad.length ? 'อัปเดตราคาครบ ' + ok.length + ' ตัวแล้ว' : ok.length ? 'อัปเดตได้ ' + ok.length + '/' + tickers.length + ' · ไม่สำเร็จ: ' + bad.join(', ') : 'อัปเดตราคาไม่สำเร็จ — ใช้ราคาล่าสุดที่บันทึกไว้');
+    }
+  })();
+  return live.pricePromise;
 }
 async function refreshRateNow() {
   if (live.rateBusy) return;
   live.rateBusy = true; live.rateStatus = 'updating'; render();
+  const okRate = r => r && r > 15 && r < 80; // ช่วงที่สมเหตุสมผลของ THB ต่อ USD
   try {
     if (!navigator.onLine) throw new Error('offline');
-    const data = await fetchJson('https://api.frankfurter.dev/v1/latest?from=USD&to=THB');
-    const r = data && data.rates && num(data.rates.THB);
-    if (!r) throw new Error('no rate');
+    let r = null;
+    try { r = num(JSON.parse(await withRetry(() => fetchBody('https://api.frankfurter.dev/v1/latest?from=USD&to=THB'))).rates.THB); } catch (e) { r = null; }
+    if (!okRate(r)) r = num(JSON.parse(await withRetry(() => fetchBody('https://open.er-api.com/v6/latest/USD'), 2)).rates.THB);
+    if (!okRate(r)) throw new Error('no rate');
     S.settings.usdThb = r; S.settings.rateUpdatedAt = Date.now();
     live.rateStatus = 'live';
     persist(); checkPriceAlerts();
@@ -1338,15 +1440,31 @@ async function refreshRateNow() {
   }
   live.rateBusy = false; render();
 }
+function scheduleNextPrice() {
+  clearTimeout(live.priceTimer);
+  const delay = PRICE_REFRESH_MS * Math.min(5, 1 + live.failStreak);   // ล้มเหลวติดกัน → ถ่วงรอบให้ช้าลง
+  live.priceTimer = setTimeout(async () => {
+    if (S.settings.autoPrice && document.visibilityState === 'visible' && navigator.onLine) await refreshPricesNow(false);
+    scheduleNextPrice();
+  }, delay);
+}
 function startLiveTimers() {
-  clearInterval(live.priceTimer); clearInterval(live.rateTimer);
-  live.priceTimer = setInterval(() => { if (S.settings.autoPrice && document.visibilityState === 'visible') refreshPricesNow(); }, PRICE_REFRESH_MS);
+  clearInterval(live.rateTimer);
+  scheduleNextPrice();
   live.rateTimer = setInterval(() => { if (S.settings.autoRate && document.visibilityState === 'visible') refreshRateNow(); }, RATE_REFRESH_MS);
-  if (S.settings.autoPrice) refreshPricesNow();
+  if (S.settings.autoPrice) refreshPricesNow(false);
   if (S.settings.autoRate) refreshRateNow();
 }
+document.addEventListener('visibilitychange', () => {   // กลับมาจาก Background → อัปเดตถ้าข้อมูลเก่า
+  if (document.visibilityState === 'visible' && S.settings.autoPrice && C && Date.now() - live.lastAttempt > 30000) refreshPricesNow(false);
+});
+function effPriceStatus() {   // สถานะ "สด" ใช้ได้เฉพาะเมื่อยังไม่เก่าเกิน STALE_MS
+  if ((live.priceStatus === 'live' || live.priceStatus === 'partial') && Date.now() - (S.settings.priceUpdatedAt || 0) > STALE_MS) return 'cached';
+  if (live.priceStatus === 'idle' && S.settings.priceUpdatedAt) return 'cached';
+  return live.priceStatus;
+}
 function liveLabel(status) {
-  const map = { idle: ['ยังไม่อัปเดต', ''], updating: ['กำลังอัปเดต…', ''], live: ['สด', 'ok'], partial: ['อัปเดตบางส่วน', 'warn'], offline: ['ออฟไลน์', 'warn'], error: ['ผิดพลาด', 'bad'] };
+  const map = { idle: ['ยังไม่อัปเดต', ''], updating: ['กำลังอัปเดต…', ''], live: ['อัปเดตสำเร็จ', 'ok'], cached: ['ใช้ราคาล่าสุดที่บันทึกไว้', 'warn'], partial: ['อัปเดตบางส่วน', 'warn'], offline: ['ออฟไลน์ · ใช้ราคาที่บันทึกไว้', 'warn'], error: ['อัปเดตไม่สำเร็จ · ใช้ราคาที่บันทึกไว้', 'bad'] };
   return map[status] || map.idle;
 }
 function timeLabel(ts) {
@@ -1355,11 +1473,31 @@ function timeLabel(ts) {
   const sameDay = d.toDateString() === new Date().toDateString();
   return (sameDay ? '' : shortDate(ymd(d.getFullYear(), d.getMonth() + 1, d.getDate())) + ' ') + pad(d.getHours()) + ':' + pad(d.getMinutes());
 }
+// ป้ายสถานะราคาต่อหุ้น: Last Price / Last Updated / Data Source / Price Status แยกกัน
+function priceBadge(t) {
+  const price = num(S.settings.prices[t]); if (price === null) return '';
+  const m = (S.settings.priceMeta || {})[t] || {};
+  if (live.priceBusy) return '<span class="pbadge">กำลังอัปเดต…</span>';
+  if (m.src === 'manual') return `<span class="pbadge">กรอกเอง · ${timeLabel(m.at)}</span>`;
+  const out = [], age = Date.now() - (m.at || 0), fresh = m.at && age <= STALE_MS && !live.failed[t];
+  if (live.failed[t]) out.push(`<span class="pbadge bad">อัปเดตไม่สำเร็จ (${esc(live.failed[t])}) · ใช้ราคาเก่า</span>`);
+  else if (fresh) out.push('<span class="pbadge ok">ราคาสด</span>');
+  else out.push('<span class="pbadge warn">ราคาล่าสุดที่บันทึกไว้</span>');
+  if (m.state === 'REGULAR' && m.mt && Date.now() / 1000 - m.mt > 20 * 60) out.push('<span class="pbadge warn">ข้อมูลล่าช้า</span>');
+  else if (m.state === 'REGULAR') out.push('<span class="pbadge">ตลาดเปิด</span>');
+  else if (m.state === 'CLOSED') out.push('<span class="pbadge">ตลาดปิด</span>');
+  out.push(`<span>${timeLabel(m.at)}${m.src && SRC_LABEL[m.src] ? ' · ' + SRC_LABEL[m.src] : ''}</span>`);
+  return out.join('');
+}
 function liveRow(kind, status, updatedAt) {
+  const isP = kind === 'price';
+  if (isP) status = effPriceStatus();
   const [label, cls] = liveLabel(status);
-  const act = kind === 'price' ? 'refresh-prices' : 'refresh-rate';
-  const title = kind === 'price' ? 'ราคาหุ้น' : 'เรท USD/THB';
-  return `<div class="live-row"><span class="pill ${cls}"><span class="dot"></span>${title}: ${label}</span><span class="muted" style="font-size:12px">อัปเดต ${timeLabel(updatedAt)}</span><button type="button" class="btn ghost sm" data-act="${act}">รีเฟรชตอนนี้</button></div>`;
+  const act = isP ? 'refresh-prices' : 'refresh-rate';
+  const title = isP ? 'ราคาหุ้น' : 'เรท USD/THB';
+  const busy = isP ? live.priceBusy : live.rateBusy;
+  const failed = isP ? Object.keys(live.failed) : [];
+  return `<div class="live-row"><span class="pill ${cls}"><span class="dot"></span>${title}: ${label}</span><span class="muted" style="font-size:12px">อัปเดต ${timeLabel(updatedAt)}${isP && live.source ? ' · ' + SRC_LABEL[live.source] : ''}</span><button type="button" class="btn ghost sm" data-act="${act}" ${busy ? 'disabled' : ''}>${busy ? 'กำลังอัปเดต…' : 'รีเฟรชตอนนี้'}</button></div>${failed.length ? `<div class="muted" style="font-size:12px;color:var(--loss);padding:2px 0 6px">อัปเดตไม่สำเร็จ: ${failed.map(t => esc(t) + ' (' + esc(live.failed[t]) + ')').join(', ')}</div>` : ''}`;
 }
 
 /* ---------- UI shell ---------- */
@@ -1444,6 +1582,7 @@ function holdHTML(h) {
       <label class="pricein">ราคาตอนนี้ $<input inputmode="decimal" data-price="${esc(h.t)}" value="${h.price === null ? '' : h.price}" placeholder="0.00" aria-label="ราคาปัจจุบันของ ${esc(h.t)}"></label>
       <span class="${sgn(h.unreal)}">${h.unreal === null ? 'ยังไม่ใส่ราคา' : money(h.unreal, '$', { sign: true }) + (h.unrealPct !== null ? ' (' + pct(h.unrealPct, true) + ')' : '')}</span>
     </div>
+    <div class="pmeta">${priceBadge(h.t)}</div>
     <div class="hold-bot">ขายไปแล้ว <span class="${sgn(h.realized)}">${money(h.realized, '$', { sign: true })}</span>${h.total !== null ? ` · รวม <span class="${sgn(h.total)}">${money(h.total, '$', { sign: true })}</span>` : ''}${h.status === 'SHARES DIFF' ? ` <span class="tag bad">ไม่ตรงโบรกเกอร์ ต่าง ${fmtShares(h.diff)}</span>` : ''}</div>
     <div class="hold-alert">
       <label>🎯 Target $<input inputmode="decimal" data-alert-target="${esc(h.t)}" value="${al.target == null ? '' : al.target}" placeholder="ไม่ตั้ง" aria-label="ราคาเป้าหมายของ ${esc(h.t)}"></label>
@@ -1452,6 +1591,15 @@ function holdHTML(h) {
   </div>`;
 }
 
+function fullDate(d) { return d ? shortDate(d) + ' ' + d.slice(0, 4) : '–'; }
+function closedHTML(c) {
+  const sym = c.cur === 'THB' ? '฿' : '$';
+  return `<div class="hold sold"><div class="hold-top"><span class="tk">${esc(c.t)}</span><span class="grow"></span><span class="${sgn(c.pl)}"><b>${money(c.pl, sym, { sign: true })}</b>${c.pct != null ? ' (' + pct(c.pct, true) + ')' : ''}</span></div>
+    <div class="hold-bot">${fullDate(c.first)} → ${fullDate(c.closed)}<br>ซื้อสะสม ${fmtShares(c.bought)} หุ้น · ขายสะสม ${fmtShares(c.sold)} หุ้น<br>ต้นทุนรวม ${money(c.cost, sym)} · ราคาขายรวม ${money(c.proceeds, sym)}</div></div>`;
+}
+function shortHTML(h) {
+  return `<div class="hold"><div class="hold-top"><span class="tk">${esc(h.t)}</span><span class="grow">คงเหลือ ${fmtShares(h.shares)} หุ้น (ติดลบ)</span></div><div class="notice bad" style="margin:8px 0 0">Short / ข้อมูลผิดปกติ — น่าจะขายเกินที่ถือหรือขาดรายการซื้อ ตรวจที่แท็บหุ้น</div></div>`;
+}
 function checksHTML() {
   const open = ui.checksOpen === null ? C.issues > 0 : ui.checksOpen;
   const b = st => `<span class="badge ${st.replace(' ', '')}">${st === 'NO INPUT' ? 'ยังไม่ใส่' : st === 'OK' ? 'ปกติ' : st === 'CHECK' ? 'ตรวจ' : 'ข้อมูล'}</span>`;
@@ -1514,13 +1662,17 @@ function viewSummary() {
   if (segs.length) {
     h += `<section class="panel panel-pad"><h2 style="font-size:15px;margin-bottom:10px">สัดส่วนพอร์ต</h2>${donutChart(segs, { aria: 'สัดส่วนพอร์ตตามมูลค่า' })}</section>`;
   }
-  if (C.holdings.length) {
-    const act = C.holdings.filter(x => !x.zero), sold = C.holdings.filter(x => x.zero);
+  const act = C.holdings.filter(x => x.kind === 'active'), shorts = C.holdings.filter(x => x.kind === 'short'), cyc = C.closedCycles;
+  if (act.length || !cyc.length && !shorts.length) {
     h += `<section class="panel"><div class="sec-head"><h2>หุ้นที่ถืออยู่</h2><small>ใส่ราคาตอนนี้ของแต่ละตัว</small></div>
-      ${act.map(holdHTML).join('')}
-      ${act.length ? `<div class="hold-total"><span>รวมมูลค่าหุ้น</span><span>${money(s.mvTotal)}</span></div>` : ''}
-      ${sold.map(holdHTML).join('')}
+      ${act.length ? `<div style="padding:0 16px 8px">${liveRow('price', live.priceStatus, S.settings.priceUpdatedAt)}</div>` : ''}
+      ${act.length ? act.map(holdHTML).join('') + `<div class="hold-total"><span>รวมมูลค่าหุ้น</span><span>${money(act.reduce((a, x) => a + (x.mv === null ? 0 : x.mv), 0))}</span></div>` : '<div class="empty" style="padding:16px"><b>ตอนนี้ไม่มีหุ้นที่ถืออยู่</b></div>'}
     </section>`;
+  }
+  if (shorts.length) h += `<section class="panel"><div class="sec-head"><h2>⚠️ ตำแหน่งผิดปกติ</h2><small>จำนวนคงเหลือติดลบ</small></div>${shorts.map(shortHTML).join('')}</section>`;
+  if (cyc.length) {
+    const usd = cyc.filter(c => c.cur !== 'THB').reduce((a, c) => a + c.pl, 0);
+    h += `<section class="panel"><details class="closed-box"${cyc.length <= 3 ? ' open' : ''}><summary><span><b>หุ้นที่เคยถือ (ขายหมดแล้ว)</b> · ${cyc.length} รอบ</span><span class="${sgn(usd)}">${money(usd, '$', { sign: true })}</span></summary>${cyc.map(closedHTML).join('')}</details></section>`;
   }
   h += `<section class="panel"><div class="sec-head"><h2>ตัวเลขสรุป</h2><small>USD</small></div><dl class="kv">
     <div class="r"><dt>เงินสดคงเหลือ</dt><dd>${money(s.curCash)}</dd></div>
@@ -1892,6 +2044,7 @@ function ocrFindNumbers(text) {
   return out.sort((a, b) => b - a);
 }
 async function scanSlip(file, kind) {
+  if (kind === 'stock') return scanStockSlip(file);   // V2: Stock OCR แยกเป็นระบบของตัวเอง — FX/Cash ใช้ logic เดิมด้านล่างโดยไม่เปลี่ยน
   const box = $('#scanStatus'); if (box) { box.hidden = false; box.textContent = 'กำลังโหลดตัวอ่าน (ครั้งแรกอาจใช้เน็ตสักครู่)...'; }
   try {
     await loadTesseract();
@@ -1930,6 +2083,155 @@ function applyScanResult(kind, date, numbers, rawText) {
   updatePreview();
 }
 
+
+/* ===================== V2: Stock OCR (Assisted OCR — แยกจาก FX OCR) =====================
+   อ่านแบบอิง "ป้ายกำกับ" (Quantity/Price/Commission/จำนวน/ราคา …) แทนการเดาจากขนาดตัวเลข
+   อ่านไม่ได้ = เว้นว่าง ไม่เดา · ไม่บันทึกอัตโนมัติ ผู้ใช้ต้องตรวจและกดบันทึกเอง
+   เพิ่ม Template โบรกเกอร์ได้ด้วย registerStockTemplate({ id, name, test(text), parse(text, ctx) -> { shares, price, ... } }) */
+/*STOCK-OCR-BEGIN*/
+const STOCK_OCR_TEMPLATES = [];
+function registerStockTemplate(t) { if (t && t.id && typeof t.test === 'function' && typeof t.parse === 'function') STOCK_OCR_TEMPLATES.push(t); }
+const STOCK_STOP = new Set(['BUY', 'SELL', 'USD', 'THB', 'NYSE', 'NASDAQ', 'TOTAL', 'FEE', 'FEES', 'VAT', 'SEC', 'TAF', 'ORDER', 'LIMIT', 'MARKET', 'DAY', 'GTC', 'ALL', 'QTY', 'PRICE', 'TYPE', 'STOCK', 'SHARE', 'SHARES', 'NET', 'AMOUNT', 'DATE', 'TIME', 'FILLED', 'STATUS', 'DONE', 'EXECUTED', 'COMMISSION', 'SIDE', 'AVG', 'THE', 'AND']);
+const STOCK_TICKER_RE = /^[A-Z]{1,5}(?:[.-][A-Z]{1,2})?$/;
+const STOCK_LABELS = {
+  shares: 'Executed\\s*Qty|Filled\\s*Qty|Quantity|Qty|Shares?|Filled|จำนวนหุ้น|จำนวน',
+  price: 'Avg(?:erage)?\\.?\\s*(?:Fill\\s*)?Price|Executed\\s*Price|Fill\\s*Price|Price|ราคาเฉลี่ย|ราคาที่ได้|ราคา',
+  feeTotal: 'Total\\s*(?:Fees?|Commission)|รวมค่าธรรมเนียม',
+  commission: 'Commission|Comm\\.?|ค่าคอมมิชชั่น|ค่าคอม|Fees?|ค่าธรรมเนียม',
+  otherFee: 'Other\\s*Fees?|Regulatory\\s*Fees?|SEC\\s*Fee|TAF|VAT|ภาษีมูลค่าเพิ่ม|ค่าธรรมเนียมอื่น(?:ๆ)?',
+  total: 'Net\\s*Amount|Total\\s*Amount|Gross\\s*Amount|Total|Amount|Proceeds|ยอดสุทธิ|ยอดรวม|มูลค่า',
+  side: 'Side|Type|Action|ประเภท|รายการ'
+};
+function stockNum(raw) { const v = Number(String(raw).replace(/,/g, '')); return isFinite(v) ? v : null; }
+// หาค่าตัวเลขหลังป้ายกำกับ: บรรทัดเดียวกันก่อน ถ้าไม่มีค่อยดูบรรทัดถัดไปเฉพาะเมื่อเป็นตัวเลขล้วน
+function findLabeled(lines, key, exclude) {
+  const lab = new RegExp('(?:' + STOCK_LABELS[key] + ')', 'i');
+  const same = new RegExp('(?:' + STOCK_LABELS[key] + ')[^\\d\\n]{0,25}?(?:USD|THB|\\$|฿)?\\s*(-?\\d[\\d,]*(?:\\.\\d+)?)', 'i');
+  for (let i = 0; i < lines.length; i++) {
+    const ln = lines[i];
+    if (!lab.test(ln) || (exclude && exclude.test(ln))) continue;
+    const m = ln.match(same);
+    if (m) { const v = stockNum(m[1]); if (v !== null) return { v, line: ln }; }
+    const nx = lines[i + 1];
+    if (nx && /^[$฿]?\s*\d[\d,]*(?:\.\d+)?$/.test(nx)) { const v = stockNum(nx.replace(/[$฿\s]/g, '')); if (v !== null) return { v, line: ln + ' ' + nx }; }
+  }
+  return null;
+}
+function findStockTicker(text, lines, known) {
+  const up = text.toUpperCase();
+  const hit = (known || []).filter(t => new RegExp('(?:^|[^A-Z0-9])' + t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '(?:$|[^A-Z0-9])').test(up));
+  if (hit.length === 1) return { v: hit[0], conf: 'high', line: hit[0] };
+  const lab = text.match(/(?:Symbol|Ticker|Stock|Security|ชื่อย่อ|หุ้น)\s*[:：]?\s*([A-Z]{1,5}(?:[.-][A-Z]{1,2})?)\b/);
+  if (lab && !STOCK_STOP.has(lab[1])) return { v: lab[1], conf: 'high', line: lab[0] };
+  const near = text.match(/\b(?:BUY|SELL|BOUGHT|SOLD)\s+([A-Z]{1,5}(?:[.-][A-Z]{1,2})?)\b/) || text.match(/\b([A-Z]{1,5}(?:[.-][A-Z]{1,2})?)\s+(?:BUY|SELL|BOUGHT|SOLD)\b/);
+  if (near && !STOCK_STOP.has(near[1])) return { v: near[1], conf: 'med', line: near[0] };
+  return null;
+}
+function parseStockSlip(text, ctx) {
+  ctx = ctx || {}; text = String(text || '');
+  const lines = text.split(/\r?\n/).map(x => x.trim()).filter(Boolean);
+  const F = {}, W = [], tpl = STOCK_OCR_TEMPLATES.find(t => { try { return t.test(text); } catch (e) { return false; } });
+  const put = (k, v, conf, line) => { if (v !== null && v !== undefined && v !== '') F[k] = { v, conf: conf || 'high', line: line || '' }; };
+  // action
+  const buy = /\b(BUY|BOUGHT|PURCHASE)\b|ซื้อ/i.test(text), sell = /\b(SELL|SOLD)\b|ขาย/i.test(text);
+  if (buy !== sell) put('action', buy ? 'BUY' : 'SELL', 'med');
+  else if (buy && sell) {
+    const sl = lines.find(l => new RegExp('(?:' + STOCK_LABELS.side + ')', 'i').test(l) && /BUY|SELL|ซื้อ|ขาย/i.test(l));
+    const b2 = sl && /\b(BUY|BOUGHT)\b|ซื้อ/i.test(sl), s2 = sl && /\b(SELL|SOLD)\b|ขาย/i.test(sl);
+    if (sl && b2 !== s2) put('action', b2 ? 'BUY' : 'SELL', 'med', sl); else W.push('พบทั้งคำว่าซื้อและขาย — เลือก ซื้อ/ขาย เอง');
+  }
+  const tk = findStockTicker(text, lines, ctx.known); if (tk && STOCK_TICKER_RE.test(tk.v)) put('asset', tk.v, tk.conf, tk.line);
+  const sh = findLabeled(lines, 'shares', /total|amount|มูลค่า|ยอด/i); if (sh) put('shares', sh.v, 'high', sh.line);
+  const pr = findLabeled(lines, 'price', /limit|stop|total|net|gross|amount|ยอด/i); if (pr) put('price', pr.v, 'high', pr.line);
+  const ft = findLabeled(lines, 'feeTotal'), cm = findLabeled(lines, 'commission', new RegExp(STOCK_LABELS.feeTotal + '|' + STOCK_LABELS.otherFee, 'i')), of = findLabeled(lines, 'otherFee');
+  if (ft) put('fee', ft.v, 'high', ft.line);
+  else if (cm || of) put('fee', Math.round(((cm ? cm.v : 0) + (of ? of.v : 0)) * 1e6) / 1e6, cm ? 'high' : 'med', (cm ? cm.line : '') + ' ' + (of ? of.line : ''));
+  const tt = findLabeled(lines, 'total', /fee|commission|ค่า|price|ราคา/i); if (tt) put('total', tt.v, 'med', tt.line);
+  const d = typeof ocrFindDate === 'function' ? ocrFindDate(text) : null; if (d) put('date', d, 'med');
+  const tm = text.match(/\b([01]?\d|2[0-3]):([0-5]\d)(?::[0-5]\d)?\b/); if (tm) put('time', String(tm[1]).padStart(2, '0') + ':' + tm[2], 'med', tm[0]);
+  const usd = /\bUSD\b|\$/.test(text), thb = /\bTHB\b|฿|บาท/.test(text);
+  if (usd !== thb) put('currency', usd ? 'USD' : 'THB', 'med'); else if (usd && thb) W.push('พบทั้ง USD และ THB — เลือกสกุลเงินเอง');
+  if (tpl) { try { const o = tpl.parse(text, ctx) || {}; Object.keys(o).forEach(k => put(k, o[k], 'high', 'template:' + tpl.id)); } catch (e) { W.push('Template ' + tpl.id + ' อ่านไม่สำเร็จ ใช้ตัวอ่านทั่วไปแทน'); } }
+  // ความมั่นใจต่อบรรทัดจาก Tesseract (ถ้ามี) — ต่ำกว่า 70 = low
+  if (Array.isArray(ctx.lines)) Object.keys(F).forEach(k => {
+    const key = (F[k].line || '').slice(0, 10); if (!key) return;
+    const l = ctx.lines.find(x => x && String(x.text || '').includes(key)); if (l && typeof l.confidence === 'number' && l.confidence < 70) F[k].conf = 'low';
+  });
+  // ---- ตรวจสอบ ----
+  const bad = (k, why) => { delete F[k]; W.push(why); };
+  if (F.shares && !(F.shares.v > 0)) bad('shares', 'จำนวนหุ้นอ่านได้ไม่ถูกต้อง — กรอกเอง');
+  if (F.price && !(F.price.v > 0)) bad('price', 'ราคาต่อหุ้นอ่านได้ไม่ถูกต้อง — กรอกเอง');
+  if (F.fee && F.fee.v < 0) bad('fee', 'ค่าธรรมเนียมอ่านได้ติดลบ — กรอกเอง');
+  if (F.date) { const t = ctx.today || '9999-12-31', dy = Number(F.date.v.slice(0, 4)); if (F.date.v > t) W.push('วันที่ที่อ่านได้เป็นอนาคต — ตรวจวันที่'); else if (dy < new Date().getFullYear() - 6) W.push('วันที่ที่อ่านได้เก่ามาก — ตรวจวันที่'); }
+  if (F.shares && F.price) {
+    const g = F.shares.v * F.price.v, fee = F.fee ? F.fee.v : 0;
+    if (F.fee && F.fee.v > g * 0.1) W.push('ค่าธรรมเนียมสูงผิดปกติเมื่อเทียบกับยอดซื้อขาย — ตรวจค่าธรรมเนียม');
+    if (F.total) {
+      const tol = Math.max(0.02, g * 0.005), ok = [g, g + fee, g - fee].some(x => Math.abs(F.total.v - x) <= tol);
+      if (!ok) W.push('ยอดรวมในรูป ' + F.total.v + ' ไม่ตรงกับ จำนวน × ราคา = ' + (Math.round(g * 100) / 100) + ' (± ค่าธรรมเนียม) — อาจอ่านตัวเลขผิดช่อง');
+    }
+    const last = ctx.prices && F.asset ? Number(ctx.prices[F.asset.v]) : NaN;
+    if (isFinite(last) && last > 0 && Math.abs(F.price.v / last - 1) > 0.5) W.push('ราคาต่างจากราคาล่าสุดที่บันทึกไว้เกิน 50% — ตรวจราคา');
+  }
+  if (typeof ctx.confidence === 'number' && ctx.confidence < 65) W.push('ภาพไม่ค่อยชัด (ความมั่นใจ OCR ต่ำ) — ตรวจทุกช่อง');
+  if (Object.values(F).some(x => x.conf === 'low')) W.push('บางช่องอ่านด้วยความมั่นใจต่ำ (ไฮไลต์ ⚠) — ตรวจเทียบกับรูป');
+  return { fields: F, warnings: W, template: tpl ? tpl.id : 'generic' };
+}
+/*STOCK-OCR-END*/
+
+// เตรียมภาพก่อน OCR (เฉพาะ Stock): ขยายให้กว้างพอ, ขาวดำ, ยืดคอนทราสต์ — ทำในเครื่องทั้งหมด ถ้าล้มเหลวใช้ภาพต้นฉบับ
+async function preprocessForOcr(file) {
+  try {
+    const bmp = await createImageBitmap(file);
+    const w = Math.min(2200, Math.max(1400, bmp.width)), sc = w / bmp.width;
+    const cv = document.createElement('canvas'); cv.width = Math.round(bmp.width * sc); cv.height = Math.round(bmp.height * sc);
+    const cx = cv.getContext('2d', { willReadFrequently: true }); cx.drawImage(bmp, 0, 0, cv.width, cv.height);
+    const im = cx.getImageData(0, 0, cv.width, cv.height), px = im.data, hist = new Array(256).fill(0);
+    for (let i = 0; i < px.length; i += 4) { const g = Math.round(0.299 * px[i] + 0.587 * px[i + 1] + 0.114 * px[i + 2]); px[i] = px[i + 1] = px[i + 2] = g; hist[g]++; }
+    const n = px.length / 4; let lo = 0, hi = 255, acc = 0;
+    for (let g = 0; g < 256; g++) { acc += hist[g]; if (acc >= n * 0.01) { lo = g; break; } }
+    acc = 0; for (let g = 255; g >= 0; g--) { acc += hist[g]; if (acc >= n * 0.01) { hi = g; break; } }
+    if (hi - lo > 20) for (let i = 0; i < px.length; i += 4) { const v = Math.max(0, Math.min(255, Math.round((px[i] - lo) * 255 / (hi - lo)))); px[i] = px[i + 1] = px[i + 2] = v; }
+    cx.putImageData(im, 0, 0);
+    // ธีมมืด (พื้นเข้ม ตัวอักษรสว่าง) → กลับสี ให้ Tesseract อ่านง่ายขึ้น
+    let sum = 0; for (let i = 0; i < px.length; i += 16) sum += px[i]; if (sum / (px.length / 16) < 110) { const im2 = cx.getImageData(0, 0, cv.width, cv.height), q = im2.data; for (let i = 0; i < q.length; i += 4) { q[i] = q[i + 1] = q[i + 2] = 255 - q[i]; } cx.putImageData(im2, 0, 0); }
+    return cv;
+  } catch (e) { return file; }
+}
+function ocrReviewHTML(res) {
+  const L = [['action', 'ซื้อ/ขาย', v => v === 'BUY' ? 'ซื้อ' : 'ขาย'], ['asset', 'Ticker', v => v], ['shares', 'จำนวนหุ้น', v => v], ['price', 'ราคาต่อหุ้น', v => v], ['date', 'วันที่', v => v], ['time', 'เวลา', v => v], ['fee', 'ค่าธรรมเนียมรวม', v => v], ['currency', 'สกุลเงิน', v => v], ['total', 'ยอดรวมในรูป (ใช้ตรวจเท่านั้น)', v => v]];
+  const rows = L.map(([k, label, f]) => { const x = res.fields[k]; return `<div class="r"><span>${label}</span>${x ? `<span>${x.conf === 'low' ? '⚠ ' : ''}${esc(String(f(x.v)))}</span>` : '<span class="miss">— อ่านไม่ได้ กรอกเอง</span>'}</div>`; }).join('');
+  return `<b>ผลอ่านจากรูป</b> <small class="muted">(${res.template === 'generic' ? 'ตัวอ่านทั่วไป' : 'template: ' + esc(res.template)})</small>${rows}${res.warnings.map(w => `<div class="w">⚠ ${esc(w)}</div>`).join('')}<div class="muted" style="margin-top:6px;font-size:12px">ช่องที่ไฮไลต์มาจาก OCR — แก้ได้ทุกช่อง และต้องกด “บันทึก” เองเสมอ ระบบไม่บันทึกให้อัตโนมัติ</div>`;
+}
+function applyStockOcr(res, raw) {
+  const f = $('#frm'); if (!f || f.dataset.kind !== 'stock') return;
+  f.querySelectorAll('.ocr-filled').forEach(el => { el.value = ''; el.classList.remove('ocr-filled'); });   // ล้างค่าจาก OCR รอบก่อนที่ผู้ใช้ยังไม่แก้
+  const F = res.fields, set = (name, v) => { const el = f.elements[name]; if (el && v !== undefined) { el.value = v; el.classList.add('ocr-filled'); } };
+  if (F.action) f.querySelectorAll('input[name="action"]').forEach(r => { r.checked = (r.value === F.action.v); });
+  ['date', 'asset', 'shares', 'price', 'fee', 'time', 'currency'].forEach(k => { if (F[k]) set(k, F[k].v); });
+  if (F.time || F.currency) { const d = f.querySelector('details.more'); if (d) d.open = true; }
+  if (f.elements['source'] && !f.elements['source'].value) f.elements['source'].value = 'OCR (ผู้ใช้ตรวจแล้ว)';
+  f.dataset.ocr = '1'; f.dataset.ocrWarn = String(res.warnings.length);
+  const rv = $('#ocrReview'); if (rv) { rv.innerHTML = ocrReviewHTML(res); rv.hidden = false; }
+  const rawBox = $('#scanRaw'), rawWrap = $('#scanRawWrap'); if (rawBox && rawWrap) { rawBox.textContent = raw.trim() || '(ไม่พบข้อความ)'; rawWrap.hidden = false; }
+  toast(res.warnings.length ? 'อ่านรูปแล้ว มีจุดที่ต้องตรวจ — ดูผลอ่านด้านบน' : 'อ่านรูปแล้ว — ตรวจให้ตรงก่อนบันทึกนะ');
+  updatePreview();
+}
+async function scanStockSlip(file) {
+  const box = $('#scanStatus'); const say = m => { if (box) { box.hidden = false; box.textContent = m; } };
+  try {
+    say('กำลังโหลดตัวอ่าน (ครั้งแรกอาจใช้เน็ตสักครู่)...');
+    await loadTesseract();
+    say('กำลังเตรียมภาพ...'); const img = await preprocessForOcr(file);
+    say('กำลังอ่านข้อความจากรูป... ประมวลผลในเครื่อง ไม่ส่งรูปออกไปไหน');
+    const { data } = await window.Tesseract.recognize(img, 'eng+tha');
+    const res = parseStockSlip(data.text || '', { known: Object.keys(C.st.per), today: today(), prices: S.settings.prices, confidence: data.confidence, lines: data.lines });
+    applyStockOcr(res, data.text || '');
+    if (box) box.hidden = true; playSound('success');
+  } catch (e) { say('อ่านรูปไม่สำเร็จ (' + (navigator.onLine ? 'ลองรูปที่ชัดกว่านี้' : 'ต้องต่อเน็ตอย่างน้อยครั้งแรก') + ') — กรอกเองแทนได้เลย'); playSound('error'); }
+}
+document.addEventListener('input', e => { const t = e.target; if (t && t.classList && t.classList.contains('ocr-filled')) t.classList.remove('ocr-filled'); });
+
 /* ----- stock form ----- */
 function openStock(id) {
   const r = id ? S.stocks.find(x => x.id === id) : null;
@@ -1937,7 +2239,7 @@ function openStock(id) {
   const tick = Object.keys(C.st.per).sort();
   openSheet(`<form id="frm" data-kind="stock" data-id="${r ? r.id : ''}" novalidate>
     ${head(r ? 'แก้ไขรายการหุ้น' : 'เพิ่มรายการหุ้น')}
-    ${r ? '' : scanBtn('stock')}
+    ${r ? '' : scanBtn('stock') + '<div class="ocr-review" id="ocrReview" hidden></div>'}
     ${seg('action', [['BUY', 'ซื้อ'], ['SELL', 'ขาย']], d.action === 'SELL' ? 'SELL' : 'BUY', 'ซื้อหรือขาย')}
     <div class="grid2">${fld('วันที่', 'date', d.date, { type: 'date' })}${fld('ชื่อหุ้น (Ticker)', 'asset', d.asset, { list: 'tickers', cap: true, ph: 'เช่น SMCI' })}</div>
     <datalist id="tickers">${tick.map(t => `<option value="${esc(t)}">`).join('')}</datalist>
@@ -2012,6 +2314,7 @@ async function saveStock(f) {
   if (!(v.price > 0)) err.push('ราคาต้องมากกว่า 0');
   if (v.fee < 0) err.push('ค่าธรรมเนียมต้องไม่ติดลบ');
   if (err.length) { $('#err').textContent = err.join(' · '); playSound('error'); return; }
+  if (f.dataset.ocr === '1' && Number(f.dataset.ocrWarn) > 0 && !(await confirmBox('ข้อมูลที่อ่านจากรูปยังมีจุดที่ต้องตรวจ (ดูผลอ่านด้านบน)\nตรวจเทียบกับรูปแล้วและต้องการบันทึก?', 'ตรวจแล้ว บันทึก', false))) return;
   const cand = stockCandidate(f, v);
   if (cand && cand.status === 'SELL > held' && !(await confirmBox('รายการนี้ขายเกินจำนวนหุ้นที่ถืออยู่ ณ วันที่นั้น\nบันทึกต่อไหม? (จะขึ้นเตือนในหน้าภาพรวม)', 'บันทึกต่อ', false))) return;
   const id = f.dataset.id;
@@ -2227,7 +2530,7 @@ document.addEventListener('click', async e => {
   else if (a === 'bk-copy') { const ok = await copyText(backupJson); toast(ok ? 'คัดลอกแล้ว วางเก็บไว้ในที่ปลอดภัย' : 'คัดลอกไม่สำเร็จ'); playSound(ok ? 'success' : 'error'); }
   else if (a === 'bk-restore') { const v = $('#restoreBox').value.trim(); if (!v) toast('วางข้อความที่สำรองไว้ก่อน'); else restoreFrom(v); }
   else if (a === 'sound-test') playSound('success');
-  else if (a === 'refresh-prices') refreshPricesNow();
+  else if (a === 'refresh-prices') refreshPricesNow(true);
   else if (a === 'refresh-rate') refreshRateNow();
   else if (a === 'refresh-all') { refreshPricesNow(); refreshRateNow(); }
   else if (a === 'notif-request') requestNotifPermission();
@@ -2239,7 +2542,7 @@ document.addEventListener('click', async e => {
 document.addEventListener('change', async e => {
   const t = e.target;
   if (t.dataset && t.dataset.price !== undefined) {
-    const p = num(t.value); if (p === null) delete S.settings.prices[t.dataset.price]; else S.settings.prices[t.dataset.price] = p;
+    const p = num(t.value); if (p === null) { delete S.settings.prices[t.dataset.price]; delete S.settings.priceMeta[t.dataset.price]; } else { S.settings.prices[t.dataset.price] = p; S.settings.priceMeta[t.dataset.price] = { at: Date.now(), src: 'manual', state: '' }; }
     persist(); checkPriceAlerts(); render();
   } else if (t.dataset && t.dataset.bshare !== undefined) {
     const p = num(t.value); if (p === null) delete S.settings.brokerShares[t.dataset.bshare]; else S.settings.brokerShares[t.dataset.bshare] = p;
